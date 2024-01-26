@@ -27,6 +27,7 @@
     - [`--overwrite`](#--overwrite)
     - [`--progress`](#--progress)
     - [`--lowercase`](#--lowercase)
+    - [`--clipboard`](#--clipboard)
 - [Features](#features)
   - [Benchmark](#benchmark)
     - [Standard Benchmark](#standard-benchmark)
@@ -320,7 +321,7 @@ Match and output hash value(s) in lower case instead of upper case.
 
 During normal operation when this utility is processing files, the hash that this utility generates is in upper-case characters. If your hash matches the one in the digest but has different casing, then the verification will fail. The casing of your digest hash, and the hash that the utility generates must be the exact same.
 
-Without this argument enabled, the following verification will **fail**:
+Without the argument `--lowercase`, the following verification will **fail**:
 
 ```
 d63ba16a664619c2dc4eb2aeef2a2e64cbc7931b831e0adf1c2275ee08e8fd47  filename.zip
@@ -333,6 +334,31 @@ D63BA16A664619C2DC4EB2AEEF2A2E64CBC7931B831E0ADF1C2275EE08E8FD47
 <br />
 
 This argument will transform all hashes to lowercase, both the hash produced by the utility, and the hashes in your digest, which will allow them to match as long as the hash characters are the same.
+
+<br />
+
+</details>
+
+<br />
+
+---
+
+<br />
+
+### `--clipboard`
+Copies the output hash value to clipboard.
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+When the argument `--clipboard` is specified, the results of a task will be copied to your clipboard.
+
+<br />
+
+> [!NOTE]
+> When targeting a folder to generate a hash, the hash of the folder itself will be copied to your clipboard, not the individual files.
 
 <br />
 
