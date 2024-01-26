@@ -36,6 +36,14 @@
     - [Standard Benchmark](#standard-benchmark)
     - [Algorithm Stress Test Benchmark](#algorithm-stress-test-benchmark)
 
+<br />
+
+---
+
+<br />
+
+> [!NOTE]
+> This utility is currently in development. Not all features are complete. If you see some aspect of the code that could be improved, you're more than welcome to commit. All code will be reviewed before it is accepted.
 
 <br />
 
