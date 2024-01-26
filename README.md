@@ -7,6 +7,24 @@
 
 </div>
 
+<br />
+
+---
+
+<br />
+
+
+- [About](#about)
+  - [Main Arguments](#main-arguments)
+  - [Sub Arguments](#sub-arguments)
+- [Features](#features)
+  - [Benchmark](#benchmark)
+    - [Standard Benchmark](#standard-benchmark)
+    - [Algorithm Stress Test Benchmark](#algorithm-stress-test-benchmark)
+
+
+<br />
+
 ---
 
 <br />
@@ -16,6 +34,40 @@
 This utility allows you to generate, sign, and validate checksums.
 
 While there are numerous apps available for doing things such as this; I need a tool that was very specific, and allowed for this to all be done very easily without complicated excessive options.
+
+<br />
+
+## Main Arguments
+xSum mains the following main features:
+
+<br />
+
+| Argument | Description |
+| --- | --- |
+| `-a, --generate` | Generate a new hash digest from the `--target <FILE>` |
+| `-v, --verify` | Verifies an existing hash digest and compares its contents with `--target <FILE>` |
+| `-s, --sign` | Signs an existing hash digest using GPG |
+
+<br />
+
+## Sub Arguments
+Along with the main features listed above, the following sub-arguments can be used to configure out xsum works for you:
+
+<br />
+
+| Argument | Description |
+| --- | --- |
+| `-t, --target` | Target folder or file to generate / verify hash for |
+| `-d, --digest` | Hash digest which contains list of generated hashes |
+| `-a, --algorithm` | Algorithm used to verify `--digest` |
+| `-o, --output` | Output file for results verified |
+| `-w, --overwrite` | Overwrite results to `--output` instead of append |
+| `-p, --progress` | Displays each file being checked and additional info |
+| `-l, --lowercase` | Match and output hash value(s) in lower case instead of upper case |
+| `-c, --clipboard` | Copies the output hash value to clipboard. |
+| `-b, --benchmark` | Performs benchmarks on a specified algorithm or all. |
+| `-i, --iterations` | Number of iterations to perform using `--benchmark` |
+| `-b, --buffer` | Buffer size to use when using `--benchmark` |
 
 <br />
 
