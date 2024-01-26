@@ -30,6 +30,7 @@
     - [`--lowercase`](#--lowercase)
     - [`--clipboard`](#--clipboard)
 - [Features](#features)
+  - [Help Menu](#help-menu)
   - [Target Types](#target-types)
   - [Benchmark](#benchmark)
     - [Standard Benchmark](#standard-benchmark)
@@ -388,6 +389,34 @@ The following features are highlighted to explain them in better detail:
 
 <br />
 
+## Help Menu
+We've attempted to give the user as much info as possible to make using the program easier. You can access the main help / commands menu by typing:
+
+```shell
+xsum
+xsum /?
+xsum ?
+```
+
+<br />
+
+If you need help on a specific command, type the argument like you normally would, but append a question mark `?` at the end, such as:
+```shell
+xsum --benchmark ?
+```
+
+<br />
+
+<p align="center"><sub>Help menu for the command `benchmark`)</sub></p>
+
+<p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/7.png"></p>
+
+<br />
+
+---
+
+<br />
+
 ## Target Types
 This utility handles various different types of input:
 - Files
@@ -410,6 +439,10 @@ If your specified input is not detected as a valid file or folder, the utility w
 
 <br />
 
+---
+
+<br />
+
 ## Benchmark
 xSum includes a **Benchmark** feature, which allows you to test the performance of the various different hashes.
 
@@ -421,6 +454,10 @@ The benchmark functionality includes a few different modes:
 | --- | --- | --- |
 | **Standard Benchmark** | Run each algorithm through a series of performance tests | `xsum.exe --benchmark --buffer 32000000 --iterations 50` |
 | **Algo Stress Test** | Stress the processing speeds of one particular algorithm. | `xsum --benchmark --algo md5 --iterations 100000` |
+
+<br />
+
+---
 
 <br />
 
