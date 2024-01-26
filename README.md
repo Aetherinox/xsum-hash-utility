@@ -16,6 +16,7 @@
 
 - [About](#about)
   - [What Is A Hash Digest](#what-is-a-hash-digest)
+  - [Supported Algorithms](#supported-algorithms)
 - [Arguments](#arguments)
   - [Main Arguments](#main-arguments)
   - [Sub Arguments](#sub-arguments)
@@ -63,6 +64,17 @@ dfb8dacbd53eac730814ef2e9f74a47efabe5cb2a5e458bcad6380ae4c1f1f59  example_file_2
 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08  sample_zip_1.zip
 60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752  README.md
 ```
+
+<br />
+
+## Supported Algorithms
+Currently, the following algorithms are suppported. More are planned for later.
+
+- MD5
+- SHA-1
+- SHA-256
+- SHA-384
+- SHA-512
 
 <br />
 
@@ -189,16 +201,16 @@ The hash digest will be saved as `SHA512.txt`.
 
 <br />
 
----
-
-<br />
-
 </details>
 
 <br />
 
+---
+
+<br />
+
 ### `--algorithm`
-Algorithm used to verify --digest
+Algorithm used to verify `--digest`
 
 <details>
 <summary><sub>Read More</sub></summary>
