@@ -24,6 +24,9 @@
     - [`--digest`](#--digest)
     - [`--algorithm`](#--algorithm)
     - [`--output`](#--output)
+    - [`--overwrite`](#--overwrite)
+    - [`--progress`](#--progress)
+    - [`--lowercase`](#--lowercase)
 - [Features](#features)
   - [Benchmark](#benchmark)
     - [Standard Benchmark](#standard-benchmark)
@@ -115,9 +118,12 @@ This utility attempts to be semi "smart" in the aspect that you can execute comm
 <br />
 
 ### `--target`
+Target folder or file to generate / verify hash for
 
 <details>
-<summary>Read More</summary>
+<summary><sub>Read More</sub></summary>
+
+<br />
 
 The **Target** is the file or folder you wish to either generate a hash for, or verify an existing hash.
 
@@ -149,10 +155,17 @@ xsum --generate "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 
 <br />
 
+---
+
+<br />
+
 ### `--digest`
+Hash digest which contains list of generated hashes
 
 <details>
-<summary>Read More</summary>
+<summary><sub>Read More</sub></summary>
+
+<br />
 
 The `--digest <FILE>` argument tells xsum either where your current digest is if you're using `-verify`, or where you want a new digest to be created if you are using `--generate`.
 
@@ -175,14 +188,21 @@ The hash digest will be saved as `SHA512.txt`.
 
 <br />
 
+---
+
+<br />
+
 </details>
 
 <br />
 
 ### `--algorithm`
+Algorithm used to verify --digest
 
 <details>
-<summary>Read More</summary>
+<summary><sub>Read More</sub></summary>
+
+<br />
 
 The `--algorithm <HASH>` argument specifies which algorithm to use for generation or verification.
 
@@ -204,12 +224,20 @@ Available Algorithms:
 
 <br />
 
+---
+
+<br />
+
 ### `--output`
+Output file for results verified
 
 <details>
-<summary>Read More</summary>
+<summary><sub>Read More</sub></summary>
+
+<br />
 
 The `--output` argument is an optional parameter which allows you to define a file where the results of your generated or verified results will be placed.
+
 <br />
 
 | Expects | Description |
@@ -220,6 +248,95 @@ The `--output` argument is an optional parameter which allows you to define a fi
 
 </details>
 
+<br />
+
+---
+
+<br />
+
+### `--overwrite`
+Overwrite results to `--output` instead of append
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+When used in combination with `--output`, this argument will force the utility to overwrite any existing output files. If you do not specify `--overwrite`, then your current task's results will be appended to any existing result files that may have been generated from previous tasks.
+
+<br />
+
+</details>
+
+<br />
+
+---
+
+<br />
+
+### `--progress`
+Displays in-depth information about the utility's progress during a task, as well as the checksum for each file being processed.
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+The `--progress` argument allows you to see a more detailed report about what xSum is doing.
+
+Without this argument, you will see a simple message stating whether or not your hash digest was successfully verified, or that your new digest has been created.
+
+However, when using this argument, you will see a larger collection of messages.
+
+<br />
+
+<p align="center"><sub>--progress enabled</sub></p>
+
+<p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/3.png"></p>
+
+<br />
+
+<p align="center"><sub>--progress disabled</sub></p>
+
+<p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/4.png"></p>
+
+<br />
+
+</details>
+
+<br />
+
+---
+
+<br />
+
+### `--lowercase`
+Match and output hash value(s) in lower case instead of upper case.
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+During normal operation when this utility is processing files, the hash that this utility generates is in upper-case characters. If your hash matches the one in the digest but has different casing, then the verification will fail. The casing of your digest hash, and the hash that the utility generates must be the exact same.
+
+Without this argument enabled, the following verification will **fail**:
+
+```
+d63ba16a664619c2dc4eb2aeef2a2e64cbc7931b831e0adf1c2275ee08e8fd47  filename.zip
+```
+
+```
+D63BA16A664619C2DC4EB2AEEF2A2E64CBC7931B831E0ADF1C2275EE08E8FD47
+```
+
+<br />
+
+This argument will transform all hashes to lowercase, both the hash produced by the utility, and the hashes in your digest, which will allow them to match as long as the hash characters are the same.
+
+<br />
+
+</details>
 
 <br />
 
