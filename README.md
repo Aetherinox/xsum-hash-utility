@@ -21,9 +21,9 @@
   - [Sub Arguments](#sub-arguments)
 - [Syntax](#syntax)
     - [`--target`](#--target)
-    - [--digest](#--digest)
-    - [--algorithm](#--algorithm)
-    - [--output](#--output)
+    - [`--digest`](#--digest)
+    - [`--algorithm`](#--algorithm)
+    - [`--output`](#--output)
 - [Features](#features)
   - [Benchmark](#benchmark)
     - [Standard Benchmark](#standard-benchmark)
@@ -117,7 +117,7 @@ This utility attempts to be semi "smart" in the aspect that you can execute comm
 ### `--target`
 
 <details>
-<summary>View Summary</summary>
+<summary>Read More</summary>
 
 The **Target** is the file or folder you wish to either generate a hash for, or verify an existing hash.
 
@@ -145,13 +145,15 @@ xsum --verify "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 xsum --generate "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 ```
 
-This is a dropdown with text!
 </details>
-
 
 <br />
 
-### --digest
+### `--digest`
+
+<details>
+<summary>Read More</summary>
+
 The `--digest <FILE>` argument tells xsum either where your current digest is if you're using `-verify`, or where you want a new digest to be created if you are using `--generate`.
 
 <br />
@@ -173,7 +175,15 @@ The hash digest will be saved as `SHA512.txt`.
 
 <br />
 
-### --algorithm
+</details>
+
+<br />
+
+### `--algorithm`
+
+<details>
+<summary>Read More</summary>
+
 The `--algorithm <HASH>` argument specifies which algorithm to use for generation or verification.
 
 <br />
@@ -190,9 +200,15 @@ Available Algorithms:
 
 <br />
 
+</details>
+
 <br />
 
-### --output
+### `--output`
+
+<details>
+<summary>Read More</summary>
+
 The `--output` argument is an optional parameter which allows you to define a file where the results of your generated or verified results will be placed.
 <br />
 
@@ -202,6 +218,7 @@ The `--output` argument is an optional parameter which allows you to define a fi
 
 <br />
 
+</details>
 
 
 <br />
