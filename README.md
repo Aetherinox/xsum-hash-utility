@@ -15,8 +15,15 @@
 
 
 - [About](#about)
+  - [What Is A Hash Digest](#what-is-a-hash-digest)
+- [Arguments](#arguments)
   - [Main Arguments](#main-arguments)
   - [Sub Arguments](#sub-arguments)
+- [Syntax](#syntax)
+    - [--target](#--target)
+    - [--digest](#--digest)
+    - [--Algorithm](#--algorithm)
+    - [--output](#--output)
 - [Features](#features)
   - [Benchmark](#benchmark)
     - [Standard Benchmark](#standard-benchmark)
@@ -37,14 +44,41 @@ While there are numerous apps available for doing things such as this; I need a 
 
 <br />
 
+## What Is A Hash Digest
+When using `--generate`, a hash digest will be created which contains a list of all the files you have targeted.  When that digest is generated, it will be created as a file named depending on what hash algorithm you specified.
+
+You may either specify your own name for the hash digest, or let the utility pick a name.
+
+If you generated a hash digest using `SHA512` and did not specify  `--digest <FILE>`, your hash digest will be generated as `SHA512.txt`.
+
+When you open the hash digest in a text editor, you will see something similar to the following:
+
+```
+d63ba16a664619c2dc4eb2aeef2a2e64cbc7931b831e0adf1c2275ee08e8fd47  example_file_1.txt
+dfb8dacbd53eac730814ef2e9f74a47efabe5cb2a5e458bcad6380ae4c1f1f59  example_file_2.txt
+9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08  sample_zip_1.zip
+60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752  README.md
+```
+
+<br />
+
+---
+
+<br />
+
+# Arguments
+The following is a description of all the arguments associated with this utility.
+
+<br />
+
 ## Main Arguments
-xSum mains the following main features:
+The following arguments are considered the **primary** arguments of this utility.
 
 <br />
 
 | Argument | Description |
 | --- | --- |
-| `-a, --generate` | Generate a new hash digest from the `--target <FILE>` |
+| `-g, --generate` | Generate a new hash digest from the `--target <FILE>` |
 | `-v, --verify` | Verifies an existing hash digest and compares its contents with `--target <FILE>` |
 | `-s, --sign` | Signs an existing hash digest using GPG |
 
@@ -68,6 +102,99 @@ Along with the main features listed above, the following sub-arguments can be us
 | `-b, --benchmark` | Performs benchmarks on a specified algorithm or all. |
 | `-i, --iterations` | Number of iterations to perform using `--benchmark` |
 | `-b, --buffer` | Buffer size to use when using `--benchmark` |
+
+<br />
+
+---
+
+<br />
+
+# Syntax
+This utility attempts to be semi "smart" in the aspect that you can execute commands in various different ways. The reason for this is because out of the various other hashing tools out there, we try to use a similar syntax for this utilities' commands so that there's very little in means of transitioning, and to make it more comfortable.
+
+<br />
+
+### --target
+The **Target** is the file or folder you wish to either generate a hash for, or verify an existing hash.
+
+This can be defined either by specifying the file or folder directly after using `--target`, or directly after the main command.
+
+<br />
+
+| Expects | Description |
+| --- | --- |
+| `--target Path\To\FILE.xxx` | File to create / verify a digest for |
+| `--target Path\To\FOLDER` | Folder to create / verify a digest for. All files in folder will be added to digest. |
+| `--target STRING` | Creates an SHA hash for a string and prints to console. |
+
+<br />
+
+The following commands all do the same action:
+
+```C#
+xsum --verify --target "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+xsum --generate --target "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+```
+
+```C#
+xsum --verify "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+xsum --generate "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+```
+
+<br />
+
+### --digest
+The `--digest <FILE>` argument tells xsum either where your current digest is if you're using `-verify`, or where you want a new digest to be created if you are using `--generate`.
+
+<br />
+
+| Expects | Description |
+| --- | --- |
+| `--digest Path\To\FILE.xxx` | The file to use as the hash digest for verifying |
+
+<br />
+
+If you use `--generate` and do not define a hash digest, one will be generated and placed in the folder where the hashes were made, using the structure `[AlgorithmName].txt`
+
+If you execute:
+```C#
+xsum --generate "X:\Path\To\ExampleFile.zip" --algo SHA512
+```
+
+The hash digest will be saved as `SHA512.txt`.
+
+<br />
+
+### --Algorithm
+The `--algorithm <HASH>` argument specifies which algorithm to use for generation or verification.
+
+<br />
+
+Available Algorithms:
+
+| Algorithm | Command |
+| --- | --- |
+| `--algorithm md5` | MD5 |
+| `--algorithm sha1` | SHA-1 |
+| `--algorithm sha256` | SHA-256 |
+| `--algorithm sha384` | SHA-384 |
+| `--algorithm sha512` | SHA-512 |
+
+<br />
+
+<br />
+
+### --output
+The `--output` argument is an optional parameter which allows you to define a file where the results of your generated or verified results will be placed.
+<br />
+
+| Expects | Description |
+| --- | --- |
+| `--output Path\To\Output.txt` | The file to output results to |
+
+<br />
+
+
 
 <br />
 
