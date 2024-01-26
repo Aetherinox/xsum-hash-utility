@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using xsum;
 using System.Windows;
 using Cfg = xsum.Properties.Settings;
+using System.Collections;
 
 #endregion
 
@@ -371,6 +372,7 @@ namespace XSum
             static bool     arg_LC_Enabled          = false;                        // Enable hash lowercase
             static bool     arg_GenMode_Enabled     = false;                        // --generate arg specified
             static bool     arg_VerifyMode_Enabled  = false;                        // --verify arg specified
+            static bool     arg_SignMode_Enabled    = false;                        // --sign arg specified
 
             static bool     arg_Target_Enabled      = false;                        // --target specified
             static string   arg_Target_File         = null;                         // --verify <FILE> || --target <FILE> location
@@ -736,6 +738,34 @@ namespace XSum
                                     break;
 
                                 /*
+                                    CASE > SIGN
+
+                                    Enable verify mode. Specify --digest <HASH_FILE> to compare the target
+                                    folder with the entries in the hash digest file.
+
+                                    Details mode lists all the files being checked and each hash.
+                                */
+
+                                case "--sign":
+
+                                    arg_SignMode_Enabled    = true;
+
+                                    for ( i = i + 1; i < args.Length ; i++ )
+                                    {
+
+                                        string property     = args[ i ];
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        arg_Target_File     = property;
+                                    }
+
+                                    break;
+
+                                /*
                                     CASE > DIGEST
 
                                     Specify digest file to compare project files to.
@@ -768,7 +798,7 @@ namespace XSum
                                         arg_Digest_File     = property;
                                     }
 
-                                    if ( arg_Output_Enabled && String.IsNullOrEmpty( arg_Digest_File ) )
+                                    if ( arg_Digest_Enabled && String.IsNullOrEmpty( arg_Digest_File ) )
                                     {
                                         nl( );
                                         c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "--digest specified but missing [#Yellow]--digest <FILE_HASH_DIGEST>[/]" ) );
@@ -1242,6 +1272,21 @@ namespace XSum
 
 
                 /*
+                    Action > Sign
+                    requires GPG
+                */
+
+                #region "Argument: Sign"
+
+                    if ( arg_SignMode_Enabled )
+                    {
+                        Action_Sign( );
+                        return (int)ExitCode.Success;
+                    }
+
+                #endregion
+
+                /*
                     Action > Verify
 
                     Triggered when user supplies --verify argument.
@@ -1521,7 +1566,7 @@ namespace XSum
                                     SHA256.txt
             */
 
-            if ( ( arg_Digest_Enabled)&& String.IsNullOrEmpty( arg_Digest_File ) )
+            if ( String.IsNullOrEmpty( arg_Digest_File ) )
             {
                 arg_Digest_File = String.Format( "{0}.txt", arg_Algo.ToUpper( ) );
             }
@@ -1573,6 +1618,130 @@ namespace XSum
             }
 
             /*
+                current paths
+
+                @output         : X:\Path\To\Folder
+            */
+
+            string file_path_search     = Path.GetFullPath( arg_Target_File );
+
+            /*
+                ARG_bIsFile         bool means the user is trying to verify a single file instead of a folder
+            */
+
+            if ( ARG_bIsFile )
+                file_path_search        = Path.GetDirectoryName( Path.Combine( xsum_path_dir, arg_Target_File ) );      // H:\CSharpProjects\XSum\bin\Release\net481
+
+            /*
+                Verify search path exists
+            */
+
+            if ( !Directory.Exists( file_path_search ) )
+            {
+                nl( );
+                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate [#Yellow]" + file_path_search + "[/]" ) );
+                nl( );
+
+                return (int)ExitCode.ErrorGeneric;
+            }
+
+            /*
+                get all files and folders that exist in file_path_search
+                this path should only be a folder.
+
+                if user specifics a file, find the folder it exists in and use that directory
+            */
+
+            string[] files          = Directory.GetFiles( file_path_search, "*", SearchOption.AllDirectories );
+
+            if ( files.Length < 1 )
+            {
+                nl( );
+                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate child path from [#Yellow]" + file_path_search + "[/]" ) );
+                nl( );
+
+                return (int)ExitCode.ErrorGeneric;
+            }
+
+            /*
+                loop files found in directory of search path
+            */
+
+            var dict_digest             = new Dictionary<string, string>( );
+            StringBuilder sb_digest     = new StringBuilder( );
+
+            for ( int i = 0; i < files.Length; i++ )
+            {
+                // next file in folder
+                // full path to each file in directory / sub dir
+
+                string item_path_full       = files[ i ];
+                if ( !Directory.Exists( item_path_full ) && !File.Exists( item_path_full ) )
+                {
+                    nl( );
+                    c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate [#Yellow]" + item_path_full + "[/]" ) );
+                    nl( );
+                    continue;
+                }
+
+                /*
+                    IF USER SPECIFYIES SINGLE FILE:         Script will find out what folder that file is in.
+                                                            Then it will scan that entire folder and display ALL files
+                                                            that exist next to that specific file.
+
+                    IF USER SPECIFIES FOLDER:               Every file that exists in that folder and subfolders will
+                                                            be cycled through.
+                */
+
+                string item_file_name       = Path.GetFileName( item_path_full );
+
+                /*
+                    If user specifies a file only, get the full path to that file.
+
+                    Path.Combine:           If the one of the subsequent paths is an absolute path, then the combine operation 
+                                            resets starting with that absolute path, discarding all previous combined paths.
+                */
+
+                if ( ARG_bIsFile )
+                    item_path_full          = Path.Combine( xsum_path_dir, arg_Target_File );
+
+                /*
+                    get the relative path to the file that will be inserted into the digest
+                */
+
+                Uri item_relative_file      = new Uri( @item_path_full );
+                Uri item_relative_folder    = new Uri( @xsum_path_dir + @"\" );             // must end in backslash
+
+                string item_path_relative   = Uri.UnescapeDataString( item_relative_folder.MakeRelativeUri( item_relative_file ).ToString( ).Replace( '/', Path.DirectorySeparatorChar ) );
+                item_path_relative          = item_path_relative.Replace( @"\", "/" );      // replace backslash with forwardslash to make lines compatible with unix
+
+                /*
+                    get file hash
+                */
+
+                string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full );                                   // get hash of file
+                item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash );                // hash to upper or lower
+                var item_bDoIgnore          = dict_Ignored.FirstOrDefault ( x=> x.Key.Contains( item_file_name ) );         // check if file is ignored
+
+                // files in ignore list
+                if ( item_bDoIgnore.Value ) continue;
+
+                /*
+                    ignore empty files
+                */
+
+                if ( new FileInfo( item_path_full ).Length == 0 )
+                    continue;
+
+                /*
+                    add file to digest
+                */
+
+                dict_digest.Add( item_get_hash, item_path_relative );
+
+            }
+
+            /*
                 Output Category
 
                 Figure out what type of target was provided to display to the user.
@@ -1595,7 +1764,7 @@ namespace XSum
                 Helpers.SetClipboard( str_to_hash );
             }
 
-            c2( String.Format( new InitSF(), "\n[#Blue] {0:F} Mode:   [/]Generated hash for {0} [#Yellow]\"{1}\"[/] using [#Yellow]{2}[/]\n\n", item_type, arg_Target_File, arg_Algo.ToUpper( ) ) );
+            c2( String.Format( new InitSF( ), "\n[#Blue] {0:F} Mode:   [/]Generated hash for {0} [#Yellow]\"{1}\"[/] using [#Yellow]{2}[/]\n\n", item_type, arg_Target_File, arg_Algo.ToUpper( ) ) );
 
             /*
                 Output to user
@@ -1604,7 +1773,51 @@ namespace XSum
             c2( sf( " {0,-14} {1,-20}", " ", str_to_hash ) );
             nl( );
 
+            /*
+                write digest
+            */
+
+            using ( StreamWriter file = new StreamWriter( arg_Digest_File ) )
+                foreach ( var entry in dict_digest )
+                    file.WriteLine( "{0}  {1}", entry.Key, entry.Value ); 
+
+            /*
+                get all files and folders that exist in file_path_search
+                this path should only be a folder.
+
+                if user specifics a file, find the folder it exists in and use that directory
+            */
+
             return (int)ExitCode.Success;
+        }
+
+        /*
+            ACTION > SIGN
+        */
+
+        static public int Action_Sign( )
+        {
+
+            /*
+                make sure gpg is installed and the path is added to your windows environment variables
+            */
+
+            bool bFind_GPG = FindProgram( "gpg.exe" );
+
+            if ( !bFind_GPG )
+            {
+                nl( );
+                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Cannot sign digests without [#Yellow]gpg.exe[/]" ) );
+                nl( );
+                c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "You must install [#Yellow]GPG[/] and add it to your Windows[/]" ) );
+                nl( );
+                c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "environment variables before you can use this feature.[/]" ) );
+                nl( );
+
+                return (int)ExitCode.ErrorMissingArg;
+            }
+
+            return (int)ExitCode.ErrorGeneric;
         }
 
         /*

@@ -950,7 +950,6 @@ namespace XSum
             dt_chr.Columns.Add          ( Helpers.ALL( "Speed",       col_speed     ),  typeof(string) );
             dt_chr.Columns.Add          ( Helpers.ALL( "Result",      col_result    ),  typeof(string) );
 
-
             /*
                 Character Test > Stopwatch > Create
             */
