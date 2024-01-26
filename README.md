@@ -15,8 +15,8 @@
 
 
 - [About](#about)
-  - [What Is A Hash Digest](#what-is-a-hash-digest)
   - [Supported Algorithms](#supported-algorithms)
+  - [What Is A Hash Digest](#what-is-a-hash-digest)
 - [Arguments](#arguments)
   - [Main Arguments](#main-arguments)
   - [Sub Arguments](#sub-arguments)
@@ -30,6 +30,7 @@
     - [`--lowercase`](#--lowercase)
     - [`--clipboard`](#--clipboard)
 - [Features](#features)
+  - [Target Types](#target-types)
   - [Benchmark](#benchmark)
     - [Standard Benchmark](#standard-benchmark)
     - [Algorithm Stress Test Benchmark](#algorithm-stress-test-benchmark)
@@ -49,6 +50,17 @@ While there are numerous apps available for doing things such as this; I need a 
 
 <br />
 
+## Supported Algorithms
+Currently, the following algorithms are suppported. More are planned for later.
+
+- MD5
+- SHA-1
+- SHA-256
+- SHA-384
+- SHA-512
+
+<br />
+
 ## What Is A Hash Digest
 When using `--generate`, a hash digest will be created which contains a list of all the files you have targeted.  When that digest is generated, it will be created as a file named depending on what hash algorithm you specified.
 
@@ -64,17 +76,6 @@ dfb8dacbd53eac730814ef2e9f74a47efabe5cb2a5e458bcad6380ae4c1f1f59  example_file_2
 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08  sample_zip_1.zip
 60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752  README.md
 ```
-
-<br />
-
-## Supported Algorithms
-Currently, the following algorithms are suppported. More are planned for later.
-
-- MD5
-- SHA-1
-- SHA-256
-- SHA-384
-- SHA-512
 
 <br />
 
@@ -126,7 +127,7 @@ Along with the main features listed above, the following sub-arguments can be us
 <br />
 
 # Syntax
-This utility attempts to be semi "smart" in the aspect that you can execute commands in various different ways. The reason for this is because out of the various other hashing tools out there, we try to use a similar syntax for this utilities' commands so that there's very little in means of transitioning, and to make it more comfortable.
+This utility attempts to be semi "smart" in the aspect that you can execute commands in various different ways. The reason for this is because out of the other hashing tools out there, we try to use a similar syntax for this utilities' commands so that there's very little in means of transitioning, and to make it more comfortable.
 
 <br />
 
@@ -384,6 +385,28 @@ When the argument `--clipboard` is specified, the results of a task will be copi
 
 # Features
 The following features are highlighted to explain them in better detail:
+
+<br />
+
+## Target Types
+This utility handles various different types of input:
+- Files
+- Folder
+- Strings
+
+If your specified input is not detected as a valid file or folder, the utility will switch over to **String Mode**, which means that it will take the string you have provided, and return a hash for that string.
+
+<br />
+
+<p align="center"><sub>Standard string hashing (sha256)</sub></p>
+
+<p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/5.png"></p>
+
+<br />
+
+<p align="center"><sub>Standard string hashing (sha1)</sub></p>
+
+<p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/6.png"></p>
 
 <br />
 
