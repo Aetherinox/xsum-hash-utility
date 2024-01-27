@@ -30,6 +30,7 @@
     - [`--progress`](#--progress)
     - [`--lowercase`](#--lowercase)
     - [`--clipboard`](#--clipboard)
+    - [`--exclude`](#--exclude)
 - [Features](#features)
   - [Help Menu](#help-menu)
   - [Target Types](#target-types)
@@ -126,6 +127,7 @@ Along with the main features listed above, the following sub-arguments can be us
 | `-p, --progress` | Displays each file being checked and additional info |
 | `-l, --lowercase` | Match and output hash value(s) in lower case instead of upper case |
 | `-c, --clipboard` | Copies the output hash value to clipboard. |
+| `-e, --exclude` | Filter out files that will not be hashed when using `-generate` and `-verify` |
 | `-b, --benchmark` | Performs benchmarks on a specified algorithm or all. |
 | `-i, --iterations` | Number of iterations to perform using `--benchmark` |
 | `-b, --buffer` | Buffer size to use when using `--benchmark` |
@@ -167,13 +169,13 @@ The `--generate` argument allows you to create a new hash digest from the target
 The following commands all do the same action:
 
 ```C#
-xsum --verify --target "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 xsum --generate --target "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+xsum --generate "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 ```
 
 ```C#
+xsum --verify --target "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 xsum --verify "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
-xsum --generate "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 ```
 
 </details>
@@ -431,6 +433,72 @@ This argument will transform all hashes to lowercase, both the hash produced by 
 
 ### `--clipboard`
 Copies the output hash value to clipboard.
+
+<br />
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+When the argument `--clipboard` is specified, the results of a task will be copied to your clipboard.
+
+<br />
+
+> [!NOTE]
+> When targeting a folder to generate a hash, the hash of the folder itself will be copied to your clipboard, not the individual files.
+
+<br />
+
+</details>
+
+<br />
+
+---
+
+<br />
+
+### `--exclude`
+The `--exclude` argument gives you the ability to filter out files that should not be included when your dash digest is created.
+
+It allows for wildcard patterns so that you can match multiple files with one rule.
+
+<br />
+
+```
+d63ba16a664619c2dc4eb2aeef2a2e64cbc7931b831e0adf1c2275ee08e8fd47  example_file_1.txt
+dfb8dacbd53eac730814ef2e9f74a47efabe5cb2a5e458bcad6380ae4c1f1f59  example_file_2.txt
+9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08  sample_zip_1.zip
+60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752  README.md
+```
+
+<br />
+
+As an example, you could exclude the files `example_file_1.txt` and `example_file_2.txt` from being hashed by utilizing the `*` wildcard:
+
+<br />
+
+```shell
+--exclude *.txt
+```
+
+<br />
+
+For multiple exclusions, append additional `--exclude` to the end of your command:
+
+```shell
+--exclude *.txt --exclude *D*
+```
+
+<br />
+
+With the above rules in place, any file ending with `.txt` will be excluded, and the rule `*D*` will exclude the file `README.md` since it has a `D` in the name.
+
+```
+9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08  sample_zip_1.zip
+```
+
+
 
 <br />
 

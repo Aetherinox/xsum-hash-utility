@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace xsum
 {
@@ -12,6 +13,19 @@ namespace xsum
 
     public class Helpers
     {
+
+        /*
+            Format Wildcard
+        */
+
+        static public string WildcardMatch( string str )
+        {
+            return "^" + Regex.Escape( str ).Replace( "\\?", "." ).Replace( "\\*", ".*" ) + "$"; 
+        }
+
+        /*
+            Console
+        */
 
         static public void c0( string msg )
         {
@@ -233,4 +247,5 @@ namespace xsum
         }
 
     }
+
 }

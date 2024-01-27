@@ -19,6 +19,8 @@ using System.Collections;
 using System.Management.Automation.Language;
 using System.Xml.Linq;
 using System.Net.Security;
+using static System.Net.Mime.MediaTypeNames;
+using System.Text.RegularExpressions;
 
 #endregion
 
@@ -28,6 +30,13 @@ namespace XSum
 
     public class App
     {
+
+        private static Dictionary<string, bool> dict_Ignored = new Dictionary<string, bool>
+        {
+            { "SHA256.txt", true },
+            { "SHA256.sig", true },
+            { ".gitignore", true },
+        };
 
         /*
             Define: Paths
@@ -400,6 +409,8 @@ namespace XSum
             static bool     arg_Algo_Enabled        = false;                        // --algo arg specified
             static string   arg_Algo_Default        = "sha256";                     // --algo default value
             static string   arg_Algo                = arg_Algo_Default;             // --algo <ALG> specified
+            static bool     arg_Ignore_Enabled      = false;                        // --ignore arg specified
+            static string   arg_Ignore_List         = null;
 
         #endregion
 
@@ -1001,6 +1012,44 @@ namespace XSum
                                     break;
 
                                 /*
+                                    CASE > IGNORE / EXCLUDE
+
+                                    ignore specific files
+                                */
+
+                                case "--exclude":
+                                case "-e":
+                                    if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--generate[/] or [#Yellow]--verify[/] arguments[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    arg_Ignore_Enabled = true;
+
+                                    for ( ++i ; i < args.Length ; i++ )
+                                    {
+                                        string property     = args[ i ];
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        string ignore_file      = property;
+                                        if ( !dict_Ignored.ContainsKey( ignore_file ) )
+                                            dict_Ignored.Add    ( ignore_file, true );
+
+                                        if ( AppInfo.bIsDebug( ) )
+                                            wl( sf( " + Ignoring {0}", ignore_file ) );
+                                    }
+
+                                    break;
+
+                                /*
                                     CASE > BENCHMARK
 
                                     benchmark
@@ -1289,6 +1338,8 @@ namespace XSum
 
                 #endregion
 
+
+
                 /*
                     Action > Verify
 
@@ -1307,14 +1358,13 @@ namespace XSum
                 #endregion
 
 
+
                 /*
                     Action > Generate
 
                     Triggered when user supplies --generate argument.
                     Generates a new hash digest file from the supplied --target path
                 */
-
-
 
                 #region "Argument: Generate"
 
@@ -1325,6 +1375,8 @@ namespace XSum
                     }
 
                 #endregion
+
+
 
                 /*
                     User specified no args.
@@ -1349,46 +1401,6 @@ namespace XSum
         #region "Dictionary: Ignored Files"
 
             /*
-                Ignored Files > Populate Dictionary
-                
-                some files are automatically added by default by the app, but the user is able to supply their own
-                ignored files using --ignore <FILE>
-            */
-
-            static IDictionary<string, bool> Dict_Ignored_Populate( bool bDebug = false )
-            {
-
-                var dict_Ignored        = new Dictionary<string, bool>( );
-
-                /*
-                    String Array >  Ignore List
-                    Internal list of files to ignore based on common items usually found in app folders, as well as XSum hash digets.
-                */
-
-                string[ ] arr_FilesIgnore = new string[ ]
-                {
-                    "SHA256.txt",
-                    "SHA256.sig",
-                    ".gitignore"
-                };
-
-                /*
-                    Dictionary > Populate Ignored Files
-                */
-
-                for ( int i = 0; i < arr_FilesIgnore.Length; i++ )
-                {
-                    string ignore_file  = arr_FilesIgnore[ i ];
-                    dict_Ignored.Add    ( ignore_file, true );
-
-                    if ( AppInfo.bIsDebug( ) || bDebug )
-                        wl( sf( " + Ignoring {0}", ignore_file ) );
-                }
-
-                return dict_Ignored;
-            }
-
-            /*
                 Ignored Files > Get List
 
                 This reports back to the user what files have been ignored with the current task.
@@ -1397,14 +1409,14 @@ namespace XSum
             static string Ignored_GetList( )
             {
                 string str_lst          = "";
-                var dict_Ignored        = Dict_Ignored_Populate( );
+                var dict_Ignore         = dict_Ignored;
 
                 StringBuilder sb        = new StringBuilder( );
 
                 int i_cur               = 0;
-                int i_max               = dict_Ignored.Keys.Count;
+                int i_max               = dict_Ignore.Keys.Count;
 
-                foreach ( string file in dict_Ignored.Keys )
+                foreach ( string file in dict_Ignore.Keys )
                 {
                     i_cur++;
                     sb.Append( ( i_cur == i_max ) ? file : file + ", " );
@@ -1487,8 +1499,7 @@ namespace XSum
 
         static public int Action_Generate( )
         {
-            var dict_GetHash            = Dict_Hashes_Populate( );                          // create dictionary for hash algos
-            var dict_Ignored            = Dict_Ignored_Populate( arg_Debug_Enabled );       // create dictionary for ignored files            
+            var dict_GetHash            = Dict_Hashes_Populate( );                          // create dictionary for hash algos        
 
             /*
                 Define > StringBuilder output
@@ -1703,7 +1714,7 @@ namespace XSum
                 {
                     var ( hash, name ) = NewHash_File( files[ i ] );
                     if ( hash == null || name == null )
-                        return (int)ExitCode.ErrorGeneric;
+                        continue;
 
                     dict_digest.Add( hash, name );
                 }
@@ -1937,15 +1948,25 @@ namespace XSum
             StringBuilder sb_digest     = new StringBuilder( );
             var dict_digest             = new Dictionary<string, string>( );
             var dict_GetHash            = Dict_Hashes_Populate( );                                                      // create dictionary for hash algos
-            var dict_Ignored            = Dict_Ignored_Populate( arg_Debug_Enabled );                                   // create dictionary for ignored files
+            var dict_Ignore             = dict_Ignored;                                                                 // create dictionary for ignored files
 
             string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full );                                   // get hash of file
             item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash );                // hash to upper or lower
-            var item_bDoIgnore          = dict_Ignored.FirstOrDefault ( x=> x.Key.Contains( item_file_name ) );         // check if file is ignored
+            var item_bDoIgnore          = dict_Ignore.FirstOrDefault ( x => x.Key.Contains( item_file_name ) );         // check if file is ignored
+            bool bWCIgnore              = false;
+
+            foreach ( string pattern in dict_Ignore.Keys )
+            {
+                bWCIgnore = Regex.IsMatch( item_file_name, Helpers.WildcardMatch( pattern ) );
+                if ( bWCIgnore )
+                    return ( null, null );
+            }
 
             // files in ignore list
             if ( item_bDoIgnore.Value )
+            {
                 return ( null, null );
+            }
 
             /*
                 ignore empty files
@@ -1997,8 +2018,8 @@ namespace XSum
         static public int Action_Verify( )
         {
 
-            var dict_GetHash            = Dict_Hashes_Populate( );                          // create dictionary for hash algos
-            var dict_Ignored            = Dict_Ignored_Populate( arg_Debug_Enabled );       // create dictionary for ignored files
+            var dict_GetHash            = Dict_Hashes_Populate( );          // create dictionary for hash algos
+            var dict_Ignore             = dict_Ignored;                     // create dictionary for ignored files
 
             /*
                 Define > StringBuilder output
@@ -2232,7 +2253,15 @@ namespace XSum
                 string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full ); 
                 item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash ); // hash to upper or lower
                 var item_FoundMatch         = dict_digest.FirstOrDefault    ( x=> x.Key.Contains( item_get_hash ) );    // find the matching hash
-                var item_bDoIgnore          = dict_Ignored.FirstOrDefault   ( x=> x.Key.Contains( item_file_name ) );   // check if file is ignored
+                var item_bDoIgnore          = dict_Ignore.FirstOrDefault   ( x=> x.Key.Contains( item_file_name ) );   // check if file is ignored
+                bool bWCIgnore              = false;
+
+                foreach ( string pattern in dict_Ignore.Keys )
+                {
+                    bWCIgnore = Regex.IsMatch( item_file_name, Helpers.WildcardMatch( pattern ) );
+                    if ( bWCIgnore )
+                        continue;
+                }
 
                 // files in ignore list
                 if ( item_bDoIgnore.Value ) continue;
