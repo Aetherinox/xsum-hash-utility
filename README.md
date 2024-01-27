@@ -22,6 +22,7 @@
   - [Sub Arguments](#sub-arguments)
 - [Syntax](#syntax)
     - [`--generate`](#--generate)
+    - [`--verify`](#--verify)
     - [`--target`](#--target)
     - [`--digest`](#--digest)
     - [`--algorithm`](#--algorithm)
@@ -181,6 +182,115 @@ xsum --generate "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 xsum --verify --target "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 xsum --verify "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 ```
+
+</details>
+
+<br />
+
+---
+
+<br />
+
+### `--verify`
+The `--verify` argument allows you to verify an existing hash digest with the source files as they are on your system.
+
+<br />
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+To verify a hash digest, you need:
+- Files for the project with the hash digest
+- Hash digest
+
+<br />
+
+A **hash digest** is usually one of the following files:
+- MD5.txt
+- SHA1.txt
+- SHA256.txt
+- SHA384.txt
+- SHA512.txt
+
+<br />
+
+Inside the hash digest is a list of every file associated with the project, as well as the hash for that file, such as the following:
+
+```shell
+d63ba16a664619c2dc4eb2aeef2a2e64cbc7931b831e0adf1c2275ee08e8fd47  Project Folder 1/myfile.txt
+dfb8dacbd53eac730814ef2e9f74a47efabe5cb2a5e458bcad6380ae4c1f1f59  Project Folder 2/example_file_2.txt
+9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08  Project File 1.xxx
+5FD924625F6AB16A19CC9807C7C506AE1813490E4BA675F843D5A10E0BAACDB8  Project File 2.xxx
+```
+
+<br />
+
+To verify a hash digest against the actual files, execute the following:
+
+```shell
+xsum --verify --target "Project Folder Name" --digest SHA256.txt
+```
+
+<br />
+
+If you have `xsum.exe` in the root project folder where the project files and hash digest exist, then you can execute:
+
+```shell
+xsum --verify --digest SHA256.txt
+```
+
+<br />
+
+If you do not specify `--target`, xSum will automatically use the directory you are executing xsum.exe from.
+
+<br />
+
+```
+📁 Project Folder 1
+📁 Project Folder 2
+📄 Project File 1.xxx
+📄 Project File 2.xxx
+📄 SHA256.txt
+🗔 xsum.exe
+```
+
+<br />
+
+The aboe file structure will allow you to verify all project folders and files.
+
+<br />
+
+Then a project is successfully verified, you will receive the following:
+
+```
+> xsum --verify --digest SHA256.txt
+
+ Lowercase:     Disabled
+ Clipboard:     Disabled
+
+ Using "sha256" to verify hash of Folder "H:\xSum"
+ Successfully verified Folder H:\xSum in digest SHA256.txt
+```
+
+<br />
+
+If you are not using SHA256, then you will need to specify the hash algorithm:
+
+```
+xsum --verify --digest MD5.txt --algo md5
+```
+
+<br />
+
+**Remember**: xSum verifies a hash digest using UPPER CASE characters. If your hash digest contains hashes in lower case, you must use:
+
+```shell
+xsum --verify --digest SHA256.txt --lowercase
+```
+
+<br />
 
 </details>
 

@@ -1374,6 +1374,8 @@ namespace XSum
                     {
                
                     }
+
+
                 }
 
 
@@ -2206,13 +2208,7 @@ namespace XSum
 
             if ( String.IsNullOrEmpty( arg_Target_File ) )
             {
-                nl( );
-                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Missing [#Yellow]--target[/]\n" ) );
-                c2( sf( " {0,-24} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --verify --target <FILE|FOLDER>[/]\n" ) );
-                c2( sf( " {0,-25} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --generate --target <FILE|FOLDER|STRING>[/]" ) );
-                nl( );
-
-                return (int)ExitCode.ErrorMissingArg;
+                arg_Target_File = xsum_path_dir;
             }
 
             /*
