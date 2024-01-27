@@ -33,18 +33,6 @@ namespace XSum
     {
 
         /*
-            pre-defined ignore list
-            --exclude argument can add additional entries
-        */
-
-        private static Dictionary<string, bool> dict_Ignored = new Dictionary<string, bool>
-        {
-            { "SHA256.txt", true },
-            { "SHA256.sig", true },
-            { ".gitignore", true },
-        };
-
-        /*
             Define: Paths
             lists the default paths associated with this app.
         */
@@ -380,6 +368,19 @@ namespace XSum
         #endregion
 
 
+
+        /*
+            pre-defined ignore list
+            --exclude argument can add additional entries
+        */
+
+        private static Dictionary<string, bool> dict_Ignored = new Dictionary<string, bool>
+        {
+            { "SHA256.txt", true },
+            { "SHA256.sig", true },
+            { ".gitignore", true },
+            { xsum_path_exe, true },
+        };
 
         /*
             Define > Global Settings
@@ -745,6 +746,7 @@ namespace XSum
                                     }
 
                                     arg_Progress_Enabled    = true;
+
                                     for ( i = i + 1; i < args.Length ; i++ )
                                     {
 
@@ -1621,13 +1623,7 @@ namespace XSum
 
             if ( String.IsNullOrEmpty( arg_Target_File ) )
             {
-                nl( );
-                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "No [#Yellow]--target[/] file, folder, or string specified\n" ) );
-                c2( sf( " {0,-25} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --generate --target <FILE|FOLDER|STRING>[/]\n" ) );
-                c2( sf( " {0,-25} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --verify --target <FILE|FOLDER>[/]" ) );
-                nl( );
-
-                return (int)ExitCode.ErrorMissingArg;
+                arg_Target_File = xsum_path_dir;
             }
 
             /*
@@ -1750,12 +1746,25 @@ namespace XSum
 
             /*
                 targ_bIsFile            bool means the user is trying to verify a single file instead of a folder
+
+                EDIT:                   unsure why the code below is there.
+                                        It ends up causing an issue with folders if you try to generate a single file digest
+
+                                            xsum --verify --target "Test\xsum.pdb" --algo sha256 --digest SHA256.txt
+
+                                        The above command will cause "file_path_search" to return:
+                                            Test\xsum.pdb\Test\xsum.pdb
+
+                                        Removing the lines below appears to fix the issues
+                            
             */
 
             if ( targ_bIsFile )
             {
-                file_path_search        = Path.GetDirectoryName( Path.Combine( xsum_path_dir, arg_Target_File ) );      // H:\CSharpProjects\XSum\bin\Release\net481
-                file_path_search        = Path.Combine( file_path_search, arg_Target_File );
+                // See note above [flagged for deprecation]
+
+                // file_path_search         = Path.GetDirectoryName( Path.Combine( xsum_path_dir, arg_Target_File ) );      // H:\CSharpProjects\XSum\bin\Release\net481
+                //file_path_search          = Path.Combine( file_path_search, arg_Target_File );
             }
 
             /*
@@ -1805,11 +1814,12 @@ namespace XSum
 
                 for ( int i = 0; i < files.Length; i++ )
                 {
-                    var ( hash, name ) = NewHash_File( files[ i ] );
+                    var ( name, hash ) = NewHash_File( files[ i ] );
                     if ( hash == null || name == null )
                         continue;
 
-                    dict_digest.Add( hash, name );
+                    if ( !dict_digest.Any( x => x.Key.Contains( name ) ) )
+                        dict_digest.Add( name, hash );
                 }
             }
 
@@ -1819,11 +1829,13 @@ namespace XSum
 
             else if ( targ_bIsFile )
             {
-                var ( hash, name ) = NewHash_File( file_path_search );
+                var ( name, hash ) = NewHash_File( file_path_search );
                 if ( hash == null || name == null )
                     return (int)ExitCode.ErrorGeneric;
 
-                dict_digest.Add( hash, name );
+                    Console.WriteLine( name );
+                if ( !dict_digest.Any( x => x.Key.Contains( name ) ) )
+                    dict_digest.Add( name, hash );
             }
 
             /*
@@ -1900,7 +1912,7 @@ namespace XSum
                         nl( );
                     }
 
-                    file.WriteLine( "{0}  {1}", entry.Key, entry.Value ); 
+                    file.WriteLine( "{0}  {1}", entry.Value, entry.Key ); 
                 }
             }
 
@@ -1992,7 +2004,7 @@ namespace XSum
             @arg        : str name
         */
 
-        static public( string hash, string name ) NewHash_File( string filename )
+        static public( string name, string hash ) NewHash_File( string filename )
         {
 
             if ( !File.Exists( filename ) )
@@ -2068,7 +2080,7 @@ namespace XSum
             if ( new FileInfo( item_path_full ).Length == 0 )
                 return ( null, null );
 
-            return ( item_get_hash, item_path_relative );
+            return ( item_path_relative, item_get_hash );
         }
 
         /*
@@ -2103,12 +2115,7 @@ namespace XSum
 
             if ( String.IsNullOrEmpty( arg_Target_File ) )
             {
-                nl( );
-                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Missing [#Yellow]--target <FILE_DIGEST>[/]\n" ) );
-                c2( sf( " {0,-25} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --sign --target <FILE_DIGEST> [ --clearsign || -detachsign ][/]\n" ) );
-                nl( );
-
-                return (int)ExitCode.ErrorMissingArg;
+                arg_Target_File = xsum_path_dir;
             }
 
             /*
@@ -2292,9 +2299,7 @@ namespace XSum
 
                 row_hash                = digest_split[ 0 ].Trim( );                            // b3d7za...
                 row_name                = digest_split[ 1 ].Trim( );                            // X:\Path\To\File
-
                 row_hash                = ( arg_LC_Enabled ? row_hash.ToLower( ) : row_hash );  // hash of file ( lowercase or normal )
-                row_name                = row_name;                                             // name of file
 
                 if ( !dict_digest.ContainsKey( row_hash ) )
                     dict_digest.Add     ( row_hash, row_name );
@@ -2341,6 +2346,16 @@ namespace XSum
 
             nl( );
 
+
+                foreach ( string val in dict_digest.Values )
+                {
+                    Console.WriteLine( val );
+                }
+
+
+
+
+
             for ( int i = 0; i < files.Length; i++ )
             {
                 // previous file failed match, stop
@@ -2373,13 +2388,38 @@ namespace XSum
                     item_path_full          = Path.Combine( xsum_path_dir, arg_Target_File );
  
                 /*
+                    relative paths
+                */
+
+                Uri item_relative_file      = new Uri( @item_path_full );
+                Uri item_relative_folder    = new Uri( @xsum_path_dir + @"\" );             // must end in backslash
+
+                /*
+                    relative paths > folders only
+
+                    If the user provides a folder as the --target, we need to strip that folder away so that the hash paths in the digest match with
+                    where they are on the machine.
+                */
+
+                if ( targ_bIsFolder )
+                {
+                    item_relative_folder    = new Uri( @xsum_path_dir + @"\" + arg_Target_File + @"\" ); // must end in backslash
+                }
+
+
+                string item_path_relative   = Uri.UnescapeDataString( item_relative_folder.MakeRelativeUri( item_relative_file ).ToString( ).Replace( '/', Path.DirectorySeparatorChar ) );
+                item_path_relative          = item_path_relative.Replace( @"\", "/" );      // replace backslash with forwardslash to make lines compatible with unix
+
+                /*
                     hash for specified file  dict_GetHash[ "sha256" ]( "X:\Full\Path\To\File.zip" )
                 */
 
                 string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full ); 
-                item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash ); // hash to upper or lower
-                var item_FoundMatch         = dict_digest.FirstOrDefault    ( x=> x.Key.Contains( item_get_hash ) );    // find the matching hash
-                var item_bDoIgnore          = dict_Ignore.FirstOrDefault   ( x=> x.Key.Contains( item_file_name ) );    // check if file is ignored
+                item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash );                    // hash to upper or lower
+
+                var item_FoundMatchHash     = dict_digest.FirstOrDefault    ( x=> x.Key.Contains( item_get_hash ) );            // find the matching hash
+                var item_FoundMatchPath     = dict_digest.FirstOrDefault    ( x=> x.Value.Contains( item_path_relative ) );     // find the matching hash
+                var item_bDoIgnore          = dict_Ignore.FirstOrDefault    ( x=> x.Key.Contains( item_file_name ) );           // check if file is ignored
 
                 /*
                     filter out --exclude arguments
@@ -2398,7 +2438,7 @@ namespace XSum
                 if ( item_bDoIgnore.Value ) continue;
 
                 // found matching file in dictionary
-                if ( !String.IsNullOrEmpty( item_FoundMatch.Key ) )
+                if ( !String.IsNullOrEmpty( item_FoundMatchHash.Key ) )
                 {
                     item_Target     = item_path_full;
 
