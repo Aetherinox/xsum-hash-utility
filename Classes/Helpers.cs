@@ -16,6 +16,8 @@ namespace xsum
 
         /*
             Format Wildcard
+
+            @ex         : bWCIgnore = Regex.IsMatch( item_variable, Helpers.WildcardMatch( "*.txt ) );
         */
 
         static public string WildcardMatch( string str )
@@ -24,17 +26,36 @@ namespace xsum
         }
 
         /*
-            Console
+            Get String Array
+
+            converts a string[] into a string
         */
 
-        static public void c0( string msg )
+        static public string GetStringArray( string[] arr )
         {
-            string[] str        = msg.Split( '<','>' );
+            var result = string.Empty;
+            foreach ( var item in arr )
+            {
+                result += item;
+            }
+            return result;
+        }
+
+        /*
+            Console
+
+            @str        : str msg
+            @ret        : void
+        */
+
+        static public void c0( string str )
+        {
+            string[] msg        = str.Split( '<','>' );
             ConsoleColor        clr;
 
             Console.ForegroundColor = ConsoleColor.White;
 
-            foreach( var resp in str )
+            foreach( var resp in msg )
             {
                 if( resp.StartsWith( "/" ) )
                     Console.ResetColor( );
@@ -62,17 +83,17 @@ namespace xsum
             if ( str == null )
                 throw new ArgumentNullException( "Attempted to set clipboard to NULL" );
 
-            Process clipboardExecutable     = new Process( ); 
-            clipboardExecutable.StartInfo   = new ProcessStartInfo
+            Process cb          = new Process( ); 
+            cb.StartInfo        = new ProcessStartInfo
             {
-                RedirectStandardInput       = true,
-                FileName                    = @"clip",
-                UseShellExecute             = false
+                RedirectStandardInput   = true,
+                FileName                = @"clip",
+                UseShellExecute         = false
             };
 
-            clipboardExecutable.Start( );
-            clipboardExecutable.StandardInput.Write( str );
-            clipboardExecutable.StandardInput.Close( ); 
+            cb.Start( );
+            cb.StandardInput.Write( str );
+            cb.StandardInput.Close( ); 
 
             return;
 
@@ -97,8 +118,10 @@ namespace xsum
             Create Random String
 
             Used for benchmarking
+            generates a large set of words that will be used to benchmark sha algorithms
 
             @arg        : str str
+            @bool       : bool bRandCase
             @ret        : str
         */
 
@@ -137,6 +160,11 @@ namespace xsum
 
         /*
             Method: Table > Align Text > Left
+
+            @ex         : Helpers.ALL( "String Text", 100  ), typeof(string) );
+            @arg        : str text
+            @arg        : int width
+            @ret        : str
         */
 
         public static string ALL( string text, int width )
@@ -152,6 +180,11 @@ namespace xsum
 
         /*
             Method: Table > Align Text > Center
+
+            @ex         : Helpers.ALC( "String Text", 100  ), typeof(string) );
+            @arg        : str text
+            @arg        : int width
+            @ret        : str
         */
 
         public static string ALC( string text, int width )
@@ -167,6 +200,11 @@ namespace xsum
 
         /*
             Method: Table > Align Text > Right
+
+            @ex         : Helpers.ALR( "String Text", 100  ), typeof(string) );
+            @arg        : str text
+            @arg        : int width
+            @ret        : str
         */
 
         public static string ALR( string text, int width )
@@ -182,13 +220,15 @@ namespace xsum
 
         /*
             Check if provided value is a number
+
+            @arg        : obj expression
         */
 
-        public static bool bIsNumber( object Expression )
+        public static bool bIsNumber( object expression )
         {
             double retNum;
+            bool isNum = Double.TryParse(Convert.ToString( expression ), System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retNum );
 
-            bool isNum = Double.TryParse(Convert.ToString(Expression), System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retNum);
             return isNum;
         }
 

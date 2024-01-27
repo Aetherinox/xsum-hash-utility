@@ -61,10 +61,10 @@ namespace XSum
                 {
 
                     if ( encoding != null )
-                        this.encoding = encoding;
+                        this.encoding   = encoding;
 
-                    this.console    = console;
-                    this.writer     = new StreamWriter( file, true, this.encoding );
+                    this.console        = console;
+                    this.writer         = new StreamWriter( file, true, this.encoding );
 
                     this.writer.AutoFlush = true;
                 }
@@ -141,6 +141,8 @@ namespace XSum
 
             public static void Send( string cat = "", int line = 0, string msg = "", string val = "" )
 		    {
+                if ( !AppInfo.bIsDebug( ) ) return;
+
 			    DateTime dt			= DateTime.Now;
 			    string now			= dt.ToString( "MM.dd.yy HH:mm" );
 			    string line_file	= String.Format( "{0}[{1}]", cat, line );

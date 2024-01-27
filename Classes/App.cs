@@ -21,6 +21,7 @@ using System.Xml.Linq;
 using System.Net.Security;
 using static System.Net.Mime.MediaTypeNames;
 using System.Text.RegularExpressions;
+using System.Security.Principal;
 
 #endregion
 
@@ -30,6 +31,11 @@ namespace XSum
 
     public class App
     {
+
+        /*
+            pre-defined ignore list
+            --exclude argument can add additional entries
+        */
 
         private static Dictionary<string, bool> dict_Ignored = new Dictionary<string, bool>
         {
@@ -266,7 +272,7 @@ namespace XSum
 
         #region "Method: Exec Powershell Queries"
 
-            public string PowershellQ( string[] queries )
+            static public string PowershellQ( string[] queries )
             {
                 using ( PowerShell ps = PowerShell.Create( ) )
                 {
@@ -410,7 +416,10 @@ namespace XSum
             static string   arg_Algo_Default        = "sha256";                     // --algo default value
             static string   arg_Algo                = arg_Algo_Default;             // --algo <ALG> specified
             static bool     arg_Ignore_Enabled      = false;                        // --ignore arg specified
-            static string   arg_Ignore_List         = null;
+            static string   arg_Ignore_List         = null;                         // --ignore list
+            static string   arg_GPG_Key             = null;                         // --gpg arg specified
+            static bool     arg_GPG_ClearSign       = false;                        // --gpg clearsign file
+            static bool     arg_GPG_DetachSign      = false;                        // --gpg detachsign file
 
         #endregion
 
@@ -691,10 +700,10 @@ namespace XSum
                                 case "-t":
                                 case "--source":
                                 case "-s":
-                                    if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled )
+                                    if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled && !arg_SignMode_Enabled )
                                     {
                                         nl( );
-                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--generate[/] or [#Yellow]--verify[/] arguments[/]" ) );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--generate[/], [#Yellow]--verify[/], or [#Yellow]--sign[/] arguments[/]" ) );
                                         nl( );
 
                                         return (int)ExitCode.ErrorMissingArg;
@@ -820,6 +829,89 @@ namespace XSum
 
                                         return (int)ExitCode.ErrorMissingArg;
                                     }
+
+                                    break;
+
+                                /*
+                                    CASE > GPG Key
+
+                                    gpg key file / id
+                                */
+
+                                case "--gpg":
+                                case "-gpg":
+                                    if ( !arg_SignMode_Enabled )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--sign[/] argument[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    for ( i = i + 1; i < args.Length ; i++ )
+                                    {
+
+                                        string property     = args[ i ];
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        arg_GPG_Key     = property;
+                                    }
+
+                                    if ( arg_SignMode_Enabled && String.IsNullOrEmpty( arg_GPG_Key ) )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "--gpg specified but missing [#Yellow]--gpg <GPG_KEY>[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    break;
+
+                                /*
+                                    CASE > GPG > Clearsign
+
+                                    gpg key file / id
+                                */
+
+                                case "--clearsign":
+                                case "-r":
+                                    if ( !arg_SignMode_Enabled )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--sign[/] argument[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    arg_GPG_ClearSign     = true;
+
+                                    break;
+
+                                /*
+                                    CASE > GPG > Detach Sign
+
+                                    gpg key file / id
+                                */
+
+                                case "--detachsign":
+                                case "-n":
+                                    if ( !arg_SignMode_Enabled )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--sign[/] argument[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    arg_GPG_DetachSign     = true;
 
                                     break;
 
@@ -1184,6 +1276,7 @@ namespace XSum
                                 */
 
                                 case "--buffer":
+                                case "-f":
                                     if ( !arg_Benchmark_Enabled )
                                     {
                                         nl( );
@@ -1978,7 +2071,6 @@ namespace XSum
             return ( item_get_hash, item_path_relative );
         }
 
-
         /*
             ACTION > SIGN
         */
@@ -2004,6 +2096,40 @@ namespace XSum
 
                 return (int)ExitCode.ErrorMissingArg;
             }
+
+            /*
+                Target file missing
+            */
+
+            if ( String.IsNullOrEmpty( arg_Target_File ) )
+            {
+                nl( );
+                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Missing [#Yellow]--target <FILE_DIGEST>[/]\n" ) );
+                c2( sf( " {0,-25} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --sign --target <FILE_DIGEST> [ --clearsign || -detachsign ][/]\n" ) );
+                nl( );
+
+                return (int)ExitCode.ErrorMissingArg;
+            }
+
+            /*
+                GPG > Clear Sign (default)
+            */
+
+            string ps_query = "gpg --batch --yes -q --default-key \"" + arg_GPG_Key + "\" --clearsign \"" + arg_Target_File + "\"";
+
+            /*
+                GPG > Detach Sign
+            */
+
+            if ( arg_GPG_DetachSign )
+                ps_query = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --detachsign \"" + arg_Target_File + "\"";
+
+            /*
+                Execute powershell query
+            */
+
+            string[] ps_exec = new String[] { ps_query };
+            PowershellQ( ps_exec );
 
             return (int)ExitCode.ErrorGeneric;
         }
@@ -2253,7 +2379,12 @@ namespace XSum
                 string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full ); 
                 item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash ); // hash to upper or lower
                 var item_FoundMatch         = dict_digest.FirstOrDefault    ( x=> x.Key.Contains( item_get_hash ) );    // find the matching hash
-                var item_bDoIgnore          = dict_Ignore.FirstOrDefault   ( x=> x.Key.Contains( item_file_name ) );   // check if file is ignored
+                var item_bDoIgnore          = dict_Ignore.FirstOrDefault   ( x=> x.Key.Contains( item_file_name ) );    // check if file is ignored
+
+                /*
+                    filter out --exclude arguments
+                */
+
                 bool bWCIgnore              = false;
 
                 foreach ( string pattern in dict_Ignore.Keys )
@@ -2487,6 +2618,64 @@ namespace XSum
             return (int)ExitCode.Success;
 
         }
+
+        #region "Method: (void) Debug Enable"
+
+            /*
+                Debug Console > Enable
+
+                @arg        : void
+                @ret        : void
+            */
+
+            public static void EnableDebugConsole( )
+            {
+                string log_filename     = Log.GetStorageFile( );
+                Log.Initialize cf       = new Log.Initialize( log_filename, Console.Out );
+                Console.SetOut( cf );
+
+                Log.Send( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ App.Debug ]", String.Format( "Enter Debug Mode" ) );
+            }
+
+        #endregion
+
+        #region "Method: (void) Debug Disable"
+
+            /*
+                Console > Disable
+                    we dont really need the cole for any other reason; just null it.
+                    better ways to do this, but  enough time has been spent on this.
+
+                @arg        : void
+                @ret        : void
+            */
+
+            public static void DisableDebugConsole( )
+            {
+                Log.Send( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ App.Debug ]", String.Format( "Exit Debug Mode" ) );
+                Console.SetOut( new Log.Initialize.SetNull( ) ) ;
+            }
+
+        #endregion
+
+        #region "Method: (bool) Is Admin"
+
+            /*
+                Check running as admin
+
+                @arg        : void
+                @ret        : bool
+            */
+
+            private static bool IsAdmin( )
+            {
+                WindowsIdentity id          = WindowsIdentity.GetCurrent( );
+                WindowsPrincipal principal  = new WindowsPrincipal( id );
+
+                return principal.IsInRole( WindowsBuiltInRole.Administrator );
+            }
+
+        #endregion
 
     }
 

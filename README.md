@@ -128,9 +128,11 @@ Along with the main features listed above, the following sub-arguments can be us
 | `-l, --lowercase` | Match and output hash value(s) in lower case instead of upper case |
 | `-c, --clipboard` | Copies the output hash value to clipboard. |
 | `-e, --exclude` | Filter out files that will not be hashed when using `-generate` and `-verify` |
+| `-r, --clearsign` | Sign the hash digest using GPG with a clear signature |
+| `-n, --detachsign` | Sign the hash digest using GPG with a detached signature |
 | `-b, --benchmark` | Performs benchmarks on a specified algorithm or all. |
 | `-i, --iterations` | Number of iterations to perform using `--benchmark` |
-| `-b, --buffer` | Buffer size to use when using `--benchmark` |
+| `-f, --buffer` | Buffer size to use when using `--benchmark` |
 
 <br />
 

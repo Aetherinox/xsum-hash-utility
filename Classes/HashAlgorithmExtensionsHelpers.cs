@@ -3,11 +3,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-/*
-    @app        : MobaXterm Keygen
-    @repo       : https://github.com/Aetherinox/MobaXtermKeygen
-    @author     : Aetherinox
-*/
 
 static class HashAlgorithmExtensionsHelpers
 {
