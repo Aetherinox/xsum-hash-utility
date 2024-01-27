@@ -16,6 +16,9 @@ using xsum;
 using System.Windows;
 using Cfg = xsum.Properties.Settings;
 using System.Collections;
+using System.Management.Automation.Language;
+using System.Xml.Linq;
+using System.Net.Security;
 
 #endregion
 
@@ -1630,34 +1633,19 @@ namespace XSum
             */
 
             if ( ARG_bIsFile )
+            {
                 file_path_search        = Path.GetDirectoryName( Path.Combine( xsum_path_dir, arg_Target_File ) );      // H:\CSharpProjects\XSum\bin\Release\net481
+                file_path_search        = Path.Combine( file_path_search, arg_Target_File );
+            }
 
             /*
                 Verify search path exists
             */
 
-            if ( !Directory.Exists( file_path_search ) )
+            if ( ARG_bIsFolder && !Directory.Exists( file_path_search ) || ARG_bIsFile && !File.Exists( file_path_search ) )
             {
                 nl( );
                 c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate [#Yellow]" + file_path_search + "[/]" ) );
-                nl( );
-
-                return (int)ExitCode.ErrorGeneric;
-            }
-
-            /*
-                get all files and folders that exist in file_path_search
-                this path should only be a folder.
-
-                if user specifics a file, find the folder it exists in and use that directory
-            */
-
-            string[] files          = Directory.GetFiles( file_path_search, "*", SearchOption.AllDirectories );
-
-            if ( files.Length < 1 )
-            {
-                nl( );
-                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate child path from [#Yellow]" + file_path_search + "[/]" ) );
                 nl( );
 
                 return (int)ExitCode.ErrorGeneric;
@@ -1670,75 +1658,44 @@ namespace XSum
             var dict_digest             = new Dictionary<string, string>( );
             StringBuilder sb_digest     = new StringBuilder( );
 
-            for ( int i = 0; i < files.Length; i++ )
+            if ( ARG_bIsFolder )
             {
-                // next file in folder
-                // full path to each file in directory / sub dir
 
-                string item_path_full       = files[ i ];
-                if ( !Directory.Exists( item_path_full ) && !File.Exists( item_path_full ) )
+                /*
+                    get all files and folders that exist in file_path_search
+                    this path should only be a folder.
+
+                    if user specifics a file, find the folder it exists in and use that directory
+                */
+
+                string[] files          = Directory.GetFiles( file_path_search, "*", SearchOption.AllDirectories );
+
+                if ( files.Length < 1 )
                 {
                     nl( );
-                    c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate [#Yellow]" + item_path_full + "[/]" ) );
+                    c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate child path from [#Yellow]" + file_path_search + "[/]" ) );
                     nl( );
-                    continue;
+
+                    return (int)ExitCode.ErrorGeneric;
                 }
 
-                /*
-                    IF USER SPECIFYIES SINGLE FILE:         Script will find out what folder that file is in.
-                                                            Then it will scan that entire folder and display ALL files
-                                                            that exist next to that specific file.
+                for ( int i = 0; i < files.Length; i++ )
+                {
+                   
+                    var ( hash, name ) = Generate_File( files[ i ] );
+                    if ( hash == null || name == null )
+                        return (int)ExitCode.ErrorGeneric;
 
-                    IF USER SPECIFIES FOLDER:               Every file that exists in that folder and subfolders will
-                                                            be cycled through.
-                */
+                    dict_digest.Add( hash, name );
+                }
+            }
+            else
+            {
+                var ( hash, name ) = Generate_File( file_path_search );
+                if ( hash == null || name == null )
+                    return (int)ExitCode.ErrorGeneric;
 
-                string item_file_name       = Path.GetFileName( item_path_full );
-
-                /*
-                    If user specifies a file only, get the full path to that file.
-
-                    Path.Combine:           If the one of the subsequent paths is an absolute path, then the combine operation 
-                                            resets starting with that absolute path, discarding all previous combined paths.
-                */
-
-                if ( ARG_bIsFile )
-                    item_path_full          = Path.Combine( xsum_path_dir, arg_Target_File );
-
-                /*
-                    get the relative path to the file that will be inserted into the digest
-                */
-
-                Uri item_relative_file      = new Uri( @item_path_full );
-                Uri item_relative_folder    = new Uri( @xsum_path_dir + @"\" );             // must end in backslash
-
-                string item_path_relative   = Uri.UnescapeDataString( item_relative_folder.MakeRelativeUri( item_relative_file ).ToString( ).Replace( '/', Path.DirectorySeparatorChar ) );
-                item_path_relative          = item_path_relative.Replace( @"\", "/" );      // replace backslash with forwardslash to make lines compatible with unix
-
-                /*
-                    get file hash
-                */
-
-                string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full );                                   // get hash of file
-                item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash );                // hash to upper or lower
-                var item_bDoIgnore          = dict_Ignored.FirstOrDefault ( x=> x.Key.Contains( item_file_name ) );         // check if file is ignored
-
-                // files in ignore list
-                if ( item_bDoIgnore.Value ) continue;
-
-                /*
-                    ignore empty files
-                */
-
-                if ( new FileInfo( item_path_full ).Length == 0 )
-                    continue;
-
-                /*
-                    add file to digest
-                */
-
-                dict_digest.Add( item_get_hash, item_path_relative );
-
+                dict_digest.Add( hash, name );
             }
 
             /*
@@ -1750,24 +1707,39 @@ namespace XSum
                     - bStringMode       = String
             */
 
-            string item_type            = ARG_bIsFile ? "file" : ARG_bIsFolder ? "folder" : bStringMode ? "string" : "unknown";
+            string item_type    = ARG_bIsFile ? "file" : ARG_bIsFolder ? "folder" : bStringMode ? "string" : "unknown";
+
+            nl( );
 
             /*
-                Inform user what type of item they converted
+                Extra arguments
             */
 
-            if ( arg_Clipboard_Enabled )
-            {
-                nl( );
-                c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Clipboard:[/]", "[#DarkGray]Enabled[/]" ) );
+            string LC_Status    = ( arg_LC_Enabled ? "Enabled" : "Disabled" );
+            c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Lowercase:[/]", "[#DarkGray]" + LC_Status + "[/]" ) );
+            nl( );
 
-                Helpers.SetClipboard( str_to_hash );
-            }
+            /*
+                Clipboard
+            */
 
-            c2( String.Format( new InitSF( ), "\n[#Blue] {0:F} Mode:   [/]Generated hash for {0} [#Yellow]\"{1}\"[/] using [#Yellow]{2}[/]\n\n", item_type, arg_Target_File, arg_Algo.ToUpper( ) ) );
+            string CB_Status    = ( arg_Clipboard_Enabled ? "Enabled" : "Disabled" );
+            c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Clipboard:[/]", "[#DarkGray]" + CB_Status + "[/]" ) );
+            nl( );
+
+            if ( arg_Clipboard_Enabled && ARG_bIsFolder )
+                Helpers.SetClipboard( file_path_search );
 
             /*
                 Output to user
+            */
+
+            nl( );
+            c2( String.Format( new InitSF( ), "[#Blue] {0:F} Mode:   [/]Generated hash for {0} [#Yellow]\"{1}\"[/] using [#Yellow]{2}[/]", item_type, arg_Target_File, arg_Algo.ToUpper( ) ) );
+            nl( );
+
+            /*
+                Output
             */
 
             c2( sf( " {0,-14} {1,-20}", " ", str_to_hash ) );
@@ -1790,6 +1762,80 @@ namespace XSum
 
             return (int)ExitCode.Success;
         }
+
+        /*
+            Get File
+        */
+
+        static public( string hash, string name ) Generate_File( string filename )
+        {
+
+            if ( !File.Exists( filename ) )
+            {
+                nl( );
+                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate file [#Yellow]" + filename + "[/]" ) );
+                nl( );
+                
+                return ( null, null );
+            }
+
+            /*
+                IF USER SPECIFYIES SINGLE FILE:         Script will find out what folder that file is in.
+                                                        Then it will scan that entire folder and display ALL files
+                                                        that exist next to that specific file.
+
+                IF USER SPECIFIES FOLDER:               Every file that exists in that folder and subfolders will
+                                                        be cycled through.
+            */
+
+            string item_file_name       = Path.GetFileName( filename );
+
+            /*
+                If user specifies a file only, get the full path to that file.
+
+                Path.Combine:           If the one of the subsequent paths is an absolute path, then the combine operation 
+                                        resets starting with that absolute path, discarding all previous combined paths.
+            */
+
+            string item_path_full       = Path.Combine( xsum_path_dir, filename );
+
+            /*
+                get the relative path to the file that will be inserted into the digest
+            */
+
+            Uri item_relative_file      = new Uri( @item_path_full );
+            Uri item_relative_folder    = new Uri( @xsum_path_dir + @"\" );             // must end in backslash
+
+            string item_path_relative   = Uri.UnescapeDataString( item_relative_folder.MakeRelativeUri( item_relative_file ).ToString( ).Replace( '/', Path.DirectorySeparatorChar ) );
+            item_path_relative          = item_path_relative.Replace( @"\", "/" );      // replace backslash with forwardslash to make lines compatible with unix
+
+            /*
+                get file hash
+            */
+
+            StringBuilder sb_digest     = new StringBuilder( );
+            var dict_digest             = new Dictionary<string, string>( );
+            var dict_GetHash            = Dict_Hashes_Populate( );                          // create dictionary for hash algos
+            var dict_Ignored            = Dict_Ignored_Populate( arg_Debug_Enabled );       // create dictionary for ignored files
+
+            string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full );                                   // get hash of file
+            item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash );                // hash to upper or lower
+            var item_bDoIgnore          = dict_Ignored.FirstOrDefault ( x=> x.Key.Contains( item_file_name ) );         // check if file is ignored
+
+            // files in ignore list
+            if ( item_bDoIgnore.Value )
+                return ( null, null );
+
+            /*
+                ignore empty files
+            */
+
+            if ( new FileInfo( item_path_full ).Length == 0 )
+                return ( null, null );
+
+            return ( item_get_hash, item_path_relative );
+        }
+
 
         /*
             ACTION > SIGN
@@ -2145,9 +2191,8 @@ namespace XSum
             }
 
             /*
-                Lowercase
+                Extra arguments
             */
-
 
             string LC_Status        = ( arg_LC_Enabled ? "Enabled" : "Disabled" );
             c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Lowercase:[/]", "[#DarkGray]" + LC_Status + "[/]" ) );

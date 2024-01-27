@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
-using System.Management.Automation.Language;
-using System.Security.Policy;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace xsum
 {
