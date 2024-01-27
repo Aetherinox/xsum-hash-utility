@@ -31,6 +31,8 @@
     - [`--lowercase`](#--lowercase)
     - [`--clipboard`](#--clipboard)
     - [`--exclude`](#--exclude)
+    - [`--clearsign`](#--clearsign)
+    - [`--detachsign`](#--detachsign)
 - [Features](#features)
   - [Help Menu](#help-menu)
   - [Target Types](#target-types)
@@ -514,6 +516,88 @@ With the above rules in place, any file ending with `.txt` will be excluded, and
 ---
 
 <br />
+
+### `--clearsign`
+The `--clearsign` argument creates a clearsign signature using GPG.
+
+<br />
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+A clearsign signature wraps both the data and the signature into an ASCII-armored signature.
+
+<br />
+
+A digital signature certifies and timestamps a document. If the document is subsequently modified in any way, a verification of the signature will fail. A digital signature can serve the same purpose as a hand-written signature with the additional benefit of being tamper-resistant. The GnuPG source distribution, for example, is signed so that users can verify that the source code has not been modified since it was packaged.
+
+<br />
+
+When trying to clearsign a document using the GPG command-line, you could execute the following:
+
+```
+gpg -default-key <XXXXXXXX> --armor --clearsign <FILE>
+```
+
+<br />
+
+xSum does this automatically without the need of using GPG. But you must have GPG installed on your system.
+
+</details>
+
+<br />
+
+---
+
+<br />
+
+### `--detachsign`
+The `--detachsign` argument creates a detached signature file using GPG.
+
+<br />
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+This creates a separate signature file that is used to verify the original message if desired. In its simplest form, this file contains a hash of the original file data and is encrypted with the private key. Anyone with the public key can open the detached signature and then compare hashes to verify the integrity of the signed file.
+
+<br />
+
+When trying to create a detached signature for a document using the GPG command-line, you could execute the following:
+
+```
+gpg --default-key <XXXXXXXX> --armor --detach-sign <FILE>
+```
+
+<br />
+
+xSum does this automatically without the need of using GPG. But you must have GPG installed on your system.
+
+</details>
+
+<br />
+
+---
+
+<br />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Features
 The following features are highlighted to explain them in better detail:
