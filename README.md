@@ -461,6 +461,13 @@ When the argument `--clipboard` is specified, the results of a task will be copi
 ### `--exclude`
 The `--exclude` argument gives you the ability to filter out files that should not be included when your dash digest is created.
 
+<br />
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
 It allows for wildcard patterns so that you can match multiple files with one rule.
 
 <br />
@@ -497,24 +504,6 @@ With the above rules in place, any file ending with `.txt` will be excluded, and
 ```
 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08  sample_zip_1.zip
 ```
-
-
-
-<br />
-
-<details>
-<summary><sub>Read More</sub></summary>
-
-<br />
-
-When the argument `--clipboard` is specified, the results of a task will be copied to your clipboard.
-
-<br />
-
-> [!NOTE]
-> When targeting a folder to generate a hash, the hash of the folder itself will be copied to your clipboard, not the individual files.
-
-<br />
 
 </details>
 
