@@ -119,7 +119,7 @@ Along with the main features listed above, the following sub-arguments can be us
 
 | Argument | Description |
 | --- | --- |
-| `-t, --target` | Target folder or file to generate / verify hash for |
+| ![Static Badge](https://img.shields.io/badge/Target---t%2C%20----target-%23fc0352?style=for-the-badge&labelColor=%23990836) | Target folder or file to generate / verify hash for |
 | `-d, --digest` | Hash digest which contains list of generated hashes |
 | `-a, --algorithm` | Algorithm used to verify `--digest` |
 | `-o, --output` | Output file for results verified |
