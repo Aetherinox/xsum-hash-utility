@@ -1814,7 +1814,7 @@ namespace XSum
 
                 for ( int i = 0; i < files.Length; i++ )
                 {
-                    var ( name, hash ) = NewHash_File( files[ i ] );
+                    var ( name, hash ) = NewHash_File( files[ i ], targ_bIsFolder, targ_bIsFile );
                     if ( hash == null || name == null )
                         continue;
 
@@ -1833,7 +1833,6 @@ namespace XSum
                 if ( hash == null || name == null )
                     return (int)ExitCode.ErrorGeneric;
 
-                    Console.WriteLine( name );
                 if ( !dict_digest.Any( x => x.Key.Contains( name ) ) )
                     dict_digest.Add( name, hash );
             }
@@ -1856,10 +1855,10 @@ namespace XSum
                     - targ_bIsString    = String
             */
 
-            string item_type    = targ_bIsFile ? "file" : targ_bIsFolder ? "folder" : targ_bIsString ? "string" : "unknown";
-            string OW_Status    = ( arg_Overwrite_Enabled ? "Enabled" : "Disabled" );
-            string LC_Status    = ( arg_LC_Enabled ? "Enabled" : "Disabled" );
-            string CB_Status    = ( arg_Clipboard_Enabled ? "Enabled" : "Disabled" );
+            string item_type        = targ_bIsFile ? "file" : targ_bIsFolder ? "folder" : targ_bIsString ? "string" : "unknown";
+            string OW_Status        = ( arg_Overwrite_Enabled ? "Enabled" : "Disabled" );
+            string LC_Status        = ( arg_LC_Enabled ? "Enabled" : "Disabled" );
+            string CB_Status        = ( arg_Clipboard_Enabled ? "Enabled" : "Disabled" );
 
             /*
                 --output log
@@ -1896,14 +1895,14 @@ namespace XSum
                 foreach ( var entry in dict_digest )
                 {
                     sb_output.Append        ( Environment.NewLine );
-                    string s5               = sf( " {0}  {1}", entry.Key, entry.Value );
+                    string s5               = sf( " {0}  {1}", entry.Value, entry.Key );
                     sb_output.Append        ( s5 );
 
                     // only shown if user uses --progress
                     if ( arg_Progress_Enabled )
                     {
-                        string l1   = sf( " {0,-15}{1,-30}", "Success", entry.Key );
-                        string l2   = sf( " {0,-15}{1,-30}", "", entry.Value );
+                        string l1   = sf( " {0,-15}{1,-30}", "Success", entry.Value );
+                        string l2   = sf( " {0,-15}{1,-30}", "", entry.Key );
 
                         wc( "Green" );
                         wl( l1 );
@@ -2004,7 +2003,7 @@ namespace XSum
             @arg        : str name
         */
 
-        static public( string name, string hash ) NewHash_File( string filename )
+        static public( string name, string hash ) NewHash_File( string filename, bool targ_bIsFolder = false, bool targ_bIsFile = false )
         {
 
             if ( !File.Exists( filename ) )
@@ -2042,6 +2041,18 @@ namespace XSum
 
             Uri item_relative_file      = new Uri( @item_path_full );
             Uri item_relative_folder    = new Uri( @xsum_path_dir + @"\" );             // must end in backslash
+
+            /*
+                relative paths > folders only
+
+                If the user provides a folder as the --target, we need to strip that folder away so that the hash paths in the digest match with
+                where they are on the machine.
+            */
+
+            if ( targ_bIsFolder )
+            {
+                item_relative_folder    = new Uri( @xsum_path_dir + @"\" + arg_Target_File + @"\" ); // must end in backslash
+            }
 
             string item_path_relative   = Uri.UnescapeDataString( item_relative_folder.MakeRelativeUri( item_relative_file ).ToString( ).Replace( '/', Path.DirectorySeparatorChar ) );
             item_path_relative          = item_path_relative.Replace( @"\", "/" );      // replace backslash with forwardslash to make lines compatible with unix
@@ -2122,14 +2133,21 @@ namespace XSum
                 GPG > Clear Sign (default)
             */
 
-            string ps_query = "gpg --batch --yes -q --default-key \"" + arg_GPG_Key + "\" --clearsign \"" + arg_Target_File + "\"";
+            string gpg_sign_type            = "Clear Signature";
+            string gpg_sign_output          = String.Format( "{0}.{1}", arg_Target_File, "asc" );
+            string ps_query                 = "gpg --batch --yes -q --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output + "\" --clearsign \"" + arg_Target_File + "\"";
 
             /*
-                GPG > Detach Sign
+                GPG > Detached Sign
             */
 
             if ( arg_GPG_DetachSign )
-                ps_query = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --detachsign \"" + arg_Target_File + "\"";
+            {
+                gpg_sign_type           = "Detached Signature";
+                gpg_sign_output         = String.Format( "{0}.{1}", arg_Target_File, "sig" );
+                ps_query                = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output + "\" --detach-sign \"" + arg_Target_File + "\"";
+            }
+
 
             /*
                 Execute powershell query
@@ -2137,6 +2155,16 @@ namespace XSum
 
             string[] ps_exec = new String[] { ps_query };
             PowershellQ( ps_exec );
+
+            /*
+                Notice to user
+            */
+
+            nl( );
+            c2( sf( " {0,-28} {1,-30}", "[#Green]Success:[/]", "Created a [#Yellow]" + gpg_sign_type + "[/] using the GPG id [#Yellow]" + arg_GPG_Key + "[/]" ) );
+            nl( );
+            c2( sf( " {0,-28} {1,-30}", "[#Green][/]", "Saved signature to [#Yellow]" + gpg_sign_output + "[/]" ) );
+            nl( );
 
             return (int)ExitCode.ErrorGeneric;
         }
@@ -2345,16 +2373,6 @@ namespace XSum
             */
 
             nl( );
-
-
-                foreach ( string val in dict_digest.Values )
-                {
-                    Console.WriteLine( val );
-                }
-
-
-
-
 
             for ( int i = 0; i < files.Length; i++ )
             {
