@@ -120,19 +120,19 @@ Along with the main features listed above, the following sub-arguments can be us
 | Argument | Description |
 | --- | --- |
 | ![Static Badge](https://img.shields.io/badge/Target---t%2C%20----target-%23fc0352?style=for-the-badge&labelColor=%23990836) | Target folder or file to generate / verify hash for |
-| `-d, --digest` | Hash digest which contains list of generated hashes |
-| `-a, --algorithm` | Algorithm used to verify `--digest` |
-| `-o, --output` | Output file for results verified |
-| `-w, --overwrite` | Overwrite results to `--output` instead of append |
-| `-p, --progress` | Displays each file being checked and additional info |
-| `-l, --lowercase` | Match and output hash value(s) in lower case instead of upper case |
-| `-c, --clipboard` | Copies the output hash value to clipboard. |
-| `-e, --exclude` | Filter out files that will not be hashed when using `-generate` and `-verify` |
-| `-r, --clearsign` | Sign the hash digest using GPG with a clear signature |
-| `-n, --detachsign` | Sign the hash digest using GPG with a detached signature |
-| `-b, --benchmark` | Performs benchmarks on a specified algorithm or all. |
-| `-i, --iterations` | Number of iterations to perform using `--benchmark` |
-| `-f, --buffer` | Buffer size to use when using `--benchmark` |
+| ![Static Badge](https://img.shields.io/badge/Digest---d%2C%20----digest-%23fc0352?style=for-the-badge&labelColor=%23990836) | Hash digest which contains list of generated hashes |
+| ![Static Badge](https://img.shields.io/badge/Algorithm---a%2C%20----algorithm-%23fc0352?style=for-the-badge&labelColor=%23990836) | Algorithm used to verify `--digest` |
+| ![Static Badge](https://img.shields.io/badge/Output---o%2C%20----output-%23fc0352?style=for-the-badge&labelColor=%23990836) | Output file for results verified |
+| ![Static Badge](https://img.shields.io/badge/Overwrite---w%2C%20----overwrite-%23fc0352?style=for-the-badge&labelColor=%23990836) | Overwrite results to `--output` instead of append |
+| ![Static Badge](https://img.shields.io/badge/Progress---p%2C%20----progress-%23fc0352?style=for-the-badge&labelColor=%23990836) | Displays each file being checked and additional info |
+| ![Static Badge](https://img.shields.io/badge/Lowercase---l%2C%20----lowercase-%23fc0352?style=for-the-badge&labelColor=%23990836) | Match and output hash value(s) in lower case instead of upper case |
+| ![Static Badge](https://img.shields.io/badge/Clipboard---c%2C%20----clipboard-%23fc0352?style=for-the-badge&labelColor=%23990836) | Copies the output hash value to clipboard. |
+| ![Static Badge](https://img.shields.io/badge/Exclude---e%2C%20----exclude-%23fc0352?style=for-the-badge&labelColor=%23990836) | Filter out files that will not be hashed when using `-generate` and `-verify` |
+| ![Static Badge](https://img.shields.io/badge/Clearsign---r%2C%20----clearsign-%23fc0352?style=for-the-badge&labelColor=%23990836) | Sign the hash digest using GPG with a clear signature |
+| ![Static Badge](https://img.shields.io/badge/DetachSign---n%2C%20----detachsign-%23fc0352?style=for-the-badge&labelColor=%23990836) | Sign the hash digest using GPG with a detached signature |
+| ![Static Badge](https://img.shields.io/badge/Benchmark---b%2C%20----benchmark-%23fc0352?style=for-the-badge&labelColor=%23990836) | Performs benchmarks on a specified algorithm or all. |
+| ![Static Badge](https://img.shields.io/badge/Iterations---i%2C%20----iterations-%23fc0352?style=for-the-badge&labelColor=%23990836) | Number of iterations to perform using `--benchmark` |
+| ![Static Badge](https://img.shields.io/badge/Buffer---f%2C%20----buffer-%23fc0352?style=for-the-badge&labelColor=%23990836) | Buffer size to use when using `--benchmark` |
 
 <br />
 
