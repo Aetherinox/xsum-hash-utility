@@ -608,9 +608,9 @@ namespace XSum
                                     return (int)ExitCode.None;
 
                                 /*
-                                    CASE > LOWERCASE
+                                    CASE > GENERATE
 
-                                    hash converted to lowercase
+                                    generate new hash digest
                                 */
 
                                 case "--generate":
@@ -1430,7 +1430,7 @@ namespace XSum
 
         static async Task WriteOutput( string file, string algo, StringBuilder output, bool bOverwrite )
         {
-            await Task.Run( ( ) =>  
+            await Task.Run( ( ) =>
             {
                 string file_saveto = null;
 
@@ -1458,17 +1458,19 @@ namespace XSum
                     output.Append( Environment.NewLine );
                     output.Append( Environment.NewLine );
 
-                    nl( );
-                    wc( "Gray" );
-                    Console.WriteLine( " {0,-10}{1,-24}", "Save:", String.Format( file_saveto ) );
-                    nl( );
+                    if ( arg_Progress_Enabled )
+                    {
+                        nl( );
+                        c2( String.Format( " {0,-25} {1,-30}", "[#DarkGray]Save:", String.Format( file_saveto ) + "[/]" ) );
+                        nl( );
+                    }
 
                     using ( StreamWriter writer = new StreamWriter( file_saveto, !bOverwrite ) )
                     {
                         writer.WriteLine( output.ToString() );
                     }
                 }
-            });  
+            } );
         }
 
         /*
@@ -1494,6 +1496,20 @@ namespace XSum
             */
 
             StringBuilder sb_output     = new StringBuilder( );
+
+            /*
+                Output > create header for top of --output file
+            */
+
+            DateTime dt             = DateTime.Now;
+            string now              = dt.ToString( "MMMM dd yyyy" );
+            string h1               = sf( " ------------------------------------------------------------------------------------------\n" );
+            string h2               = sf( " {0,-20} {1,30}", now, "---------------------------------------------------------------------\n" );
+            string h3               = sf( " ------------------------------------------------------------------------------------------\n" );
+
+            sb_output.Append( h1 );
+            sb_output.Append( h2 );
+            sb_output.Append( h3 );
 
             /*
                User did not specify --target
@@ -1529,10 +1545,10 @@ namespace XSum
                 --verify <FILE> provided, check if it exists as a FILE or FOLDER
             */
 
-            bool ARG_bIsFile        = false;
-            bool ARG_bIsFolder      = false;
-            bool bStringMode        = false;
-            string str_to_hash      = null;
+            bool targ_bIsFile       = false;
+            bool targ_bIsFolder     = false;
+            bool targ_bIsString     = false;
+            string targ_hash        = null;
 
             if ( !String.IsNullOrEmpty( arg_Target_File ) )
             {
@@ -1541,21 +1557,21 @@ namespace XSum
                 */
 
                 if ( File.Exists( arg_Target_File ) )
-                    ARG_bIsFile     = true;
+                    targ_bIsFile    = true;
 
                 /*
                     --verify "Test\"
                 */
 
                 if ( Directory.Exists( arg_Target_File ) )
-                    ARG_bIsFolder   = true;
+                    targ_bIsFolder  = true;
             }
 
             if ( AppInfo.bIsDebug( ) || arg_Debug_Enabled )
             {
                 nl( );
-                wl( sf( " ARG_bIsFile ......... {0}", ARG_bIsFile ) );
-                wl( sf( " ARG_bIsFolder ....... {0}", ARG_bIsFolder ) );
+                wl( sf( " targ_bIsFile ......... {0}", targ_bIsFile ) );
+                wl( sf( " targ_bIsFolder ....... {0}", targ_bIsFolder ) );
                 nl( );
             }
 
@@ -1582,11 +1598,11 @@ namespace XSum
                 @output         : X:\Path\To\Folder
             */
 
-            if ( ARG_bIsFolder )
+            if ( targ_bIsFolder )
             {
-                str_to_hash             = Path.GetFullPath( arg_Target_File );
-                str_to_hash             = Hash.GetHash_Directory( arg_Algo,  str_to_hash );
-                str_to_hash             = ( arg_LC_Enabled ? str_to_hash.ToLower( ) : str_to_hash );
+                targ_hash               = Path.GetFullPath( arg_Target_File );
+                targ_hash               = Hash.GetHash_Directory( arg_Algo,  targ_hash );
+                targ_hash               = ( arg_LC_Enabled ? targ_hash.ToLower( ) : targ_hash );
             }
  
             /*
@@ -1599,11 +1615,11 @@ namespace XSum
                 @output         : X:\Path\To\Folder\file.xxx
             */
 
-            if ( ARG_bIsFile )
+            if ( targ_bIsFile )
             {
-                str_to_hash             = Path.Combine( xsum_path_dir, arg_Target_File );
-                str_to_hash             = dict_GetHash[ arg_Algo ]( str_to_hash );
-                str_to_hash             = ( arg_LC_Enabled ? str_to_hash.ToLower( ) : str_to_hash );
+                targ_hash               = Path.Combine( xsum_path_dir, arg_Target_File );
+                targ_hash               = dict_GetHash[ arg_Algo ]( targ_hash );
+                targ_hash               = ( arg_LC_Enabled ? targ_hash.ToLower( ) : targ_hash );
             }
 
             /*
@@ -1613,11 +1629,11 @@ namespace XSum
                 This gets triggered if the system cannot detect a valid file or folder provided.
             */
 
-            if ( String.IsNullOrEmpty( str_to_hash ) )
+            if ( String.IsNullOrEmpty( targ_hash ) )
             {
-                bStringMode             = true;
-                str_to_hash             = Hash.GetHash_String( arg_Algo, arg_Target_File );
-                str_to_hash             = ( arg_LC_Enabled ? str_to_hash.ToLower( ) : str_to_hash );
+                targ_bIsString          = true;
+                targ_hash               = Hash.GetHash_String( arg_Algo, arg_Target_File );
+                targ_hash               = ( arg_LC_Enabled ? targ_hash.ToLower( ) : targ_hash );
             }
 
             /*
@@ -1629,10 +1645,10 @@ namespace XSum
             string file_path_search     = Path.GetFullPath( arg_Target_File );
 
             /*
-                ARG_bIsFile         bool means the user is trying to verify a single file instead of a folder
+                targ_bIsFile            bool means the user is trying to verify a single file instead of a folder
             */
 
-            if ( ARG_bIsFile )
+            if ( targ_bIsFile )
             {
                 file_path_search        = Path.GetDirectoryName( Path.Combine( xsum_path_dir, arg_Target_File ) );      // H:\CSharpProjects\XSum\bin\Release\net481
                 file_path_search        = Path.Combine( file_path_search, arg_Target_File );
@@ -1642,7 +1658,7 @@ namespace XSum
                 Verify search path exists
             */
 
-            if ( ARG_bIsFolder && !Directory.Exists( file_path_search ) || ARG_bIsFile && !File.Exists( file_path_search ) )
+            if ( targ_bIsFolder && !Directory.Exists( file_path_search ) || targ_bIsFile && !File.Exists( file_path_search ) )
             {
                 nl( );
                 c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate [#Yellow]" + file_path_search + "[/]" ) );
@@ -1658,7 +1674,11 @@ namespace XSum
             var dict_digest             = new Dictionary<string, string>( );
             StringBuilder sb_digest     = new StringBuilder( );
 
-            if ( ARG_bIsFolder )
+            /*
+                Mode: Folder
+            */
+
+            if ( targ_bIsFolder )
             {
 
                 /*
@@ -1673,7 +1693,7 @@ namespace XSum
                 if ( files.Length < 1 )
                 {
                     nl( );
-                    c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate child path from [#Yellow]" + file_path_search + "[/]" ) );
+                    c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Could not locate sub path from [#Yellow]" + file_path_search + "[/]" ) );
                     nl( );
 
                     return (int)ExitCode.ErrorGeneric;
@@ -1681,17 +1701,21 @@ namespace XSum
 
                 for ( int i = 0; i < files.Length; i++ )
                 {
-                   
-                    var ( hash, name ) = Generate_File( files[ i ] );
+                    var ( hash, name ) = NewHash_File( files[ i ] );
                     if ( hash == null || name == null )
                         return (int)ExitCode.ErrorGeneric;
 
                     dict_digest.Add( hash, name );
                 }
             }
-            else
+
+            /*
+                Mode: File
+            */
+
+            else if ( targ_bIsFile )
             {
-                var ( hash, name ) = Generate_File( file_path_search );
+                var ( hash, name ) = NewHash_File( file_path_search );
                 if ( hash == null || name == null )
                     return (int)ExitCode.ErrorGeneric;
 
@@ -1699,75 +1723,172 @@ namespace XSum
             }
 
             /*
+                Mode: String
+            */
+
+            else
+            {
+                dict_digest.Add( targ_hash, arg_Target_File );
+            }
+
+            /*
                 Output Category
 
                 Figure out what type of target was provided to display to the user.
-                    - ARG_bIsFile       = File
-                    - ARG_bIsFolder     = Folder
-                    - bStringMode       = String
+                    - targ_bIsFile      = File
+                    - targ_bIsFolder    = Folder
+                    - targ_bIsString    = String
             */
 
-            string item_type    = ARG_bIsFile ? "file" : ARG_bIsFolder ? "folder" : bStringMode ? "string" : "unknown";
-
-            nl( );
-
-            /*
-                Extra arguments
-            */
-
+            string item_type    = targ_bIsFile ? "file" : targ_bIsFolder ? "folder" : targ_bIsString ? "string" : "unknown";
+            string OW_Status    = ( arg_Overwrite_Enabled ? "Enabled" : "Disabled" );
             string LC_Status    = ( arg_LC_Enabled ? "Enabled" : "Disabled" );
-            c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Lowercase:[/]", "[#DarkGray]" + LC_Status + "[/]" ) );
-            nl( );
+            string CB_Status    = ( arg_Clipboard_Enabled ? "Enabled" : "Disabled" );
 
             /*
-                Clipboard
+                --output log
             */
 
-            string CB_Status    = ( arg_Clipboard_Enabled ? "Enabled" : "Disabled" );
-            c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Clipboard:[/]", "[#DarkGray]" + CB_Status + "[/]" ) );
-            nl( );
+            sb_output.Append        ( Environment.NewLine );
+            string s1               = sf( " Generated hash for {0} \"{1}\" using \"{2}\"", item_type, arg_Target_File, arg_Algo.ToUpper( ) );
+            sb_output.Append        ( s1 );
+            sb_output.Append        ( Environment.NewLine );
 
-            if ( arg_Clipboard_Enabled && ARG_bIsFolder )
-                Helpers.SetClipboard( file_path_search );
+            sb_output.Append        ( Environment.NewLine );
+            string s2               = sf( " {0,-20} {1,-30}", "Overwrite:", "" + OW_Status + "" );
+            sb_output.Append        ( s2 );
+
+            sb_output.Append        ( Environment.NewLine );
+            string s3               = sf( " {0,-20} {1,-30}", "Lowercase:", "" + LC_Status + "" );
+            sb_output.Append        ( s3 );
+
+            sb_output.Append        ( Environment.NewLine );
+            string s4               = sf( " {0,-20} {1,-30}", "Clipboard:", "" + CB_Status + "" );
+            sb_output.Append        ( s4 );
+            sb_output.Append        ( Environment.NewLine );
+
+            /*
+                write hashes and filenames to digest file
+            */
+
+            using ( StreamWriter file = new StreamWriter( arg_Digest_File ) )
+            {
+
+                if ( arg_Progress_Enabled )
+                    nl( );
+
+                foreach ( var entry in dict_digest )
+                {
+                    sb_output.Append        ( Environment.NewLine );
+                    string s5               = sf( " {0}  {1}", entry.Key, entry.Value );
+                    sb_output.Append        ( s5 );
+
+                    // only shown if user uses --progress
+                    if ( arg_Progress_Enabled )
+                    {
+                        string l1   = sf( " {0,-15}{1,-30}", "Success", entry.Key );
+                        string l2   = sf( " {0,-15}{1,-30}", "", entry.Value );
+
+                        wc( "Green" );
+                        wl( l1 );
+                        wc( "DarkGray" );
+                        wl( l2 );
+                        nl( );
+                    }
+
+                    file.WriteLine( "{0}  {1}", entry.Key, entry.Value ); 
+                }
+            }
+
+            if ( arg_Progress_Enabled )
+            {
+
+                /*
+                    Extras > Overwrite
+                */
+
+                c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Overwrite:[/]", "[#DarkGray]" + OW_Status + "[/]" ) );
+                nl( );
+
+                /*
+                    Extras > Lowercase
+                */
+
+                c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Lowercase:[/]", "[#DarkGray]" + LC_Status + "[/]" ) );
+                nl( );
+
+                /*
+                    Extras > Clipboard
+                */
+
+                c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Clipboard:[/]", "[#DarkGray]" + CB_Status + "[/]" ) );
+                nl( );
+
+            }
+
+            /*
+                Extras > Clipboard > Copy
+            */
+
+            if ( arg_Clipboard_Enabled )
+                Helpers.SetClipboard( targ_hash );
 
             /*
                 Output to user
             */
 
             nl( );
-            c2( String.Format( new InitSF( ), "[#Blue] {0:F} Mode:   [/]Generated hash for {0} [#Yellow]\"{1}\"[/] using [#Yellow]{2}[/]", item_type, arg_Target_File, arg_Algo.ToUpper( ) ) );
+            c2( String.Format( new InitSF( ), " {0,-24} {1,-30}", "[#Blue]" + Helpers.ucfirst( item_type ) + " Mode:[/]", "Generated hash for " + item_type + " [#Yellow]\"" + arg_Target_File + "\"[/] using [#Yellow]" + arg_Algo.ToUpper( ) + "[/]" ) );
+            nl( ); 
+            c2( String.Format( new InitSF( ), " {0,-24} {1,-30}", "[#Blue][/]", "Digest saved to [#Yellow]\"" + arg_Digest_File + "\"[/]" ) );
+            nl( );
             nl( );
 
             /*
-                Output
+                Output > Hash
             */
 
-            c2( sf( " {0,-14} {1,-20}", " ", str_to_hash ) );
+            c2( sf( " {0,-14} {1,-20}", " ", targ_hash ) );
             nl( );
 
             /*
-                write digest
+                Argument --output
+                Results will be stored in a file
             */
 
-            using ( StreamWriter file = new StreamWriter( arg_Digest_File ) )
-                foreach ( var entry in dict_digest )
-                    file.WriteLine( "{0}  {1}", entry.Key, entry.Value ); 
+            if ( !String.IsNullOrEmpty( arg_Output_File ) )
+            {
 
-            /*
-                get all files and folders that exist in file_path_search
-                this path should only be a folder.
+                /*
+                    Determine save location
 
-                if user specifics a file, find the folder it exists in and use that directory
-            */
+                    if provided output only contains a local folder with no filename:
+                        -   x:\Path\To\XSum\folder\{algo}.txt
+
+                    If provided output contains a local folder with filename:
+                        -   x:\Path\To\XSum\folder\filename.xxx
+
+                    If provided output is a full path without a filename:
+                        -   x:\path\provided\{algo}.txt
+
+                    If provided output hs a full path with filename:
+                        -   x:\path\provided\filename.xxx
+                */
+
+                WriteOutput( arg_Output_File, arg_Algo, sb_output, arg_Overwrite_Enabled ).Wait( );
+
+            }
 
             return (int)ExitCode.Success;
         }
 
         /*
-            Get File
+            Generate Hash > File
+
+            @arg        : str name
         */
 
-        static public( string hash, string name ) Generate_File( string filename )
+        static public( string hash, string name ) NewHash_File( string filename )
         {
 
             if ( !File.Exists( filename ) )
@@ -1815,8 +1936,8 @@ namespace XSum
 
             StringBuilder sb_digest     = new StringBuilder( );
             var dict_digest             = new Dictionary<string, string>( );
-            var dict_GetHash            = Dict_Hashes_Populate( );                          // create dictionary for hash algos
-            var dict_Ignored            = Dict_Ignored_Populate( arg_Debug_Enabled );       // create dictionary for ignored files
+            var dict_GetHash            = Dict_Hashes_Populate( );                                                      // create dictionary for hash algos
+            var dict_Ignored            = Dict_Ignored_Populate( arg_Debug_Enabled );                                   // create dictionary for ignored files
 
             string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full );                                   // get hash of file
             item_get_hash               = ( arg_LC_Enabled ? item_get_hash.ToLower( ) : item_get_hash );                // hash to upper or lower
@@ -1916,8 +2037,8 @@ namespace XSum
                 --verify <FILE> provided, check if it exists as a FILE or FOLDER
             */
 
-            bool ARG_bIsFile        = false;
-            bool ARG_bIsFolder      = false;
+            bool targ_bIsFile       = false;
+            bool targ_bIsFolder     = false;
 
             if ( !String.IsNullOrEmpty( arg_Target_File ) )
             {
@@ -1926,21 +2047,21 @@ namespace XSum
                 */
 
                 if ( File.Exists( arg_Target_File ) )
-                    ARG_bIsFile     = true;
+                    targ_bIsFile    = true;
 
                 /*
                     --verify "Test"
                 */
 
                 if ( Directory.Exists( arg_Target_File ) )
-                    ARG_bIsFolder   = true;
+                    targ_bIsFolder  = true;
             }
 
             if ( AppInfo.bIsDebug( ) || arg_Debug_Enabled )
             {
                 nl( );
-                wl( sf( " ARG_bIsFile ......... {0}", ARG_bIsFile ) );
-                wl( sf( " ARG_bIsFolder ....... {0}", ARG_bIsFolder ) );
+                wl( sf( " targ_bIsFile ......... {0}", targ_bIsFile ) );
+                wl( sf( " targ_bIsFolder ....... {0}", targ_bIsFolder ) );
                 nl( );
             }
 
@@ -1949,7 +2070,7 @@ namespace XSum
                     --verify <FILE or FOLDER>
             */
 
-            if ( !ARG_bIsFile && !ARG_bIsFolder )
+            if ( !targ_bIsFile && !targ_bIsFolder )
             {
                 nl( );
                 c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Specified target file or folder [#Yellow]\"" + arg_Target_File + "\"[/] does not exist[/]\n" ) );
@@ -1996,10 +2117,10 @@ namespace XSum
             string file_path_search     = Path.GetFullPath( arg_Target_File );
 
             /*
-                ARG_bIsFile         bool means the user is trying to verify a single file instead of a folder
+                targ_bIsFile        bool means the user is trying to verify a single file instead of a folder
             */
 
-            if ( ARG_bIsFile )
+            if ( targ_bIsFile )
                 file_path_search        = Path.GetDirectoryName( Path.Combine( xsum_path_dir, arg_Target_File ) );      // H:\CSharpProjects\XSum\bin\Release\net481
 
             /*
@@ -2060,7 +2181,7 @@ namespace XSum
             int i_success           = 0;                                                        // total files correct hash
             int i_error             = 0;                                                        // total files mismatch hash
 
-            string item_hash        = ( ARG_bIsFolder ? Hash.GetHash_Directory( arg_Algo,  arg_Target_File ) : null );
+            string item_hash        = ( targ_bIsFolder ? Hash.GetHash_Directory( arg_Algo,  arg_Target_File ) : null );
             item_hash               = (  arg_LC_Enabled ? item_hash.ToLower( ) : item_hash );
 
             string item_Target      = null;
@@ -2101,7 +2222,7 @@ namespace XSum
                                             resets starting with that absolute path, discarding all previous combined paths.
                 */
 
-                if ( ARG_bIsFile )
+                if ( targ_bIsFile )
                     item_path_full          = Path.Combine( xsum_path_dir, arg_Target_File );
  
                 /*
@@ -2121,8 +2242,8 @@ namespace XSum
                 {
                     item_Target     = item_path_full;
 
-                    string l1   = sf( " {0,-10}{1,-24}", "Success", item_path_full );
-                    string l2   = sf( " {0,-10}{1,-24}", "", item_get_hash );
+                    string l1   = sf( " {0,-15}{1,-30}", "Success", item_path_full );
+                    string l2   = sf( " {0,-15}{1,-30}", "", item_get_hash );
 
                     // only shown if user uses --progress
                     if ( arg_Progress_Enabled )
@@ -2147,7 +2268,7 @@ namespace XSum
                         without this, xsum will continue to loop through the rest of the files
                     */
 
-                    if ( ARG_bIsFile )
+                    if ( targ_bIsFile )
                         bSingleFile = true;
 
                     i_success++;
@@ -2156,8 +2277,8 @@ namespace XSum
                 {
                     item_Target     = item_path_full;
 
-                    string l5       = sf( " {0,-10}{1,-24}", "Fail", item_path_full );
-                    string l6       = sf( " {0,-10}{1,-24}", "", item_get_hash );
+                    string l5       = sf( " {0,-15}{1,-30}", "Fail", item_path_full );
+                    string l6       = sf( " {0,-15}{1,-30}", "", item_get_hash );
 
                     // only shown if user uses --progress
                     if ( arg_Progress_Enabled )
@@ -2180,7 +2301,7 @@ namespace XSum
                             --verify "Path\To\File.xxx"
                     */
 
-                    if ( ARG_bIsFile )
+                    if ( targ_bIsFile )
                         bSingleFile = true;
 
                     bFailed         = true;
@@ -2206,7 +2327,7 @@ namespace XSum
             c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Clipboard:[/]", "[#DarkGray]" + CB_Status + "[/]" ) );
             nl( );
 
-            if ( arg_Clipboard_Enabled && ARG_bIsFolder )
+            if ( arg_Clipboard_Enabled && targ_bIsFolder )
                 Helpers.SetClipboard( item_hash );
 
             /*
@@ -2277,19 +2398,19 @@ namespace XSum
                 nl( );
                 sb_output.Append( Environment.NewLine );
 
-                string s2 = String.Format( " {0,-10}{1,-24}", i_count, String.Format( "files scanned" ) );
+                string s2 = String.Format( " {0,-15}{1,-30}", i_count, String.Format( "files scanned" ) );
                 wc( "Gray" );
                 wl( s2 );
                 sb_output.Append( s2 );
                 sb_output.Append( Environment.NewLine );
 
-                string s3 = String.Format( " {0,-10}{1,-24}", i_success, String.Format( "files successfully verified" ) );
+                string s3 = String.Format( " {0,-15}{1,-30}", i_success, String.Format( "files successfully verified" ) );
                 wc( "Green" );
                 wl( s3 );
                 sb_output.Append( s3 );
                 sb_output.Append( Environment.NewLine );
 
-                string s4 = String.Format( " {0,-10}{1,-24}", i_error, String.Format( "files failed verification" ) );
+                string s4 = String.Format( " {0,-15}{1,-30}", i_error, String.Format( "files failed verification" ) );
                 wc( "Red" );
                 wl( s4 );
                 sb_output.Append( s4 );

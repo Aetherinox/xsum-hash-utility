@@ -21,6 +21,7 @@
   - [Main Arguments](#main-arguments)
   - [Sub Arguments](#sub-arguments)
 - [Syntax](#syntax)
+    - [`--generate`](#--generate)
     - [`--target`](#--target)
     - [`--digest`](#--digest)
     - [`--algorithm`](#--algorithm)
@@ -140,8 +141,53 @@ This utility attempts to be semi "smart" in the aspect that you can execute comm
 
 <br />
 
+### `--generate`
+Compute hash for folder, files, or strings and generate new hash digest
+
+<br />
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+The `--generate` argument allows you to create a new hash digest from the target folder. This argument requires you to specify a target file or folder using one of the following ways:
+
+<br />
+
+| Expects | Description |
+| --- | --- |
+| `--generate Path\To\Folder` | Folder to generate hash digest for |
+| `--generate --target Path\To\Folder` | Same as above
+| `--generate Path\To\File.xxx` | File to generate hash digest for |
+| `--generate --target Path\To\File.xxx` | Same as above
+
+<br />
+
+The following commands all do the same action:
+
+```C#
+xsum --verify --target "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+xsum --generate --target "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+```
+
+```C#
+xsum --verify "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+xsum --generate "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
+```
+
+</details>
+
+<br />
+
+---
+
+<br />
+
 ### `--target`
 Target folder or file to generate / verify hash for
+
+<br />
 
 <details>
 <summary><sub>Read More</sub></summary>
@@ -185,6 +231,8 @@ xsum --generate "X:\Path\To\ExampleFile.zip" --algo sha256 --digest SHA256.sig
 ### `--digest`
 Hash digest which contains list of generated hashes
 
+<br />
+
 <details>
 <summary><sub>Read More</sub></summary>
 
@@ -222,6 +270,8 @@ The hash digest will be saved as `SHA512.txt`.
 ### `--algorithm`
 Algorithm used to verify `--digest`
 
+<br />
+
 <details>
 <summary><sub>Read More</sub></summary>
 
@@ -252,7 +302,9 @@ Available Algorithms:
 <br />
 
 ### `--output`
-Output file for results verified
+Output file which displays detailed information about each task.
+
+<br />
 
 <details>
 <summary><sub>Read More</sub></summary>
@@ -260,6 +312,10 @@ Output file for results verified
 <br />
 
 The `--output` argument is an optional parameter which allows you to define a file where the results of your generated or verified results will be placed.
+
+The information provided by `--output` is different than the output to the hash digest using `--digest`.
+
+The hash digest contains a list of each target file and its corresponding hash. However, the output file will display step-by-step of what is going on when the hashes are generated.
 
 <br />
 
@@ -280,6 +336,8 @@ The `--output` argument is an optional parameter which allows you to define a fi
 ### `--overwrite`
 Overwrite results to `--output` instead of append
 
+<br />
+
 <details>
 <summary><sub>Read More</sub></summary>
 
@@ -299,6 +357,8 @@ When used in combination with `--output`, this argument will force the utility t
 
 ### `--progress`
 Displays in-depth information about the utility's progress during a task, as well as the checksum for each file being processed.
+
+<br />
 
 <details>
 <summary><sub>Read More</sub></summary>
@@ -336,6 +396,8 @@ However, when using this argument, you will see a larger collection of messages.
 ### `--lowercase`
 Match and output hash value(s) in lower case instead of upper case.
 
+<br />
+
 <details>
 <summary><sub>Read More</sub></summary>
 
@@ -369,6 +431,8 @@ This argument will transform all hashes to lowercase, both the hash produced by 
 
 ### `--clipboard`
 Copies the output hash value to clipboard.
+
+<br />
 
 <details>
 <summary><sub>Read More</sub></summary>
