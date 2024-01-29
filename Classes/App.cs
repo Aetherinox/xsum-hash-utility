@@ -699,7 +699,7 @@ namespace XSum
                     I may make this work for users some day.
                 */
 
-                string[] files = System.IO.Directory.GetFiles( xsum_path_dir, "SHA*.txt.asc", System.IO.SearchOption.TopDirectoryOnly );
+                string[] files = System.IO.Directory.GetFiles( xsum_path_dir, "SHA*.asc", System.IO.SearchOption.TopDirectoryOnly );
 
                 if ( files.Length > 0 )
                 {
@@ -726,6 +726,29 @@ namespace XSum
                         }
                     }
                 }
+                else
+                {
+                    var ProcParent = AppInfo.GetParentProcess( Process.GetCurrentProcess( ) );
+                    if ( ProcParent.ProcessName == "explorer" )
+                    {
+                        nl( );
+                        c2( sf( " {0,-24} {1,-30}", "[#Red]Error[/]", "[#Yellow]Self-Verification[/] mode aborting.[/]" ) );
+                        nl( );
+                        nl( );
+                        c2( sf( " {0,-24} {1,-30}", "[#Red][/]", "Could not locate a valid hash digest file with the name:" ) );
+                        nl( );
+                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]SHA*.asc[/]" ) );
+                        nl( );
+                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]MD5*.asc[/]" ) );
+                        nl( );
+                        nl( );
+                        c2( sf( " {0,-24} {1,-30}", "[#Red][/]", "Press any key to exit.[/]" ) );
+                        nl( );
+
+                        Console.ReadLine( );
+                    }
+                }
+
 
                 /*
                     No arguments supplied by user

@@ -24,6 +24,7 @@
 - [Syntax](#syntax)
     - [`--generate`](#--generate)
     - [`--verify`](#--verify)
+    - [`--sign`](#--sign)
     - [`--target`](#--target)
     - [`--digest`](#--digest)
     - [`--algorithm`](#--algorithm)
@@ -33,11 +34,13 @@
     - [`--lowercase`](#--lowercase)
     - [`--clipboard`](#--clipboard)
     - [`--exclude`](#--exclude)
+    - [`--key`](#--key)
     - [`--clearsign`](#--clearsign)
     - [`--detachsign`](#--detachsign)
 - [Features](#features)
   - [Help Menu](#help-menu)
   - [Target Types](#target-types)
+  - [Automatic Checking](#automatic-checking)
   - [Benchmark](#benchmark)
     - [Standard Benchmark](#standard-benchmark)
     - [Algorithm Stress Test Benchmark](#algorithm-stress-test-benchmark)
@@ -293,7 +296,7 @@ Then a project is successfully verified, you will receive the following:
 
 If you are not using SHA256, then you will need to specify the hash algorithm:
 
-```
+```shell
 xsum --verify --digest MD5.txt --algo md5
 ```
 
@@ -303,6 +306,70 @@ xsum --verify --digest MD5.txt --algo md5
 
 ```shell
 xsum --verify --digest SHA256.txt --lowercase
+```
+
+<br />
+
+</details>
+
+<br />
+
+---
+
+<br />
+
+### `--sign`
+The `--sign` argument allows you to sign a hash digest using a specified GPG key.
+
+<br />
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+This feature requires that you have [GPG](https://gnupg.org/download/) installed on your device, and added to your Windows Environment Variables. You can also install [Gpg4Win](https://www.gpg4win.org/).
+
+<br />
+
+To sign a hash digest with your GPG key, open command prompt and use `--generate` to generate your hash digest.
+
+<br />
+
+If you navigate to the folder where the project files are, you do not need to specify a `--target`. It will automatically use the current directory as the target path.
+
+```shell
+xsum --generate --algo SHA256 --lowercase
+```
+
+<br />
+
+The command above will generate a new file named `SHA256.txt` and all hashes will be **lowercase**. After the new file is created, you can now sign it with GPG by running:
+
+```shell
+xsum --sign --key ABCD1234 --clearsign
+```
+
+<br />
+
+The above command will sign **SHA256.txt** using the GPG key **ABCD1234** with a **Clear Signature**. A new file will then be created which is named `SHA256.txt.asc`.
+
+If you do not specify a signature type ( `--clearsign` or `--detachsign` ), then it will default to generating a **Clear signature**.
+
+<br />
+
+If you wish to sign with a detached signature, execute:
+
+```shell
+xsum --sign --key ABCD1234 --detachsign
+```
+
+<br />
+
+To specify a target location to sign, execute:
+
+```shell
+xsum --sign --target "X:\Path\To\Folder\" --key ABCD1234 --detachsign
 ```
 
 <br />
@@ -642,6 +709,54 @@ With the above rules in place, any file ending with `.txt` will be excluded, and
 
 <br />
 
+### `--key`
+This argument defines which GPG key to use signing digests with `--sign`.
+
+<br />
+
+<details>
+<summary><sub>Read More</sub></summary>
+
+<br />
+
+xSum gives the ability to sign your hash digest using a **GPG Key**. This command does require that you have GPG installed on your system and added to your Windows Environment Variables.
+
+<br />
+
+```
+xsum --sign --target SHA256.txt --key ABCD1234
+```
+
+<br />
+
+The above command will use GPG key `ABCD1234` to sigh the hash digest file in the current directory with a **Detached Signature**. In return, you will see a new file:
+
+- **SHA256.txt.asc**
+
+<br />
+
+You can specify either `--detachsign` or `--clearsign`. If you want to sign your hash digest with a detached signature, execute:
+
+```shell
+xsum --sign --target SHA256.txt --key ABCD1234 --detachsign
+```
+
+<br />
+
+In return, you will see a new file:
+
+- **SHA256.txt.sig**
+
+<br />
+
+</details>
+
+<br />
+
+---
+
+<br />
+
 ### `--clearsign`
 The `--clearsign` argument creates a clearsign signature using GPG.
 
@@ -710,20 +825,6 @@ xSum does this automatically without the need of using GPG. But you must have GP
 
 <br />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Features
 The following features are highlighted to explain them in better detail:
 
@@ -776,6 +877,39 @@ If your specified input is not detected as a valid file or folder, the utility w
 <p align="center"><sub>Standard string hashing (sha1)</sub></p>
 
 <p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/6.png"></p>
+
+<br />
+
+---
+
+<br />
+
+## Automatic Checking
+xSum will be typically launched using **Command Prompt** or **Powershell** and executing all xSum commands through one of those methods.
+
+<br />
+
+However, xSum has the ability to be launched as a regular executable. When you click on the xsum.exe executable, the utility will automatically go into **Verify Mode**. In order to utilize this mode, xsum.exe must be in the same folder as a hash digest file, which can be any of the following:
+
+- SHA1.*.asc
+- SHA256.*.asc
+- SHA384.*.asc
+- SHA512.*.asc
+- MD5.*.asc
+
+<br />
+
+Once xSum finds the hash digest file, all of the files will be automatically checked.
+
+<br />
+
+<p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/8.png"></p>
+
+<br />
+
+If you attempt to run xsum.exe in a folder where a hash digest is not present, you will see the following screen:
+
+<p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/9.png"></p>
 
 <br />
 
@@ -862,4 +996,3 @@ xsum.exe --benchmark --algo sha256 --iterations 100000
 <br />
 
 <p align="center"><img style="width: 85%;text-align: center;border: 1px solid #353535;" src="Docs/images/2.png"></p>
-
