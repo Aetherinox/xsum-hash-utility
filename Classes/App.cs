@@ -2139,7 +2139,7 @@ namespace XSum
                 foreach ( var entry in dict_digest )
                 {
                     sb_output.Append        ( Environment.NewLine );
-                    string s5               = sf( " {0}  {1}", entry.Value, entry.Key );
+                    string s5               = sf( "{0}  {1}", entry.Value, entry.Key );
                     sb_output.Append        ( s5 );
 
                     // only shown if user uses --progress
