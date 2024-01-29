@@ -110,12 +110,6 @@ The following arguments are considered the **primary** arguments of this utility
 
 | Argument | Description |
 | --- | --- |
-| `-g, --generate` | Generate a new hash digest from the `--target <FILE>` |
-| `-v, --verify` | Verifies an existing hash digest and compares its contents with `--target <FILE>` |
-| `-s, --sign` | Signs an existing hash digest using GPG |
-
-| Argument | Description |
-| --- | --- |
 | ![Generate](https://img.shields.io/badge/Generate-%7F%E2%A0%80%E2%A0%80--g%2C%20%20----generate%E2%A0%80%E2%A0%80%7F-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=10) | Generate a new hash digest from the `--target <FILE>` |
 | ![Verify](https://img.shields.io/badge/Verify-%7F%E2%A0%80%E2%A0%80%E2%A0%80%20--v%2C%20%20----verify%E2%A0%80%E2%A0%80%7F%E2%A0%80-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=31) | Verify existing digest and compare folder with `--target <FILE>` |
 | ![Sign](https://img.shields.io/badge/Sign-%7F%E2%A0%80%E2%A0%80%E2%A0%80%20%E2%A0%80--s%2C%20%20----sign%E2%A0%80%E2%A0%80%E2%A0%80%7F%E2%A0%80-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=43) | Signs an existing hash digest using GPG |
