@@ -544,17 +544,19 @@ namespace XSum
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-l, --lowercase[/]", "[#Gray]Match and output hash value(s) in lower case instead of upper case.[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-c, --clipboard[/]", "[#Gray]Copies the output hash value to clipboard.[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-e, --exclude[/]", "[#Gray]Filter out files to not be hashed with -generate and -verify[/]\n" ) );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-k, --key[/]", "[#Gray]GPG key to use signing digests with --sign.[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-r, --clearsign[/]", "[#Gray]Sign the hash digest using GPG with a clear signature[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-n, --detachsign[/]", "[#Gray]Sign the hash digest using GPG with a detached signature[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-b, --benchmark[/]", "[#Gray]Performs benchmarks on a specified algorithm or all.[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-i, --iterations[/]", "[#Gray]Number of iterations to perform for --benchmark[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-f, --buffer[/]", "[#Gray]Buffer size to use for --benchmark[/]\n" ) );
-                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-x, --debug[/]", "[#Gray]Debugging information[/]\n" ) );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-m, --debug[/]", "[#Gray]Debugging information[/]\n" ) );
                 nl( );
 
                 wl( " Extra Tools:" );
 
                 nl( );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-x, --excludes[/]", "[#Gray]Print list of out-of-box excluded files[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-y, --list-keys[/]", "[#Gray]Prints all of the GPG keys in your keyring[/]\n" ) );
 
                 nl( );
@@ -1344,6 +1346,7 @@ namespace XSum
 
                                 case "--excludes":
                                 case "--ignores":
+                                case "-x":
                                     Ignores_GetList( true );
                                     return (int)ExitCode.Success;
 
@@ -1558,13 +1561,13 @@ namespace XSum
                                     return (int)ExitCode.ErrorGeneric;
 
                                 /*
-                                    CASE > DEBUG
+                                    CASE > DEBUG / Dev Mode
 
                                     Enter debug / developer mode.
                                 */
 
                                 case "--debug":
-                                case "-x":
+                                case "-m":
                                     arg_Debug_Enabled = true;
                                     break;
 

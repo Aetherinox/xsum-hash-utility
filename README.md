@@ -20,6 +20,7 @@
 - [Arguments](#arguments)
   - [Main Arguments](#main-arguments)
   - [Sub Arguments](#sub-arguments)
+  - [Other Arguments](#other-arguments)
 - [Syntax](#syntax)
     - [`--generate`](#--generate)
     - [`--verify`](#--verify)
@@ -122,20 +123,34 @@ Along with the main features listed above, the following sub-arguments can be us
 
 | Argument | Description |
 | --- | --- |
-| ![Target Badge](https://img.shields.io/badge/Target-%E2%A0%80%E2%A0%80--t%2C%20----target%20%E2%A0%80%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=42) | Target folder or file to generate / verify hash for |
-| ![Digest Badge](https://img.shields.io/badge/Digest-%E2%A0%80%E2%A0%80--d%2C%20----digest%20%E2%A0%80%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=44) | Hash digest which contains list of generated hashes |
-| ![Algo Badge](https://img.shields.io/badge/Algorithm-%7F%7F--a%2C%20----algorithm%7F%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=18) | Algorithm used to generate or verify hash |
-| ![Output Badge](https://img.shields.io/badge/Output-%E2%A0%80%E2%A0%80--o%2C%20----output%E2%A0%80%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=42) | Output log file for tasks |
-| ![Overwrite Badge](https://img.shields.io/badge/Overwrite-%7F%7F--w%2C%20----overwrite-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=17) | Overwrite results to `--output` instead of append |
-| ![Progress Badge](https://img.shields.io/badge/Progress-%E2%A0%80--p%2C%20----progress%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=25) | Displays each file being checked and additional info |
-| ![Lowercase Badge](https://img.shields.io/badge/Lowercase---l%2C%20----lowercase%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=15) | Match and output hash value(s) in lower case instead of upper case |
-| ![Clipboard Badge](https://img.shields.io/badge/Clipboard-%E2%A0%80--c%2C%20----clipboard-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=20) | Copies the output hash value to clipboard. |
-| ![Exclude Badge](https://img.shields.io/badge/Exclude-%E2%A0%80%E2%A0%80%7F--e%2C%20----exclude%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=34) | Filter out files to not be hashed with `-generate` and `-verify` |
-| ![Clearsign Badge](https://img.shields.io/badge/Clearsign-%7F--r%2C%20----clearsign%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=21) | Sign the hash digest using GPG with a clear signature |
-| ![DetachSign Badge](https://img.shields.io/badge/DetachSign---n%2C%20----detachsign-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=10) | Sign the hash digest using GPG with a detached signature |
-| ![Benchmark Badge](https://img.shields.io/badge/Benchmark-%7F--b%2C%20----benchmark%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=15) | Perform benchmarks on a specific algorithm or all. |
-| ![Iterations Badge](https://img.shields.io/badge/Iterations-%20%20%7F%7F--i%2C%20----iterations%7F%7F%20%20-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=14) | Number of iterations to perform for `--benchmark` |
-| ![Buffer Badge](https://img.shields.io/badge/Buffer-%7F%E2%A0%80%E2%A0%80--f%2C%20----buffer%E2%A0%80%E2%A0%80%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=44) | Buffer size to use for `--benchmark` |
+| ![Target](https://img.shields.io/badge/Target-%E2%A0%80%E2%A0%80--t%2C%20----target%20%E2%A0%80%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=42) | Target folder or file to generate / verify hash for |
+| ![Digest](https://img.shields.io/badge/Digest-%E2%A0%80%E2%A0%80--d%2C%20----digest%20%E2%A0%80%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=44) | Hash digest which contains list of generated hashes |
+| ![Algo](https://img.shields.io/badge/Algorithm-%7F%7F--a%2C%20----algorithm%7F%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=18) | Algorithm used to generate or verify hash |
+| ![Output](https://img.shields.io/badge/Output-%E2%A0%80%E2%A0%80--o%2C%20----output%E2%A0%80%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=42) | Output log file for tasks |
+| ![Overwrite](https://img.shields.io/badge/Overwrite-%7F%7F--w%2C%20----overwrite-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=17) | Overwrite results to `--output` instead of append |
+| ![Progress](https://img.shields.io/badge/Progress-%E2%A0%80--p%2C%20----progress%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=25) | Displays progress info for each task step |
+| ![Lowercase](https://img.shields.io/badge/Lowercase---l%2C%20----lowercase%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=15) | Match and output hash value(s) in lower case instead of upper case |
+| ![Clipboard](https://img.shields.io/badge/Clipboard-%E2%A0%80--c%2C%20----clipboard-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=20) | Copies the output hash value to clipboard. |
+| ![Exclude](https://img.shields.io/badge/Exclude-%E2%A0%80%E2%A0%80%7F--e%2C%20----exclude%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=34) | Exclude files not hashed with `-g` and `-v` |
+| ![GPG Key](https://img.shields.io/badge/GPG%20Key-%E2%A0%80--k%2C%20----key%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=20) | GPG key to use signing digests with --sign |
+| ![Clearsign](https://img.shields.io/badge/Clearsign-%7F--r%2C%20----clearsign%E2%A0%80-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=21) | Sign the hash digest using GPG with a clear signature |
+| ![DetachSign](https://img.shields.io/badge/DetachSign---n%2C%20----detachsign-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=10) | Sign the hash digest using GPG with a detached signature |
+| ![Benchmark](https://img.shields.io/badge/Benchmark-%7F--b%2C%20----benchmark%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=15) | Perform benchmarks on a specific algorithm or all. |
+| ![Iterations](https://img.shields.io/badge/Iterations-%20%20%7F%7F--i%2C%20----iterations%7F%7F%20%20-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=14) | Number of iterations to perform for `--benchmark` |
+| ![Buffer](https://img.shields.io/badge/Buffer-%7F%E2%A0%80%E2%A0%80--f%2C%20----buffer%E2%A0%80%E2%A0%80%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=44) | Buffer size to use for `--benchmark` |
+| ![Debug](https://img.shields.io/badge/Debug-%7F%E2%A0%80%E2%A0%80--m%2C%20----debug%E2%A0%80%E2%A0%80%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=44) | Debugging information |
+
+<br />
+
+## Other Arguments
+The following are a list of extra functionality:
+
+<br />
+
+| Argument | Description |
+| --- | --- |
+| ![Excludes](https://img.shields.io/badge/Excludes---x%2C%20----excludes-%23fc0352?style=for-the-badge&labelColor=%23990836) | Print list of out-of-box excluded files |
+| ![List Keys](https://img.shields.io/badge/List%20Keys---y%2C%20----list--keys-%23fc0352?style=for-the-badge&labelColor=%23990836) | Prints all of the GPG keys in your keyring |
 
 <br />
 
