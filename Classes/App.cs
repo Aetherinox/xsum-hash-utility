@@ -475,7 +475,7 @@ namespace XSum
                 wl( " @author        : " + AppInfo.Company + " " );
                 wl( " @version       : " + AppInfo.PublishVersion + " " );
                 wl( " @copyright     : " + AppInfo.Copyright + " " );
-                wl( " @website       : https://github.com/aetherinox/XSum" );
+                wl( " @website       : " + Cfg.Default.app_repo_url + " " );
                 nl( );
                 fg( ConsoleColor.DarkRed );
                 wl( " ------------------------------------------------------------------------------" );
