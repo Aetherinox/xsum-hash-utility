@@ -110,9 +110,9 @@ The following arguments are considered the **primary** arguments of this utility
 
 | Argument | Description |
 | --- | --- |
-| ![Generate](https://img.shields.io/badge/Generate-%7F%E2%A0%80%E2%A0%80--g%2C%20%20----generate%E2%A0%80%E2%A0%80%7F-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=10) | Generate a new hash digest from the `--target <FILE>` |
-| ![Verify](https://img.shields.io/badge/Verify-%7F%E2%A0%80%E2%A0%80%E2%A0%80%20--v%2C%20%20----verify%E2%A0%80%E2%A0%80%7F%E2%A0%80-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=31) | Verify existing digest and compare folder with `--target <FILE>` |
-| ![Sign](https://img.shields.io/badge/Sign-%7F%E2%A0%80%E2%A0%80%E2%A0%80%20%E2%A0%80--s%2C%20%20----sign%E2%A0%80%E2%A0%80%E2%A0%80%7F%E2%A0%80-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=43) | Signs an existing hash digest using GPG |
+| ![Generate](https://img.shields.io/badge/Generate-%7F--g%2C%20%20%20----generate%7F-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=27) | Generate a new hash digest from the `--target <FILE>` |
+| ![Verify](https://img.shields.io/badge/Verify-%7F%E2%A0%80%20--v%2C%20%20%20----verify%E2%A0%80%7F-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=48) | Verify existing digest and compare folder with `--target <FILE>` |
+| ![Sign](https://img.shields.io/badge/Sign-%7F%E2%A0%80%E2%A0%80%20%20--s%2C%20%20----sign%E2%A0%80%7F%E2%A0%80-%2349649c?style=for-the-badge&labelColor=%23354b77&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=60) | Signs an existing hash digest using GPG |
 
 <br />
 
@@ -149,8 +149,8 @@ The following are a list of extra functionality:
 
 | Argument | Description |
 | --- | --- |
-| ![Excludes](https://img.shields.io/badge/Excludes---x%2C%20----excludes-%23fc0352?style=for-the-badge&labelColor=%23990836) | Print list of out-of-box excluded files |
-| ![List Keys](https://img.shields.io/badge/List%20Keys---y%2C%20----list--keys-%23fc0352?style=for-the-badge&labelColor=%23990836) | Prints all of the GPG keys in your keyring |
+| ![Excludes](https://img.shields.io/badge/Excludes---x%2C%20----excludes-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=28) | Print list of out-of-box excluded files |
+| ![List Keys](https://img.shields.io/badge/List%20Keys---y%2C%20----list--keys-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=28) | Prints all of the GPG keys in your keyring |
 
 <br />
 
