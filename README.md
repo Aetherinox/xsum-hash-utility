@@ -138,7 +138,7 @@ Along with the main features listed above, the following sub-arguments can be us
 | ![Benchmark](https://img.shields.io/badge/Benchmark-%7F--b%2C%20----benchmark%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=15) | Perform benchmarks on a specific algorithm or all. |
 | ![Iterations](https://img.shields.io/badge/Iterations-%20%20%7F%7F--i%2C%20----iterations%7F%7F%20%20-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=14) | Number of iterations to perform for `--benchmark` |
 | ![Buffer](https://img.shields.io/badge/Buffer-%7F%E2%A0%80%E2%A0%80--f%2C%20----buffer%E2%A0%80%E2%A0%80%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=44) | Buffer size to use for `--benchmark` |
-| ![Debug](https://img.shields.io/badge/Debug-%7F%E2%A0%80%E2%A0%80--m%2C%20----debug%E2%A0%80%E2%A0%80%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=44) | Debugging information |
+| ![Debug](https://img.shields.io/badge/Debug-%7F%E2%A0%80%E2%A0%80--m%2C%20%20----debug%E2%A0%80%E2%A0%80%7F-%23fc0352?style=for-the-badge&labelColor=%23990836&logo=data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&logoWidth=48) | Debugging information |
 
 <br />
 
