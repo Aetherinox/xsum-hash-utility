@@ -1,7 +1,9 @@
 ﻿#region "Using"
 
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Management;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Cfg = xsum.Properties.Settings;
@@ -17,6 +19,47 @@ namespace XSum
 
     class AppInfo
     {
+
+        #region "Method: Parent Process Name"
+
+            /*
+                Get Parent Process
+
+                Via Command Prompt      : System.Diagnostics.Process (cmd)
+                Double-Clicking EXE     : System.Diagnostics.Process (explorer)
+                Visual Studio Debug     : VsDebugConsole
+
+
+                @usage                  : var parent = GetParentProcess( Process.GetCurrentProcess( ) );
+
+                                          parent.Id                 Process ID
+                                          parent.ProcessName        Process Name
+            */
+
+            public static Process GetParentProcess(Process process)
+            {
+                string query = "SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = " + process.Id;
+                using ( ManagementObjectSearcher mos = new ManagementObjectSearcher(query))
+                {
+                    foreach ( ManagementObject mo in mos.Get( ) )
+                    {
+                        if ( mo["ParentProcessId"] != null )
+                        {
+                            try
+                            {
+                                var id = Convert.ToInt32( mo["ParentProcessId"] );
+                                return Process.GetProcessById( id );
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+        #endregion
 
         /*
              AppInfo > Configuration Name

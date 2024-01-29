@@ -3,6 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Text;
+using System.Collections;
+using System.IO;
 
 namespace xsum
 {
@@ -26,7 +29,7 @@ namespace xsum
         }
 
         /*
-            Get String Array
+            String Array to String List
 
             converts a string[] into a string
         */
@@ -39,6 +42,57 @@ namespace xsum
                 result += item;
             }
             return result;
+        }
+
+        /*
+            Dictionary to String List
+
+            converts a string[] into a string
+        */
+
+        static public string GetStringDictionary( IDictionary dict )
+        {
+            string str_lst          = "";
+            var dict_Ignore         = dict;
+
+            StringBuilder sb        = new StringBuilder( );
+
+            int i_cur               = 0;
+            int i_max               = dict_Ignore.Keys.Count;
+
+            foreach ( string file in dict_Ignore.Keys )
+            {
+                i_cur++;
+                sb.Append( ( i_cur == i_max ) ? file : file + ", " );
+                str_lst = sb.ToString( );
+            }
+
+            return str_lst;
+
+        }
+
+        /*
+            Get Path by Wildcard
+
+            @arg        : str path
+            @arg        : str wildcard
+
+            @usage      : string[] files = Helpers.GetWildcardFiles( @xsum_path_dir, @wildcard );
+                          string[] files = Helpers.GetWildcardFiles( @xsum_path_dir, @"SHA*.txt" );
+        */
+
+        static public string[] GetWildcardFiles( string path, string wildcard )
+        {
+            string dir_root         = path; 
+            string search_wildcard  = wildcard;
+
+            string pattern          = Path.GetFileName( search_wildcard ); 
+            string relDir           = search_wildcard.Substring ( 0, search_wildcard.Length - pattern.Length );
+            string path_absolute    = Path.GetFullPath ( Path.Combine ( dir_root ,relDir ) );
+
+            string[] files          = Directory.GetFiles ( path_absolute, pattern, SearchOption.TopDirectoryOnly );
+
+            return files;
         }
 
         /*

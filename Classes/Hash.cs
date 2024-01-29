@@ -354,7 +354,7 @@ namespace XSum
             SHA2    : FIPS 180
             SHA3    : FIPS 202
 
-            @usage  : string hash = Hash.GetHash_MD5_SHA2( "sha256", "x:\path\to\file.xxxx" );
+            @usage  : string hash = Hash.GetHash_Universe( "sha256", "x:\path\to\file.xxxx" );
 
             @arg    : str path
             @ret    : str
@@ -362,11 +362,11 @@ namespace XSum
 
         #region "Cryptography: Hash - File (Universal)"
 
-            public static string GetHash_MD5_SHA2( string algorithm, string path )
+            public static string GetHash_Universe( string algorithm, string path )
             {
                 using ( FileStream stream = File.OpenRead( path ) )
                 {
-                    using (var hash = (HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
+                    using ( var hash = (HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
                     {
                         byte[] bytes    = hash.ComputeHash( stream );
                         return BytesToString( bytes );
@@ -378,53 +378,44 @@ namespace XSum
 
 
 
-        public static string CreateMd5ForFolder(string path)
+        public static string CreateMd5ForFolder( string path )
         {
             // assuming you want to include nested folders
-            var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories)
-                                 .OrderBy(p => p).ToList();
+            var files = Directory.GetFiles( path, "*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
 
-            MD5 md5 = MD5.Create();
+            MD5 md5 = MD5.Create( );
 
-            for(int i = 0; i < files.Count; i++)
+            for( int i = 0; i < files.Count; i++ )
             {
-                string file = files[i];
-        
-                // hash path
-                string relativePath = file.Substring(path.Length + 1);
-                byte[] pathBytes = Encoding.UTF8.GetBytes(relativePath.ToLower());
-                md5.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
+                string file             = files[ i ];
+                string path_relative    = file.Substring( path.Length + 1 );
+                byte[] path_bytes       = Encoding.UTF8.GetBytes( path_relative.ToLower( ) );
+
+                md5.TransformBlock( path_bytes, 0, path_bytes.Length, path_bytes, 0 );
         
                 // hash contents
-                byte[] contentBytes = File.ReadAllBytes(file);
+                byte[] bytes_content = File.ReadAllBytes( file );
                 if (i == files.Count - 1)
-                    md5.TransformFinalBlock(contentBytes, 0, contentBytes.Length);
+                    md5.TransformFinalBlock( bytes_content, 0, bytes_content.Length );
                 else
-                    md5.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
+                    md5.TransformBlock( bytes_content, 0, bytes_content.Length, bytes_content, 0 );
             }
     
             return BitConverter.ToString(md5.Hash).Replace("-", "").ToLower();
         }
 
-        private static string GetHash(HashAlgorithm hashAlgorithm, string input)
+        private static string GetHash( HashAlgorithm algorithm, string input )
         {
 
-            // Convert the input string to a byte array and compute the hash.
-            byte[] data = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(input));
+            byte[] data     = algorithm.ComputeHash( Encoding.UTF8.GetBytes( input ) );
+            var sb          = new StringBuilder( );
 
-            // Create a new Stringbuilder to collect the bytes
-            // and create a string.
-            var sBuilder = new StringBuilder();
-
-            // Loop through each byte of the hashed data
-            // and format each one as a hexadecimal string.
-            for (int i = 0; i < data.Length; i++)
+            for ( int i = 0; i < data.Length; i++ )
             {
-                sBuilder.Append(data[i].ToString("x2"));
+                sb.Append( data[ i ].ToString( "x2" ) );
             }
 
-            // Return the hexadecimal string.
-            return sBuilder.ToString();
+            return sb.ToString( );
         }
 
         public static string CreateDirectoryMd5( string srcPath )
@@ -459,13 +450,10 @@ namespace XSum
 
 
         // Verify a hash against a string.
-        private static bool VerifyHash(HashAlgorithm hashAlgorithm, string input, string hash)
+        private static bool VerifyHash( HashAlgorithm algorithm, string input, string hash )
         {
-            // Hash the input.
-            var hashOfInput = GetHash(hashAlgorithm, input);
-
-            // Create a StringComparer an compare the hashes.
-            StringComparer comparer = StringComparer.OrdinalIgnoreCase;
+            var hashOfInput             = GetHash( algorithm, input );
+            StringComparer comparer     = StringComparer.OrdinalIgnoreCase;
 
             return comparer.Compare(hashOfInput, hash) == 0;
         }
@@ -475,23 +463,22 @@ namespace XSum
             Confirmed against sha256sum
         */
 
-        static public string SHA256Hash( string directory )
+        static public string SHA256Hash( string folder )
         {
 
-            if ( Directory.Exists( directory ) )
+            if ( Directory.Exists( folder ) )
             {
 
-                var files = Directory.GetFiles( directory, "*", SearchOption.AllDirectories).OrderBy(p => p).ToArray();
-
-                var s = new byte[64];
+                var files    = Directory.GetFiles( folder, "*", SearchOption.AllDirectories).OrderBy( p => p ).ToArray();
+                var s       = new byte[ 64 ];
                 byte[] m;
                 byte[] x;
 
-                foreach (var fInfo in files)
+                foreach ( var file in files )
                 {
-                    byte[] pathBytes = Encoding.UTF8.GetBytes( fInfo );
+                    byte[] path_bytes = Encoding.UTF8.GetBytes( file );
 
-                    Console.WriteLine( BytesToString( pathBytes ) );
+                    Console.WriteLine( BytesToString( path_bytes ) );
                     try
                     {
                         using ( IncrementalHash sha256 = IncrementalHash.CreateHash( HashAlgorithmName.SHA256 ) )
@@ -537,7 +524,7 @@ namespace XSum
                 var files                   = Directory.GetFiles( folder, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
                 using (var file_total       = (HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
                 {
-                    int bytes_read_chunk    = 20;
+                    int bytes_read_chunk    = 2048;
 
                     foreach ( string file in files )
                     {
@@ -548,7 +535,7 @@ namespace XSum
                                 byte[] bytes_content    = new byte[ bytes_read_chunk ];
                                 int bytes_read          = 0;
 
-                                // read file in chunks for optimization
+                                // (optimization) read file in chunks
                                 while ( ( bytes_read = file_contents.Read( bytes_content, 0, bytes_read_chunk ) ) > 0 )
                                 {
                                     file_total.TransformBlock   ( bytes_content, 0, bytes_read, bytes_content, 0 );
@@ -570,7 +557,7 @@ namespace XSum
                     }
 
                     // close total hash block
-                    file_total.TransformFinalBlock(new byte[ 0 ], 0, 0 );
+                    file_total.TransformFinalBlock( new byte[ 0 ], 0, 0 );
 
                     return BytesToString( file_total.Hash );
                 }
@@ -596,21 +583,19 @@ namespace XSum
             static public string GetHash_MD5_Directory( string directory )
             {
 
-                string aaaa;
-                string bbbb;
-
                 var files               = Directory.GetFiles( directory, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
                 MD5 file_total          = MD5.Create( );
                 int bytesToReadAtOnce   = 2048;
-                var buffer              = new byte[8192];
+                var buffer              = new byte[ 8192 ];
 
                 foreach ( string file in files )
                 {
                     MD5 file_single = MD5.Create( );
 
                     // hash contents
-                    // NOTE: This is nice for small files, but a memory eater for big files
-                    byte[] file_bytes = File.ReadAllBytes( file );
+                    // NOTE: Good for small files, high memory usage for large files
+                    // may cause issues for other algorithms
+                    // byte[] file_bytes = File.ReadAllBytes( file );
                     // file_single.TransformFinalBlock( file_bytes, 0, file_bytes.Length ); does not work with md5
 
                     using ( FileStream inputFile = File.OpenRead( file ) )
@@ -634,7 +619,7 @@ namespace XSum
                     }
                 }
 
-                // close total hash block
+                // close hash block
                 file_total.TransformFinalBlock(new byte[ 0 ], 0, 0 );
 
                 return BytesToString( file_total.Hash );

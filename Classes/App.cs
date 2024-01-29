@@ -22,12 +22,14 @@ using System.Net.Security;
 using static System.Net.Mime.MediaTypeNames;
 using System.Text.RegularExpressions;
 using System.Security.Principal;
+using System.Security.Cryptography;
+using System.Security.Policy;
+using System.Management;
 
 #endregion
 
 namespace XSum
 {
-
 
     public class App
     {
@@ -72,7 +74,6 @@ namespace XSum
         #endregion
 
 
-
         /*
             Define > Delegate
 
@@ -81,7 +82,7 @@ namespace XSum
 
         #region "Define: Delegates"
 
-            delegate string del_sf          ( string format, params object[] arg );
+        delegate string del_sf          ( string format, params object[] arg );
             static del_sf       sf          = String.Format;
 
             delegate void del_write         ( string format, params object[] arg );
@@ -260,12 +261,15 @@ namespace XSum
 
         #region "Method: Exec Powershell Queries"
 
-            static public string PowershellQ( string[] queries )
+            static public string PowershellQ( string[] queries, bool bShowOutput = false )
             {
                 using ( PowerShell ps = PowerShell.Create( ) )
                 {
                     for ( int i = 0; i < queries.Length; i++ ) 
                     {
+                        if ( bShowOutput )
+                            Console.WriteLine( "PowerShell Query: " + queries[ i ] );
+
                         ps.AddScript    ( queries[ i ] );
                         Log.Send        ( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ PSQ.Execute ]", String.Format( "{0}", queries[ i ] ) );
                     }
@@ -280,6 +284,9 @@ namespace XSum
                         {
                             Log.Send( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ PSQ.Result ]", String.Format( "{0}", PSItem ) );
                             sb.AppendLine( PSItem.ToString( ) );
+
+                            if ( bShowOutput )
+                                Console.WriteLine( PSItem.ToString( ) );
                         }
                     }
 
@@ -368,19 +375,40 @@ namespace XSum
         #endregion
 
 
+        #region "Predefined Dictionary Lists"
 
-        /*
-            pre-defined ignore list
-            --exclude argument can add additional entries
-        */
+            /*
+                pre-defined hash list
+            */
 
-        private static Dictionary<string, bool> dict_Ignored = new Dictionary<string, bool>
-        {
-            { "SHA256.txt", true },
-            { "SHA256.sig", true },
-            { ".gitignore", true },
-            { xsum_path_exe, true },
-        };
+            private static Dictionary<string, bool> dict_HashFiles = new Dictionary<string, bool>
+            {
+                { "SHA*.txt",       true },
+                { "MD5*.txt",       true },
+            };
+
+
+            /*
+                pre-defined ignore list
+                --exclude argument can add additional entries
+            */
+
+            private static Dictionary<string, bool> dict_Ignored = new Dictionary<string, bool>
+            {
+                { ".gitignore",         true },
+                { ".github",            true },
+                { ".gitea",             true },
+                { "SHA*.asc",           true },
+                { "SHA*.sig",           true },
+                { "MD5*.asc",           true },
+                { "MD5*.sig",           true },
+                { "SHA256.txt",         true },
+                { "SHA256.sig",         true },
+                { xsum_path_exe,        true },
+            };
+
+        #endregion
+
 
         /*
             Define > Global Settings
@@ -392,6 +420,7 @@ namespace XSum
             static bool     arg_GenMode_Enabled     = false;                        // --generate arg specified
             static bool     arg_VerifyMode_Enabled  = false;                        // --verify arg specified
             static bool     arg_SignMode_Enabled    = false;                        // --sign arg specified
+            static bool     arg_SelfVerify_Enabled  = false;                        // self verification enabled
 
             static bool     arg_Target_Enabled      = false;                        // --target specified
             static string   arg_Target_File         = null;                         // --verify <FILE> || --target <FILE> location
@@ -401,7 +430,8 @@ namespace XSum
             static bool     arg_Debug_Enabled       = false;                        // --debug arg specified
             static bool     arg_Overwrite_Enabled   = false;                        // --overwrite arg specified
             static bool     arg_Clipboard_Enabled   = false;                        // --clipboard arg specified
-            static string   arg_Algo_List           = Hash_GetSupported( );         // list of supported algorithms
+            static string   arg_Algo_List           = Hash_GetList( );              // list of supported algorithms
+            static string   arg_Ignored_List        = Ignores_GetList( );           // list of ignored files
             static bool     arg_Output_Enabled      = false;                        // --output arg specified
             static string   arg_Output_File         = null;                         // --output <FILE> location
             static bool     arg_Benchmark_Enabled   = false;                        // --benchmark arg specified
@@ -421,6 +451,7 @@ namespace XSum
             static string   arg_GPG_Key             = null;                         // --gpg arg specified
             static bool     arg_GPG_ClearSign       = false;                        // --gpg clearsign file
             static bool     arg_GPG_DetachSign      = false;                        // --gpg detachsign file
+            static string   arg_GPG_ListKeys        = "long";                       // --gpg list-keys
 
         #endregion
 
@@ -466,15 +497,23 @@ namespace XSum
                 wl( " Usage:" );
                 nl( );
 
-                c0( sf( "   <#Yellow>{0} --generate --target [ DIR|FILE|STRING ] [ --digest HASH_FILE ] </>\n", xsum_path_exe ) );
+                c0( sf( "   <#Yellow>{0} --generate [ --target DIR|FILE|STRING ] [ --digest HASH_FILE ] </>\n", xsum_path_exe ) );
                 c0( sf( "          <#Yellow>[ --algo MD5|SHA1|SHA256|SHA384|SHA512 ] [ --output FILE ] </>\n" ) );
-                c0( sf( "          <#Yellow>[ --lowercase ] [ --overwrite ] [ --progress ] [--clip]</>\n" ) );
+                c0( sf( "          <#Yellow>[ --lowercase ] [ --overwrite ] [ --progress ] [ --clip ]</>\n" ) );
 
                 nl( );
 
-                c0( sf( "   <#Yellow>{0} --verify --target [ DIR|FILE|STRING ] [ --digest HASH_FILE ]</>\n", xsum_path_exe ) );
+                c0( sf( "   <#Yellow>{0} --verify [ --target DIR|FILE|STRING ] [ --digest HASH_FILE ]</>\n", xsum_path_exe ) );
                 c0( sf( "          <#Yellow>[ --algo MD5|SHA1|SHA256|SHA384|SHA512 ] [ --output FILE ]</>\n" ) );
-                c0( sf( "          <#Yellow>[ --lowercase ] [ --overwrite ] [ --progress ] [--clip]</>\n" ) );
+                c0( sf( "          <#Yellow>[ --lowercase ] [ --overwrite ] [ --progress ] [ --clip ]</>\n" ) );
+
+                nl( );
+                c0( sf( "   <#Yellow>{0} --sign [ --target FILE_HASH_DIGEST ] [ --gpg GPG_KEY ]</>\n", xsum_path_exe ) );
+                c0( sf( "          <#Yellow>[ --clearsign | --detachsign ]</>\n" ) );
+
+                nl( );
+
+                c0( sf( "   <#Yellow>{0} [ --list-keys SHORT | LONG ]</>\n", xsum_path_exe ) );
 
                 nl( );
 
@@ -484,16 +523,17 @@ namespace XSum
 
                 nl( );
 
-                wl( " Commands:" );
+                wl( " Arguments:" );
 
                 nl( );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-g, --generate[/]", "[#Gray]Compute hash for folder, files, or strings and generate new hash digest[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-v, --verify[/]", "[#Gray]Verify specified hash digset with files in path[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-s, --sign[/]", "[#Gray]Sign an existing diget with a GPG keypair[/]\n" ) );
+                nl( );
+
+                wl( " Sub Arguments:" );
 
                 nl( );
-                c0( " <#Yellow>--verify</>" );
-                nl( 2 );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-t, --target[/]", "[#Gray]Target folder or file to generate / verify hash for[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-d, --digest[/]", "[#Gray]Hash digest which contains list of generated hashes[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-a, --algorithm[/]", "[#Gray]Algorithm used to verify --digest[/]\n" ) );
@@ -503,9 +543,30 @@ namespace XSum
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-p, --progress[/]", "[#Gray]Displays each file being checked and additional info[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-l, --lowercase[/]", "[#Gray]Match and output hash value(s) in lower case instead of upper case.[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-c, --clipboard[/]", "[#Gray]Copies the output hash value to clipboard.[/]\n" ) );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-e, --exclude[/]", "[#Gray]Filter out files to not be hashed with -generate and -verify[/]\n" ) );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-r, --clearsign[/]", "[#Gray]Sign the hash digest using GPG with a clear signature[/]\n" ) );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-n, --detachsign[/]", "[#Gray]Sign the hash digest using GPG with a detached signature[/]\n" ) );
                 c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-b, --benchmark[/]", "[#Gray]Performs benchmarks on a specified algorithm or all.[/]\n" ) );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-i, --iterations[/]", "[#Gray]Number of iterations to perform for --benchmark[/]\n" ) );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-f, --buffer[/]", "[#Gray]Buffer size to use for --benchmark[/]\n" ) );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-x, --debug[/]", "[#Gray]Debugging information[/]\n" ) );
+                nl( );
 
-                wl( "" );
+                wl( " Extra Tools:" );
+
+                nl( );
+                c2( sf( " {0,1} {1,-33} {2,30}", "", "[#Red]-y, --list-keys[/]", "[#Gray]Prints all of the GPG keys in your keyring[/]\n" ) );
+
+                nl( );
+                wl( " Available Algorithms:" );
+                c2( sf( "   [#Yellow]" + arg_Algo_List + "[/]\n" ) );
+
+                nl( );
+
+                wl( " Ignore List:" );
+                c2( sf( "   [#Yellow]" + arg_Ignored_List + "[/]\n" ) );
+
+
                 wl( "" );
                 fg( ConsoleColor.DarkRed );
                 wl( " ------------------------------------------------------------------------------" );
@@ -547,9 +608,11 @@ namespace XSum
 
             /*
                 Dictionary > Get Hash Supported List
+
+                @ret        : str
             */
 
-            static string Hash_GetSupported( )
+            static string Hash_GetList( )
             {
                 string str_lst          = "";
                 var dict_GetHash        = Dict_Hashes_Populate( );
@@ -569,6 +632,53 @@ namespace XSum
                 return str_lst;
             }
 
+            /*
+                Ignores > Get List
+
+                @arg        : bool bList
+                              returns ignored files in a dotted list
+
+                @ret        : str
+            */
+
+            static string Ignores_GetList( bool bList = false )
+            {
+                string str_lst          = "";
+                StringBuilder sb        = new StringBuilder( );
+
+                int lst_i_cur           = 0;
+                int lst_i_max           = dict_Ignored.Keys.Count;
+
+                if ( bList )
+                {
+                    nl( );
+                    c2( sf( " {0,-23} {1,-30}", "[#Blue]Ignore List[/]", "The following is a list of pre-registered ignore files:[/]" ) );
+                    nl( );
+                    c2( sf( " {0,-23} {1,-30}", "[#Blue][/]", "These file patterns will be skipped when generating or verifying hash digests[/]" ) );
+                    nl( );
+                    nl( );
+
+                    foreach ( string file in dict_Ignored.Keys )
+                    {
+                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "· [#Yellow]" + file + "[/]" ) );
+                        nl( );
+                    }
+                }
+                else
+                {
+                    foreach ( string file in dict_Ignored.Keys )
+                    {
+                        lst_i_cur++;
+                        sb.Append( ( lst_i_cur == lst_i_max ) ? file : file + ", " );
+                        str_lst = sb.ToString( );
+                    }
+
+                    return str_lst;
+                }
+
+                return String.Empty;
+            }
+
         #endregion
 
 
@@ -581,6 +691,39 @@ namespace XSum
 
             static int Main( string[] args )
             {
+
+                /*
+                    This is for automatic verification. It's only used by the developer.
+                    I may make this work for users some day.
+                */
+
+                string[] files = System.IO.Directory.GetFiles( xsum_path_dir, "SHA*.txt.asc", System.IO.SearchOption.TopDirectoryOnly );
+
+                if ( files.Length > 0 )
+                {
+                    var ProcParent = AppInfo.GetParentProcess( Process.GetCurrentProcess( ) );
+                    if ( ProcParent.ProcessName == "explorer" )
+                    {
+
+                        foreach( string file in files )
+                        {
+                            string file_name            = Path.GetFileName( file );
+
+                            nl( );
+                            c2( sf( " {0,-23} {1,-30}", "[#Blue]Verify[/]", "Found [#Yellow]" + file_name + "[/] - Starting verification[/]" ) );
+                            nl( );
+
+                            arg_SelfVerify_Enabled      = true;
+                            arg_Algo                    = "sha256";
+                            arg_Digest_Enabled          = true;
+                            arg_Digest_File             = file_name;
+                            arg_Target_File             = xsum_path_dir;
+                            arg_LC_Enabled              = true;
+
+                            Action_Verify( );
+                        }
+                    }
+                }
 
                 /*
                     No arguments supplied by user
@@ -697,10 +840,15 @@ namespace XSum
 
                                     break;
 
+                                /*
+                                    CASE > TARGET
+
+                                    an alternative method to specify a target file
+                                */
+
                                 case "--target":
                                 case "-t":
                                 case "--source":
-                                case "-s":
                                     if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled && !arg_SignMode_Enabled )
                                     {
                                         nl( );
@@ -726,17 +874,14 @@ namespace XSum
                                     break;
 
                                 /*
-                                    CASE > Verbose
+                                    CASE > Progress
 
-                                    Enable verify mode. Specify --digest <HASH_FILE> to compare the target
-                                    folder with the entries in the hash digest file.
-
-                                    Details mode lists all the files being checked and each hash.
+                                    Displays a detailed list of everything going on with a task.
                                 */
 
                                 case "--progress":
                                 case "-p":
-                                    if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled )
+                                    if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled && !arg_SignMode_Enabled  )
                                     {
                                         nl( );
                                         c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--generate[/] or [#Yellow]--verify[/] arguments[/]" ) );
@@ -765,14 +910,11 @@ namespace XSum
                                 /*
                                     CASE > SIGN
 
-                                    Enable verify mode. Specify --digest <HASH_FILE> to compare the target
-                                    folder with the entries in the hash digest file.
-
-                                    Details mode lists all the files being checked and each hash.
+                                    Enable --sign mode.
                                 */
 
                                 case "--sign":
-
+                                case "-s":
                                     arg_SignMode_Enabled    = true;
 
                                     for ( i = i + 1; i < args.Length ; i++ )
@@ -837,11 +979,13 @@ namespace XSum
                                 /*
                                     CASE > GPG Key
 
-                                    gpg key file / id
+                                    gpg key file / id used with --sign
                                 */
 
                                 case "--gpg":
-                                case "-gpg":
+                                case "--gpg-key":
+                                case "--key":
+                                case "-k":
                                     if ( !arg_SignMode_Enabled )
                                     {
                                         nl( );
@@ -876,13 +1020,58 @@ namespace XSum
                                     break;
 
                                 /*
+                                    CASE > GPG Key
+
+                                    a shortcut to the GPG command-line to list all of the keys in the GPG keyring
+                                */
+
+                                case "--gpg-list-keys":
+                                case "--list-keys":
+                                case "--keys":
+                                case "-y":
+                                    if ( !FindProgram( "gpg.exe" ) )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Cannot sign digests without [#Yellow]gpg.exe[/]" ) );
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "You must install [#Yellow]GPG[/] and add it to your Windows[/]" ) );
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "environment variables before you can use this feature.[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    for ( i = i + 1; i < args.Length ; i++ )
+                                    {
+
+                                        string property     = args[ i ];
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        if ( !String.IsNullOrEmpty( property ) )
+                                            arg_GPG_ListKeys    = property;
+                                    }
+
+                                    string ps_query     = "gpg --list-secret-keys --keyid-format=\"" + arg_GPG_ListKeys + "\"";
+                                    string[] ps_exec    = new String[] { ps_query };
+                                    string ps_result    = PowershellQ( ps_exec, true );
+
+                                    return (int)ExitCode.Success;
+
+                                /*
                                     CASE > GPG > Clearsign
 
-                                    gpg key file / id
+                                    used in combination with --sign to create a clearsign signature
                                 */
 
                                 case "--clearsign":
+                                case "--clear":
                                 case "-r":
+                                case "-cs":
                                     if ( !arg_SignMode_Enabled )
                                     {
                                         nl( );
@@ -899,11 +1088,13 @@ namespace XSum
                                 /*
                                     CASE > GPG > Detach Sign
 
-                                    gpg key file / id
+                                    used in combination with --sign to create a detached signature
                                 */
 
                                 case "--detachsign":
+                                case "--detach":
                                 case "-n":
+                                case "-ds":
                                     if ( !arg_SignMode_Enabled )
                                     {
                                         nl( );
@@ -998,7 +1189,6 @@ namespace XSum
                                         return (int)ExitCode.ErrorMissingArg;
                                     }
 
-
                                     break;
 
                                 /*
@@ -1008,6 +1198,7 @@ namespace XSum
                                 */
 
                                 case "--lowercase":
+                                case "--lower":
                                 case "-l":
                                     if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled )
                                     {
@@ -1050,6 +1241,7 @@ namespace XSum
 
                                 case "--clipboard":
                                 case "--clip":
+                                case "--copy":
                                 case "-c":
                                     if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled )
                                     {
@@ -1112,6 +1304,7 @@ namespace XSum
                                 */
 
                                 case "--exclude":
+                                case "--ignore":
                                 case "-e":
                                     if ( !arg_VerifyMode_Enabled && !arg_GenMode_Enabled )
                                     {
@@ -1142,6 +1335,17 @@ namespace XSum
                                     }
 
                                     break;
+
+                                /*
+                                    CASE > IGNORE / EXCLUDE LIST
+
+                                    returns a list of registered excluded files
+                                */
+
+                                case "--excludes":
+                                case "--ignores":
+                                    Ignores_GetList( true );
+                                    return (int)ExitCode.Success;
 
                                 /*
                                     CASE > BENCHMARK
@@ -1193,7 +1397,6 @@ namespace XSum
 
                                             return (int)ExitCode.Success;
                                         }
-
                                     }
 
                                     break;
@@ -1205,6 +1408,7 @@ namespace XSum
                                 */
 
                                 case "--iterations":
+                                case "--iteration":
                                 case "-i":
                                     if ( !arg_Benchmark_Enabled )
                                     {
@@ -1272,9 +1476,9 @@ namespace XSum
                                     break;
 
                                 /*
-                                    CASE > ROUNDS
+                                    CASE > BUFFER
 
-                                    benchmark rounds
+                                    the size of the buffer to use in combination with --benchmark
                                 */
 
                                 case "--buffer":
@@ -1360,7 +1564,7 @@ namespace XSum
                                 */
 
                                 case "--debug":
-                                case "-xdb":
+                                case "-x":
                                     arg_Debug_Enabled = true;
                                     break;
 
@@ -1372,7 +1576,7 @@ namespace XSum
 
                     if ( inputFile.Count > 0 && arg_Output_File != null )
                     {
-               
+                        // not needed right now
                     }
 
 
@@ -1413,6 +1617,7 @@ namespace XSum
 
                             Benchmark.Start( buffer, iterations );
                         }
+
                         return (int)ExitCode.Success;
                     }
 
@@ -1497,31 +1702,7 @@ namespace XSum
 
         #region "Dictionary: Ignored Files"
 
-            /*
-                Ignored Files > Get List
 
-                This reports back to the user what files have been ignored with the current task.
-            */
-
-            static string Ignored_GetList( )
-            {
-                string str_lst          = "";
-                var dict_Ignore         = dict_Ignored;
-
-                StringBuilder sb        = new StringBuilder( );
-
-                int i_cur               = 0;
-                int i_max               = dict_Ignore.Keys.Count;
-
-                foreach ( string file in dict_Ignore.Keys )
-                {
-                    i_cur++;
-                    sb.Append( ( i_cur == i_max ) ? file : file + ", " );
-                    str_lst = sb.ToString( );
-                }
-
-                return str_lst;
-            }
 
         #endregion
 
@@ -1625,7 +1806,18 @@ namespace XSum
 
             if ( String.IsNullOrEmpty( arg_Target_File ) )
             {
-                arg_Target_File = xsum_path_dir;
+
+                /*
+                nl( );
+                c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "No [#Yellow]--target[/] file, folder, or string specified\n" ) );
+                c2( sf( " {0,-25} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --generate --target <FILE|FOLDER|STRING>[/]\n" ) );
+                c2( sf( " {0,-25} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --verify --target <FILE|FOLDER>[/]" ) );
+                nl( );
+
+                return (int)ExitCode.ErrorMissingArg;
+                */
+
+                arg_Target_File = @".\";
             }
 
             /*
@@ -1765,7 +1957,7 @@ namespace XSum
             {
                 // See note above [flagged for deprecation]
 
-                // file_path_search         = Path.GetDirectoryName( Path.Combine( xsum_path_dir, arg_Target_File ) );      // H:\CSharpProjects\XSum\bin\Release\net481
+                //file_path_search         = Path.GetDirectoryName( Path.Combine( xsum_path_dir, arg_Target_File ) );      // H:\CSharpProjects\XSum\bin\Release\net481
                 //file_path_search          = Path.Combine( file_path_search, arg_Target_File );
             }
 
@@ -1814,6 +2006,11 @@ namespace XSum
                     return (int)ExitCode.ErrorGeneric;
                 }
 
+                /*
+                    Loop all files in file_path_search directory.
+                    Add all files to the hash digest.
+                */
+
                 for ( int i = 0; i < files.Length; i++ )
                 {
                     var ( name, hash ) = NewHash_File( files[ i ], targ_bIsFolder, targ_bIsFile );
@@ -1821,7 +2018,22 @@ namespace XSum
                         continue;
 
                     if ( !dict_digest.Any( x => x.Key.Contains( name ) ) )
+                    {
+
+                        /*
+                            If you leave --target blank and app uses current local directory, it will prefix "../" to tbe beginning
+                            of each entry added to the SHA txt digest.
+
+                        e.g.:   xxxxxx  ../Path/To/File.xxx
+
+                            Strip ../ characters, otherwise --verify will fail
+                        */
+
+                        if ( name.StartsWith( "../" ) )
+                            name = name.Replace("../", string.Empty );
+
                         dict_digest.Add( name, hash );
+                    }
                 }
             }
 
@@ -1834,6 +2046,10 @@ namespace XSum
                 var ( name, hash ) = NewHash_File( file_path_search );
                 if ( hash == null || name == null )
                     return (int)ExitCode.ErrorGeneric;
+
+                /*
+                    Single file, add to digest
+                */
 
                 if ( !dict_digest.Any( x => x.Key.Contains( name ) ) )
                     dict_digest.Add( name, hash );
@@ -2128,16 +2344,64 @@ namespace XSum
 
             if ( String.IsNullOrEmpty( arg_Target_File ) )
             {
-                arg_Target_File = xsum_path_dir;
+
+                /*
+                    use wildcard dictionary to search for hash digest in case --target is not specified
+                */
+
+                foreach ( string wildcard in dict_HashFiles.Keys )
+                {
+                    string[] files              = Helpers.GetWildcardFiles( @xsum_path_dir, @wildcard );
+
+                    for ( int i = 0; i < files.Length; i++ )
+                    {
+                        string item_path_full   = files[ i ];
+                        arg_Target_File         = item_path_full;
+                    }
+                }
+            }
+
+            /*
+                GPG > Key
+
+                user did not specify a gpg key or email address
+            */
+
+
+            if ( String.IsNullOrEmpty( arg_GPG_Key ) )
+            {
+                nl( );
+                c2( sf( " {0,-26} {1,-30}", "[#Red]Error:[/]", "Did not specify [#Yellow]--gpg <KEY_ID>[/] which should be either a GPG key, or email." ) );
+                nl( );
+                c2( sf( " {0,-28} {1,-30}", "[#DarkGray] ", xsum_path_exe + " --sign --gpg 1234ABCD[/]" ) );
+                nl( );
+
+                return (int)ExitCode.ErrorMissingArg;
             }
 
             /*
                 GPG > Clear Sign (default)
             */
 
-            string gpg_sign_type            = "Clear Signature";
-            string gpg_sign_output          = String.Format( "{0}.{1}", arg_Target_File, "asc" );
-            string ps_query                 = "gpg --batch --yes -q --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output + "\" --clearsign \"" + arg_Target_File + "\"";
+
+            if ( !File.Exists( arg_Target_File ) )
+            {
+                nl( );
+                c2( sf( " {0,-26} {1,-30}", "[#Red]Error:[/]", "Could not locate a vaid file in [#Yellow]" + arg_Target_File + "[/]" ) );
+                nl( );
+                c2( sf( " {0,-26} {1,-30}", "[#Red][/]", "[#DarkGray]Have you used [#Yellow]--generate[#DarkGray] on the project folder yet?[/]" ) );
+                nl( );
+
+                return (int)ExitCode.ErrorMissingArg;
+            }
+
+            /*
+                GPG > Clear Signature or Detached
+            */
+
+            string gpg_sign_type        = "Clear Signature";
+            string gpg_sign_output      = String.Format( "{0}.{1}", arg_Target_File, "asc" );
+            string ps_query             = "gpg --batch --yes -q --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output + "\" --clearsign \"" + arg_Target_File + "\"";
 
             /*
                 GPG > Detached Sign
@@ -2156,7 +2420,7 @@ namespace XSum
             */
 
             string[] ps_exec = new String[] { ps_query };
-            PowershellQ( ps_exec );
+            string ps_result = PowershellQ( ps_exec, arg_Debug_Enabled );
 
             /*
                 Notice to user
@@ -2176,6 +2440,8 @@ namespace XSum
 
             Verifies a hash digest.
             Triggered when user specifies --verify
+
+            @arg        : bool bSilenceProgress
         */
 
         static public int Action_Verify( )
@@ -2368,8 +2634,6 @@ namespace XSum
                 loop through all the files inside the directory searched above
             */
 
-            nl( );
-
             for ( int i = 0; i < files.Length; i++ )
             {
                 // previous file failed match, stop
@@ -2444,9 +2708,10 @@ namespace XSum
                 foreach ( string pattern in dict_Ignore.Keys )
                 {
                     bWCIgnore = Regex.IsMatch( item_file_name, Helpers.WildcardMatch( pattern ) );
-                    if ( bWCIgnore )
-                        continue;
+                    if ( bWCIgnore ) break;
                 }
+
+                if ( bWCIgnore ) continue;
 
                 // files in ignore list
                 if ( item_bDoIgnore.Value ) continue;
@@ -2525,21 +2790,33 @@ namespace XSum
                 i_count++;
             }
 
-            /*
-                Extra arguments
-            */
-
-            string LC_Status        = ( arg_LC_Enabled ? "Enabled" : "Disabled" );
-            c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Lowercase:[/]", "[#DarkGray]" + LC_Status + "[/]" ) );
             nl( );
 
             /*
-                Clipboard
+                Show settings used.
+                Don't display if self-verification enabled
             */
 
-            string CB_Status        = ( arg_Clipboard_Enabled ? "Enabled" : "Disabled" );
-            c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Clipboard:[/]", "[#DarkGray]" + CB_Status + "[/]" ) );
-            nl( );
+            if ( !arg_SelfVerify_Enabled )
+            {
+
+                /*
+                    Extra arguments
+                */
+
+                string LC_Status        = ( arg_LC_Enabled ? "Enabled" : "Disabled" );
+                c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Lowercase:[/]", "[#DarkGray]" + LC_Status + "[/]" ) );
+                nl( );
+
+                /*
+                    Clipboard
+                */
+
+                string CB_Status        = ( arg_Clipboard_Enabled ? "Enabled" : "Disabled" );
+                c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Clipboard:[/]", "[#DarkGray]" + CB_Status + "[/]" ) );
+                nl( );
+
+            }
 
             if ( arg_Clipboard_Enabled && targ_bIsFolder )
                 Helpers.SetClipboard( item_hash );
@@ -2632,11 +2909,11 @@ namespace XSum
 
                 if ( i_count == i_success )
                 {
-                    fg( ConsoleColor.DarkGreen );
-                    string s5 = String.Format( "           All files successfully verified" );
+                    string s5 = String.Format( " {0,-15}{1,-30}", "", String.Format( "All files successfully verified" ) );
+                    wc( "DarkGreen" );
                     wl( s5 );
-
                     sb_output.Append( s5 );
+                    sb_output.Append( Environment.NewLine );
                     rs( );
                 }
             }
@@ -2667,6 +2944,15 @@ namespace XSum
 
                 WriteOutput( arg_Output_File, arg_Algo, sb_output, arg_Overwrite_Enabled ).Wait( );
 
+            }
+
+            if ( arg_SelfVerify_Enabled )
+            {
+                nl( );
+                c2( sf( " {0,-24} {1,-30}", "[#Green]Complete[/]", "[#Yellow]Self-Verification[/] complete. Press any key.[/]" ) );
+                nl( );
+
+                Console.ReadLine( );
             }
 
             return (int)ExitCode.Success;
