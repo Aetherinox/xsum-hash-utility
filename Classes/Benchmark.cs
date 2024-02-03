@@ -1,19 +1,17 @@
 ﻿#region "Using"
 
+using XSum;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
 using System.Net.NetworkInformation;
 using System.Threading;
-using System.Timers;
-using XSum;
 using System.Data;
-using static System.Net.Mime.MediaTypeNames;
-using System.Security.Policy;
+using SHA3M.Security.Cryptography;
+using System.Drawing;
 
 #endregion
 
@@ -503,6 +501,7 @@ namespace XSum
             string alg_sha256           = "SHA256";
             string alg_sha384           = "SHA384";
             string alg_sha512           = "SHA512";
+            string alg_sha3256          = "SHA3-512";
 
             /*
                 Define > Defaults
@@ -1007,6 +1006,8 @@ namespace XSum
 
             byte[] hash = null;
 
+            bool bIsSHA3 = algo.Substring( 0, 4 ).Contains("sha3");
+
             for ( int i = 0; i < input.Length; i++ )
             {
                 sw.Restart( );
@@ -1014,6 +1015,10 @@ namespace XSum
                 for ( int k = 0; k < n; k++ )
                 {
                     HashAlgorithm hasher    = ( HashAlgorithm)CryptoConfig.CreateFromName( algo );
+
+                    if ( bIsSHA3 )
+                        hasher              = ( HashAlgorithm)SHA3.Create( algo );
+
                     hash                    = hasher.ComputeHash( Encoding.ASCII.GetBytes( input[ i ] ) );
                 }
 

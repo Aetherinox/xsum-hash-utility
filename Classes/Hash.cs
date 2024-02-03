@@ -6,14 +6,14 @@
 
 #region "Using"
 
-using SHA3M.Security.Cryptography;
+using XSum;
 using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using XSum;
+using SHA3M.Security.Cryptography;
 
 #endregion
 
