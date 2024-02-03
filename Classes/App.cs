@@ -12,19 +12,10 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using xsum;
-using System.Windows;
-using Cfg = xsum.Properties.Settings;
-using System.Collections;
-using System.Management.Automation.Language;
-using System.Xml.Linq;
-using System.Net.Security;
-using static System.Net.Mime.MediaTypeNames;
 using System.Text.RegularExpressions;
 using System.Security.Principal;
 using System.Security.Cryptography;
-using System.Security.Policy;
-using System.Management;
+using Cfg = XSum.Properties.Settings;
 
 #endregion
 
@@ -72,6 +63,7 @@ namespace XSum
             private Benchmark Benchmark         = new Benchmark( );
 
         #endregion
+
 
 
         /*
@@ -250,7 +242,6 @@ namespace XSum
 
 
 
-
         /*
             Execute powershell query
             checks to see if a target file has been signed with x509 cert
@@ -375,6 +366,11 @@ namespace XSum
         #endregion
 
 
+
+        /*
+            Dictionary
+        */
+
         #region "Predefined Dictionary Lists"
 
             /*
@@ -408,6 +404,7 @@ namespace XSum
             };
 
         #endregion
+
 
 
         /*
@@ -455,6 +452,8 @@ namespace XSum
 
         #endregion
 
+
+
         /*
             Help Dialog
                 default if no arguments are specified by user
@@ -484,7 +483,7 @@ namespace XSum
                 wl(@" XSum.exe is a checksum utility.
 
  Command-line utility for Windows which generates and verifies the hash of 
- directories and files. If an invalid file or folder is provided, xsum will
+ directories and files. If an invalid file or folder is provided, XSum will
  treat it as a normal string which will be hashed.
 
  Hash digests can be signed utilizing GPG.
@@ -1722,6 +1721,8 @@ namespace XSum
 
         #endregion
 
+
+
         /*
             Methods to populate and compile Ignored Files dictionary.
         */
@@ -1731,6 +1732,8 @@ namespace XSum
 
 
         #endregion
+
+
 
         /*
             Write Output
@@ -1970,10 +1973,10 @@ namespace XSum
                 EDIT:                   unsure why the code below is there.
                                         It ends up causing an issue with folders if you try to generate a single file digest
 
-                                            xsum --verify --target "Test\xsum.pdb" --algo sha256 --digest SHA256.txt
+                                            XSum --verify --target "Test\XSum.pdb" --algo sha256 --digest SHA256.txt
 
                                         The above command will cause "file_path_search" to return:
-                                            Test\xsum.pdb\Test\xsum.pdb
+                                            Test\XSum.pdb\Test\XSum.pdb
 
                                         Removing the lines below appears to fix the issues
                             
@@ -2770,7 +2773,7 @@ namespace XSum
                         if user looks for a file instead of folder, we only want the one file displaying
                             --verify "X:\Full\Path\To\File.zip"
 
-                        without this, xsum will continue to loop through the rest of the files
+                        without this, XSum will continue to loop through the rest of the files
                     */
 
                     if ( targ_bIsFile )

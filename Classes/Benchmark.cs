@@ -10,7 +10,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Timers;
-using xsum;
+using XSum;
 using System.Data;
 using static System.Net.Mime.MediaTypeNames;
 using System.Security.Policy;
@@ -225,7 +225,7 @@ namespace XSum
 
 
         /*
-            Define > Byte Size Buffixes
+            Define > Byte Size Suffixes
         */
 
         #region "Define: File Size Suffix"
@@ -442,7 +442,6 @@ namespace XSum
 
             BenchmarkBuffer buffer_new  = new BenchmarkBuffer   ( buffer );
             byte[] bench_buffer         = buffer_new.Generate   ( buffer );
-            //byte[] bench_buffer       = File.ReadAllBytes     ( "MobaXterm.Keygen-v1.3.0.0-win-x86-x64.rar" );
             byte[] data_bytes           = bench_buffer;
 
             /*

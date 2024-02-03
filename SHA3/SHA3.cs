@@ -1,5 +1,7 @@
-﻿using System;
+﻿#region "Using"
+using System;
 using System.Security.Cryptography;
+#endregion
 
 namespace SHA3.Security.Cryptography
 {

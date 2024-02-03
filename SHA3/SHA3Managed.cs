@@ -1,5 +1,7 @@
+#region "Using"
 using System;
 using System.Runtime.CompilerServices;
+#endregion
 
 namespace SHA3.Security.Cryptography
 {

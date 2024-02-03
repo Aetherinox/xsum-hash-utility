@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Collections;
 using System.IO;
 
-namespace xsum
+namespace XSum
 {
 
     /*

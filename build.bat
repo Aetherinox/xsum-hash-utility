@@ -98,13 +98,10 @@ echo Merging %APP_NAME% ...
 "%PATH_ILMERGE%"\ILMerge.exe %PATH_ROOT%\%PATH_PLATFORM%\%PATH_PUBLISH%\%APP_NAME%  ^
     /lib:%PATH_ROOT%\%PATH_PLATFORM%\%PATH_PUBLISH% ^
     /out:%PATH_ROOT%\%PATH_PLATFORM%\%PATH_PUBLISH%\%APP_NAME% ^
-    /allowDup ^
-    /keyfile:%SN_KEY% ^
     System.Buffers.dll ^
     System.Management.Automation.dll ^
     System.Memory.dll ^
-    System.Numerics.Vectors.dll ^
-    System.Runtime.CompilerServices.Unsafe.dll 
+    System.Numerics.Vectors.dll
 
     GOTO SIGN_EXE_DLL_CUROLDER
 

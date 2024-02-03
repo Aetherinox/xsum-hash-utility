@@ -6,7 +6,7 @@ using System.Linq;
 using System.Management;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Cfg = xsum.Properties.Settings;
+using Cfg = XSum.Properties.Settings;
 
 #endregion
 

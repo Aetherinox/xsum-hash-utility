@@ -6,7 +6,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
-using xsum;
+using XSum;
 
 #endregion
 
