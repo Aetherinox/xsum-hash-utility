@@ -72,7 +72,7 @@ While there are numerous apps available for doing things such as this; I need a 
 Currently, the following algorithms are suppported. More are planned for later.
 
 - MD5
-- SHA-1
+- SHA1
 - SHA2-256
 - SHA2-384
 - SHA2-512
@@ -101,7 +101,7 @@ xsum
 
 <br />
 
-Algorithm supports algorithms with and without hyphens:
+Supports specifying algorithms with and without hyphens:
 
 ```shell
 xsum --generate "MyFolder" --algo sha3-256
