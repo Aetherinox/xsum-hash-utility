@@ -22,7 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ilmerge" Version="3.0.41" />
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,6 +60,11 @@
     </None>
   </ItemGroup>
 
+  <Target Name="ILMerge">
+    <!-- the ILMergePath property points to the location of ILMerge.exe console application -->
+    <Exec Command="$(ILMergeConsolePath) bin\Release\net481\xsum.exe  /out:xsum-stable.exe bin\Release\net481\System.Management.Automation.dll " />
+  </Target>
+
 <Target Name="BeforeBuild">
     <ItemGroup>
         <AssemblyAttributes Include="xsum.Author">
@@ -68,6 +75,10 @@
         <Output TaskParameter="OutputFile" ItemName="Compile" />
         <Output TaskParameter="OutputFile" ItemName="FileWrites" />
     </WriteCodeFragment>
+</Target>
+
+<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Exec Command="call &quot;$(SolutionDir)build.bat&quot;" />
 </Target>
 
 </Project>
