@@ -14,6 +14,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using SHA3M.Security.Cryptography;
+using Blake2Fast;
 
 #endregion
 
@@ -38,6 +39,7 @@ namespace XSum
         */
 
         static AppInfo AppInfo             = new AppInfo( );
+        static Helpers Helpers             = new Helpers( );
 
         /*
             method : hash
@@ -78,6 +80,15 @@ namespace XSum
             foreach ( byte b in bytes ) result += b.ToString( "x2" ).ToUpper( );
             return result;
         }
+
+        /*
+            Bytes To Hex String
+
+            @arg        : byte a
+            @ret        : str
+        */
+
+        public static string ToHexString( byte[] a ) => string.Concat( a.Select( x => x.ToString( "X2" ).ToUpper( ) ) );
 
         /*
             method : file stream
@@ -199,6 +210,26 @@ namespace XSum
                 }
             }
 
+            /*
+                Blake-2
+
+                Blake 2 supports specified bytes
+
+                    32      : 256
+            */
+
+
+            public static string GetHash_String_B2( string arg, string str )
+            {
+                int hash_size = 64;
+                Int32.TryParse( arg, out hash_size );
+
+                byte[] bytes    = Encoding.UTF8.GetBytes( str );
+                var hash        = Blake2Fast.Blake2b.ComputeHash( hash_size, bytes );
+
+                return BytesToString( hash );
+            }
+
         #endregion
 
 
@@ -245,6 +276,27 @@ namespace XSum
                 }
             }
 
+            /*
+                Blake2
+
+                @arg        : str arg
+                              number of bytes for the key
+
+                @arg        : str path
+                              path to file
+            */
+
+            public static string GetHash_File_B2( string arg, string path )
+            {
+                int hash_size = 64;
+                Int32.TryParse( arg, out hash_size );
+
+                using ( FileStream stream = File.OpenRead( path ) )
+                {
+                    byte[] bytes    = Blake2Fast.Blake2b.ComputeHash( hash_size, Helpers.FSReadFull( stream ) );
+                    return BytesToString( bytes );
+                }
+            }
 
         #endregion
 
@@ -265,17 +317,17 @@ namespace XSum
                 MD5, SHA-2
             */
 
-            static public string GetHash_Directory_SHA2( string algorithm, string folder )
+            static public string GetHash_Directory_SHA2( string algo, string folder )
             {
 
                 var files                   = Directory.GetFiles( folder, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
-                using (var file_total       = (HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
+                using (var file_total       = (HashAlgorithm)CryptoConfig.CreateFromName( algo ) )
                 {
                     int bytes_read_chunk    = 2048;
 
                     foreach ( string file in files )
                     {
-                        using (var file_single = (HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
+                        using (var file_single = (HashAlgorithm)CryptoConfig.CreateFromName( algo ) )
                         {
                             using ( FileStream file_contents = File.OpenRead( file ) )
                             {
@@ -360,6 +412,61 @@ namespace XSum
             }
 
 
+            /*
+                Blake2
+
+                @arg        : str arg
+                @arg        : str folder
+                @ret        : str
+            */
+
+            static public string GetHash_Directory_B2( string arg, string folder )
+            {
+                int hash_size = 64;
+                Int32.TryParse( arg, out hash_size );
+
+                var files                   = Directory.GetFiles( folder, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
+                using (var file_total       = Blake2b.CreateHashAlgorithm( hash_size ) )
+                {
+                    int bytes_read_chunk    = 2048;
+
+                    foreach ( string file in files )
+                    {
+                        using (var file_single = Blake2b.CreateHashAlgorithm( hash_size ) )
+                        {
+                            using ( FileStream file_contents = File.OpenRead( file ) )
+                            {
+                                byte[] bytes_content    = new byte[ bytes_read_chunk ];
+                                int bytes_read          = 0;
+
+                                // (optimization) read file in chunks
+                                while ( ( bytes_read = file_contents.Read( bytes_content, 0, bytes_read_chunk ) ) > 0 )
+                                {
+                                    file_total.TransformBlock   ( bytes_content, 0, bytes_read, bytes_content, 0 );
+                                    file_single.TransformBlock  ( bytes_content, 0, bytes_read, bytes_content, 0 );
+                                }
+
+                                // close file_single block with 0 length
+                                file_single.TransformFinalBlock( bytes_content, 0, 0 );
+                            }
+
+                            if ( AppInfo.bIsDebug( ) )
+                            {
+                                Console.WriteLine( file );
+                                Console.WriteLine( BitConverter.ToString( file_single.Hash ).Replace( "-", "" ).ToUpper( ) );
+                                Console.WriteLine( "\n");
+                            }
+
+                        }
+                    }
+
+                    // close total hash block
+                    file_total.TransformFinalBlock( new byte[ 0 ], 0, 0 );
+
+                    return BytesToString( file_total.Hash );
+                }
+            }
+
 
         #endregion
 
@@ -375,6 +482,10 @@ namespace XSum
 
             /*
                 Management > MD5, SHA1, SHA-2
+
+                @arg        : str algo
+                @arg        : str src
+                @ret        : str
             */
 
             public static string Hash_Manage_SHA2( string algo, string src )
@@ -389,6 +500,10 @@ namespace XSum
 
             /*
                 Management > SHA-3
+
+                @arg        : str algo
+                @arg        : str src
+                @ret        : str
             */
 
             public static string Hash_Manage_SHA3( string algo, string src )
@@ -400,6 +515,25 @@ namespace XSum
                 else
                     return Hash.GetHash_String_SHA3( algo, src );
             }
+
+            /*
+                Management > Blake2
+
+                @arg        : str arg
+                @arg        : str src
+                @ret        : str
+            */
+
+            public static string Hash_Manage_B2( string arg, string src )
+            {
+                if ( Directory.Exists( src ) )
+                    return Hash.GetHash_Directory_B2( arg,  src );
+                else if ( File.Exists( src ) )
+                    return Hash.GetHash_File_B2( arg, src );
+                else
+                    return Hash.GetHash_String_B2( arg, src );
+            }
+
 
         #endregion
 

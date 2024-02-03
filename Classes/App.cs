@@ -18,6 +18,7 @@ using System.Security.Cryptography;
 using Cfg = XSum.Properties.Settings;
 using SHA3M.Security.Cryptography;
 using System.Security.Policy;
+using Blake2Fast;
 
 #endregion
 
@@ -398,10 +399,13 @@ namespace XSum
                 { ".gitea",             true },
                 { "MD5*.asc",           true },
                 { "SHA*.asc",           true },
+                { "BLAKE*.asc",         true },
                 { "MD5*.txt",           true },
                 { "SHA*.txt",           true },
+                { "BLAKE*.txt",         true },
                 { "MD5*.sig",           true },
                 { "SHA*.sig",           true },
+                { "BLAKE*.sig",         true },
                 { xsum_path_exe,        true },
             };
 
@@ -600,16 +604,20 @@ namespace XSum
             static IDictionary<string, Func<string, string>> Dict_Hashes_Populate( )
             {
                 var dict_GetHash        = new Dictionary<string, Func<string, string>>( );
-                dict_GetHash.Add        ( "md5",        ( p ) => Hash.Hash_Manage_SHA2      ( "md5",        p ) );
-                dict_GetHash.Add        ( "sha1",       ( p ) => Hash.Hash_Manage_SHA2      ( "sha1",       p ) );
-                dict_GetHash.Add        ( "sha256",     ( p ) => Hash.Hash_Manage_SHA2      ( "sha256",     p ) );
-                dict_GetHash.Add        ( "sha384",     ( p ) => Hash.Hash_Manage_SHA2      ( "sha384",     p ) );
-                dict_GetHash.Add        ( "sha512",     ( p ) => Hash.Hash_Manage_SHA2      ( "sha512",     p ) );
-                dict_GetHash.Add        ( "sha3224",    ( p ) => Hash.Hash_Manage_SHA3      ( "sha3224",    p ) );
-                dict_GetHash.Add        ( "sha3256",    ( p ) => Hash.Hash_Manage_SHA3      ( "sha3256",    p ) );
-                dict_GetHash.Add        ( "sha3384",    ( p ) => Hash.Hash_Manage_SHA3      ( "sha3384",    p ) );
-                dict_GetHash.Add        ( "sha3512",    ( p ) => Hash.Hash_Manage_SHA3      ( "sha3512",    p ) );
-
+                dict_GetHash.Add        ( "md5",            ( p ) => Hash.Hash_Manage_SHA2      ( "md5",        p ) );
+                dict_GetHash.Add        ( "sha1",           ( p ) => Hash.Hash_Manage_SHA2      ( "sha1",       p ) );
+                dict_GetHash.Add        ( "sha256",         ( p ) => Hash.Hash_Manage_SHA2      ( "sha256",     p ) );
+                dict_GetHash.Add        ( "sha384",         ( p ) => Hash.Hash_Manage_SHA2      ( "sha384",     p ) );
+                dict_GetHash.Add        ( "sha512",         ( p ) => Hash.Hash_Manage_SHA2      ( "sha512",     p ) );
+                dict_GetHash.Add        ( "sha3224",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3224",    p ) );
+                dict_GetHash.Add        ( "sha3256",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3256",    p ) );
+                dict_GetHash.Add        ( "sha3384",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3384",    p ) );
+                dict_GetHash.Add        ( "sha3512",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3512",    p ) );
+                dict_GetHash.Add        ( "blake2b128",     ( p ) => Hash.Hash_Manage_B2        ( "16",         p ) );
+                dict_GetHash.Add        ( "blake2b160",     ( p ) => Hash.Hash_Manage_B2        ( "20",         p ) );
+                dict_GetHash.Add        ( "blake2b256",     ( p ) => Hash.Hash_Manage_B2        ( "32",         p ) );
+                dict_GetHash.Add        ( "blake2b384",     ( p ) => Hash.Hash_Manage_B2        ( "48",         p ) );
+                dict_GetHash.Add        ( "blake2b512",     ( p ) => Hash.Hash_Manage_B2        ( "64",         p ) );
                 return dict_GetHash;
             }
 

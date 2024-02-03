@@ -80,6 +80,11 @@ Currently, the following algorithms are suppported. More are planned for later.
 - SHA3-256
 - SHA3-384
 - SHA3-512
+- Blake2b-128
+- Blake2b-160
+- Blake2b-256
+- Blake2b-384
+- Blake2b-512
 
 <br />
 

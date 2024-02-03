@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace xsum.Properties {
+namespace XSum.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -25,28 +25,25 @@ namespace xsum.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://github.com/Aetherinox/xsum")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://github.com/Aetherinox/XSum-hash-utility")]
         public string app_repo_url {
             get {
                 return ((string)(this["app_repo_url"]));
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool app_bDevmode {
             get {
                 return ((bool)(this["app_bDevmode"]));
             }
-            set {
-                this["app_bDevmode"] = value;
-            }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("xsum.exe")]
+        [global::System.Configuration.DefaultSettingValueAttribute("XSum.exe")]
         public string app_exe_name {
             get {
                 return ((string)(this["app_exe_name"]));
