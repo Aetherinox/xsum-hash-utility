@@ -384,8 +384,8 @@ namespace XSum
             {
                 { "SHA*.txt",       true },
                 { "MD5*.txt",       true },
+                { "BLAKE*.txt",     true },
             };
-
 
             /*
                 pre-defined ignore list
@@ -599,11 +599,15 @@ namespace XSum
 
             /*
                 Dictionary > Populate Hashes
+
+                First argument differs for each algorithm.
+                Blake2b specifies the number of bytes for the hash length.
             */
 
             static IDictionary<string, Func<string, string>> Dict_Hashes_Populate( )
             {
                 var dict_GetHash        = new Dictionary<string, Func<string, string>>( );
+
                 dict_GetHash.Add        ( "md5",            ( p ) => Hash.Hash_Manage_SHA2      ( "md5",        p ) );
                 dict_GetHash.Add        ( "sha1",           ( p ) => Hash.Hash_Manage_SHA2      ( "sha1",       p ) );
                 dict_GetHash.Add        ( "sha256",         ( p ) => Hash.Hash_Manage_SHA2      ( "sha256",     p ) );
@@ -613,11 +617,17 @@ namespace XSum
                 dict_GetHash.Add        ( "sha3256",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3256",    p ) );
                 dict_GetHash.Add        ( "sha3384",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3384",    p ) );
                 dict_GetHash.Add        ( "sha3512",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3512",    p ) );
-                dict_GetHash.Add        ( "blake2b128",     ( p ) => Hash.Hash_Manage_B2        ( "16",         p ) );
-                dict_GetHash.Add        ( "blake2b160",     ( p ) => Hash.Hash_Manage_B2        ( "20",         p ) );
-                dict_GetHash.Add        ( "blake2b256",     ( p ) => Hash.Hash_Manage_B2        ( "32",         p ) );
-                dict_GetHash.Add        ( "blake2b384",     ( p ) => Hash.Hash_Manage_B2        ( "48",         p ) );
-                dict_GetHash.Add        ( "blake2b512",     ( p ) => Hash.Hash_Manage_B2        ( "64",         p ) );
+                dict_GetHash.Add        ( "blake2b128",     ( p ) => Hash.Hash_Manage_B2B       ( "16",         p ) );
+                dict_GetHash.Add        ( "blake2b160",     ( p ) => Hash.Hash_Manage_B2B       ( "20",         p ) );
+                dict_GetHash.Add        ( "blake2b256",     ( p ) => Hash.Hash_Manage_B2B       ( "32",         p ) );
+                dict_GetHash.Add        ( "blake2b384",     ( p ) => Hash.Hash_Manage_B2B       ( "48",         p ) );
+                dict_GetHash.Add        ( "blake2b512",     ( p ) => Hash.Hash_Manage_B2B       ( "64",         p ) );
+                dict_GetHash.Add        ( "blake2s128",     ( p ) => Hash.Hash_Manage_B2S       ( "16",         p ) );
+                dict_GetHash.Add        ( "blake2s160",     ( p ) => Hash.Hash_Manage_B2S       ( "20",         p ) );
+                dict_GetHash.Add        ( "blake2s256",     ( p ) => Hash.Hash_Manage_B2S       ( "32",         p ) );
+                dict_GetHash.Add        ( "blake2s384",     ( p ) => Hash.Hash_Manage_B2S       ( "48",         p ) );
+                dict_GetHash.Add        ( "blake2s512",     ( p ) => Hash.Hash_Manage_B2S       ( "64",         p ) );
+
                 return dict_GetHash;
             }
 
@@ -637,10 +647,10 @@ namespace XSum
                 int lst_i_cur           = 0;
                 int lst_i_max           = dict_GetHash.Keys.Count;
 
-                foreach ( string file in dict_GetHash.Keys )
+                foreach ( string hash in dict_GetHash.Keys )
                 {
                     lst_i_cur++;
-                    sb.Append( ( lst_i_cur == lst_i_max ) ? file : file + ", " );
+                    sb.Append( ( lst_i_cur == lst_i_max ) ? hash : hash + ", " );
                     str_lst = sb.ToString( );
                 }
 
@@ -729,7 +739,7 @@ namespace XSum
                             nl( );
 
                             arg_SelfVerify_Enabled      = true;
-                            arg_Algo                    = "sha256";
+                            arg_Algo                    = arg_Algo_Default;
                             arg_Digest_Enabled          = true;
                             arg_Digest_File             = file_name;
                             arg_Target_File             = xsum_path_dir;
@@ -753,6 +763,8 @@ namespace XSum
                         c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]SHA*.asc[/]" ) );
                         nl( );
                         c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]MD5*.asc[/]" ) );
+                        nl( );
+                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]BLAKE*.asc[/]" ) );
                         nl( );
                         nl( );
                         c2( sf( " {0,-24} {1,-30}", "[#Red][/]", "Press any key to exit.[/]" ) );
@@ -2737,7 +2749,6 @@ namespace XSum
                 {
                     item_relative_folder    = new Uri( @xsum_path_dir + @"\" + arg_Target_File + @"\" ); // must end in backslash
                 }
-
 
                 string item_path_relative   = Uri.UnescapeDataString( item_relative_folder.MakeRelativeUri( item_relative_file ).ToString( ).Replace( '/', Path.DirectorySeparatorChar ) );
                 item_path_relative          = item_path_relative.Replace( @"\", "/" );      // replace backslash with forwardslash to make lines compatible with unix

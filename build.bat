@@ -101,6 +101,7 @@ echo Merging %APP_NAME% ...
     System.Buffers.dll ^
     System.Management.Automation.dll ^
     System.Memory.dll ^
+    SauceControl.Blake2Fast.dll ^
     System.Numerics.Vectors.dll
 
     GOTO SIGN_EXE_DLL_CUROLDER
