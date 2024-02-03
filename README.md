@@ -83,6 +83,23 @@ Currently, the following algorithms are suppported. More are planned for later.
 
 <br />
 
+For a list of supported algorithms, type
+
+```shell
+xsum
+```
+
+<br />
+
+Algorithm supports algorithms with and without hyphens:
+
+```shell
+xsum --generate "MyFolder" --algo sha3-256
+xsum --generate "MyFolder" --algo sha3256
+```
+
+<br />
+
 ## What Is A Hash Digest
 When using `--generate`, a hash digest will be created which contains a list of all the files you have targeted.  When that digest is generated, it will be created as a file named depending on what hash algorithm you specified.
 
