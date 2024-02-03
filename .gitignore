@@ -65,6 +65,18 @@
 
 /bin/Release/.vshistory*
 
+# Allow: SHA3
+!/SHA3*
+/SHA3/.vshistory*
+
+# Allow: Blake2
+!/Blake2*
+/Blake2/.vshistory*
+
+# Allow: Blake3
+!/Blake3*
+/Blake3/.vshistory*
+
 # Allow: Classes
 !/Classes*
 /Classes/.vshistory*
