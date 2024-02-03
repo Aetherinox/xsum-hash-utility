@@ -3,7 +3,7 @@ using System;
 using System.Runtime.CompilerServices;
 #endregion
 
-namespace SHA3CS.Security.Cryptography
+namespace SHA3M.Security.Cryptography
 {
     public abstract class SHA3Managed : SHA3
     {

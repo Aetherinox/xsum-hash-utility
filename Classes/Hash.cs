@@ -6,14 +6,10 @@
 
 #region "Using"
 
-using SHA3CS.Security.Cryptography;
+using SHA3M.Security.Cryptography;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Ports;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;

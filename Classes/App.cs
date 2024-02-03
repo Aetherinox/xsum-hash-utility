@@ -16,7 +16,7 @@ using System.Text.RegularExpressions;
 using System.Security.Principal;
 using System.Security.Cryptography;
 using Cfg = XSum.Properties.Settings;
-using SHA3CS.Security.Cryptography;
+using SHA3M.Security.Cryptography;
 using System.Security.Policy;
 
 #endregion
@@ -1191,6 +1191,13 @@ namespace XSum
                                             return (int)ExitCode.Success;
                                         }
                                     }
+
+                                    /*
+                                        Clean up algorithm string
+                                        this allows users to add hyphens such as sha3-256
+                                    */
+
+                                    arg_Algo = Regex.Replace( arg_Algo, @"[^a-zA-Z0-9]", "" );
 
                                     if ( arg_Algo_Enabled && ( String.IsNullOrEmpty( arg_Algo ) || arg_Algo.Length < 2 ) )
                                     {

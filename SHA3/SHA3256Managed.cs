@@ -1,4 +1,4 @@
-namespace SHA3CS.Security.Cryptography
+namespace SHA3M.Security.Cryptography
 {
     public class SHA3256Managed : SHA3Managed
     {

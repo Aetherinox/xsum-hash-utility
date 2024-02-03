@@ -3,7 +3,7 @@ using System;
 using System.Security.Cryptography;
 #endregion
 
-namespace SHA3CS.Security.Cryptography
+namespace SHA3M.Security.Cryptography
 {
     public abstract class SHA3 : HashAlgorithm
     {
