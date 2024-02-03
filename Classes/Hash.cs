@@ -6,6 +6,7 @@
 
 #region "Using"
 
+using SHA3CS.Security.Cryptography;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -94,315 +95,8 @@ namespace XSum
         }
 
         /*
-            method : Get SHA1 Hash
-                requires a path to file to obtain the SHA1 hash
-
-            @arg    : str path
-            @ret    : str
+            Get Hash
         */
-
-        public static string ReturnSHA1( string path )
-        {
-            string result       = "";
-            string res_hash     = "";
-
-            byte[] arrByteHash;
-            System.IO.FileStream fs = null;
-
-            System.Security.Cryptography.SHA1CryptoServiceProvider sha1_hash = new System.Security.Cryptography.SHA1CryptoServiceProvider( );
-
-            try
-            {
-                fs              = GetFileStream( path );
-                arrByteHash     = sha1_hash.ComputeHash( fs );
-
-                fs.Close( );
-
-                res_hash        = System.BitConverter.ToString( arrByteHash );
-                res_hash        = res_hash.Replace( "-", "" );
-                result          = res_hash;
-            }
-            catch ( System.Exception ex )
-            {
-                Console.Write( String.Format( "Error {0}", ex.Message ) );
-            }
-
-            if ( AppInfo.bIsDebug( ) )
-            {
-                Console.Write( String.Format( "Result (SHA1): {0}", result ) );
-            }
-
-
-            return ( result );
-        }
-
-        /*
-            method : Get MD5 Hash
-                requires a path to file to obtain the md5 hash
-
-            @arg    : str path
-            @ret    : str
-        */
-
-        public static string ReturnMD5( string path )
-        {
-            string result       = "";
-            string res_hash     = "";
-
-            byte[] arrByteHash;
-            System.IO.FileStream fs = null;
-
-            System.Security.Cryptography.MD5CryptoServiceProvider sha1_hash = new System.Security.Cryptography.MD5CryptoServiceProvider( );
-
-            try
-            {
-                fs              = GetFileStream( path );
-                arrByteHash     = sha1_hash.ComputeHash( fs );
-
-                fs.Close( );
-
-                res_hash        = System.BitConverter.ToString( arrByteHash );
-                res_hash        = res_hash.Replace( "-", "" );
-                result          = res_hash;
-            }
-            catch ( System.Exception ex )
-            {
-                Console.Write( String.Format( "Error: {0}", ex.Message ) );
-            }
-
-            if ( AppInfo.bIsDebug( ) )
-            {
-                Console.Write( String.Format( "Result (MD5): {0}", result ) );
-            }
-
-            return ( result );
-        }
-
-
-        /*
-            method : Get SHA256 Hash (string)
-                requires a path to file to obtain the sha256 hash
-
-            @arg    : str path
-            @ret    : str
-        */
-
-        public static string GetHash_String( string algorithm, string str )
-        {
-            using (var hash = (HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
-            {
-                byte[] bytes    = hash.ComputeHash( Encoding.UTF8.GetBytes( str ) );
-                return BytesToString( bytes );
-            }
-        }
-
-        /*
-            Cryptography > MD5
-                Generates an MD5 hash from the file stream path provided.
-
-            @usage  : string MD5 = Hash.BytesToString( Hash.GetHash_MD5( "X:\Path\To\File.dll" ) );
-                      string MD5 = Hash.GetHash_MD5( "X:\Path\To\File.dll" );
-
-            @arg    : str path
-            @ret    : str
-        */
-
-        #region "Cryptography: MD5"
-
-            public static string GetHash_MD5( string path )
-            {
-                using ( FileStream stream = File.OpenRead( path ) )
-                {
-
-                    byte[] bytes = Md5.ComputeHash( stream );
-                    return BytesToString( bytes );
-                }
-            }
-
-        #endregion
-
-        /*
-            Cryptography > SHA1
-                Generates an SHA1 hash from the file stream path provided.
-
-            DoD PKI policy prohibits the use of SHA1 as of December 2016
-
-            @usage  : string SHA1 = Hash.BytesToString( Hash.GetHash_SHA1( "X:\Path\To\File.dll" ) );
-                      string SHA1 = Hash.GetHash_SHA1( "X:\Path\To\File.dll" );
-
-            @arg    : str path
-            @ret    : str
-        */
-
-        #region "Cryptography: SHA1"
-
-            public static string GetHash_SHA1( string path )
-            {
-                using ( FileStream stream = File.OpenRead( path ) )
-                {
-                    SHA1 SHA1       = SHA1.Create( );
-                    byte[] bytes    = SHA1.ComputeHash( stream );
-
-                    return BytesToString( bytes );
-                }
-            }
-
-        #endregion
-
-
-
-        /*
-            Cryptography > SHA2-256
-                Generates an SHA256 hash from the file stream path provided.
-
-            SHA1    : FIPS 180-1
-            SHA2    : FIPS 180
-            SHA3    : FIPS 202
-
-            @usage  : string SHA256 = Hash.BytesToString( Hash.GetHash_SHA2_256( "X:\Path\To\File.dll" ) );
-                      string SHA256 = Hash.GetHash_SHA2_256( "X:\Path\To\File.dll" );
-
-            @arg    : str path
-            @ret    : str
-        */
-
-        #region "Cryptography: SHA2-256"
-
-            public static string GetHash_SHA2_256( string path )
-            {
-                using ( FileStream stream = File.OpenRead( path ) )
-                {
-                    SHA256 sha256   = SHA256.Create( );
-                    byte[] bytes    = Sha256.ComputeHash( stream );
-
-                    return BytesToString( bytes );
-                }
-            }
-
-        #endregion
-
-        /*
-            Cryptography > SHA2-384
-                Generates an SHA384 hash from the file stream path provided.
-
-            SHA2    : FIPS 180
-            SHA3    : FIPS 202
-
-            @usage  : string SHA384 = Hash.BytesToString( Hash.GetHash_SHA2_384( "X:\Path\To\File.dll" ) );
-                      string SHA384 = Hash.GetHash_SHA2_384( "X:\Path\To\File.dll" );
-
-            @arg    : str path
-            @ret    : str
-        */
-
-        #region "Cryptography: SHA2-384"
-
-            public static string GetHash_SHA2_384( string path )
-            {
-                using ( FileStream stream = File.OpenRead( path ) )
-                {
-                    SHA384 Sha384   = SHA384.Create( );
-                    byte[] bytes    = Sha384.ComputeHash( stream );
-
-                    return BytesToString( bytes );
-                }
-            }
-
-        #endregion
-
-
-
-        /*
-            Cryptography > SHA2-512
-                Generates an SHA512 hash from the file stream path provided.
-
-            SHA2    : FIPS 180
-            SHA3    : FIPS 202
-
-            @usage  : string SHA512 = Hash.BytesToString( Hash.GetHash_SHA2_512( "X:\Path\To\File.dll" ) );
-                      string SHA512 = Hash.GetHash_SHA2_512( "X:\Path\To\File.dll" );
-
-            @arg    : str path
-            @ret    : str
-        */
-
-        #region "Cryptography: SHA2-512"
-
-            public static string GetHash_SHA2_512( string path )
-            {
-                using ( FileStream stream = File.OpenRead( path ) )
-                {
-
-                    SHA512 sha512   = SHA512.Create( );
-                    byte[] bytes    = sha512.ComputeHash( stream );
-
-                    return BytesToString( bytes );
-                }
-            }
-
-        #endregion
-
-
-
-        /*
-            Cryptography > Get Hash
-                Universal method for getting the hash of a file using the standards.
-                md5, sha2.
-
-            Generates a hash from the file stream path provided.
-
-            SHA2    : FIPS 180
-            SHA3    : FIPS 202
-
-            @usage  : string hash = Hash.GetHash_Universe( "sha256", "x:\path\to\file.xxxx" );
-
-            @arg    : str path
-            @ret    : str
-        */
-
-        #region "Cryptography: Hash - File (Universal)"
-
-            public static string GetHash_Universe( string algorithm, string path )
-            {
-                using ( FileStream stream = File.OpenRead( path ) )
-                {
-                    using ( var hash = (HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
-                    {
-                        byte[] bytes    = hash.ComputeHash( stream );
-                        return BytesToString( bytes );
-                    }
-                }
-            }
-
-        #endregion
-
-
-
-        public static string CreateMd5ForFolder( string path )
-        {
-            // assuming you want to include nested folders
-            var files = Directory.GetFiles( path, "*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
-
-            MD5 md5 = MD5.Create( );
-
-            for( int i = 0; i < files.Count; i++ )
-            {
-                string file             = files[ i ];
-                string path_relative    = file.Substring( path.Length + 1 );
-                byte[] path_bytes       = Encoding.UTF8.GetBytes( path_relative.ToLower( ) );
-
-                md5.TransformBlock( path_bytes, 0, path_bytes.Length, path_bytes, 0 );
-        
-                // hash contents
-                byte[] bytes_content = File.ReadAllBytes( file );
-                if (i == files.Count - 1)
-                    md5.TransformFinalBlock( bytes_content, 0, bytes_content.Length );
-                else
-                    md5.TransformBlock( bytes_content, 0, bytes_content.Length, bytes_content, 0 );
-            }
-    
-            return BitConverter.ToString(md5.Hash).Replace("-", "").ToLower();
-        }
 
         private static string GetHash( HashAlgorithm algorithm, string input )
         {
@@ -418,107 +112,164 @@ namespace XSum
             return sb.ToString( );
         }
 
-        public static string CreateDirectoryMd5( string srcPath )
-        {
-            var filePaths = Directory.GetFiles( srcPath, "*", SearchOption.AllDirectories).OrderBy(p => p).ToArray();
+        /*
+            Verify hash against string
+        */
 
-            using (var sha256 = SHA256.Create())
-            {
-                foreach (var filePath in filePaths)
-                {
-
-                    // hash path
-                    byte[] pathBytes = Encoding.UTF8.GetBytes(filePath);
-
-                    Console.WriteLine( BytesToString( pathBytes ) );
-
-                    sha256.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
-
-                    // hash contents
-                    byte[] contentBytes = File.ReadAllBytes(filePath);
-
-                    sha256.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
-                }
-
-                //Handles empty filePaths case
-                sha256.TransformFinalBlock(new byte[0], 0, 0);
-
-                return BitConverter.ToString(sha256.Hash).Replace("-", "").ToLower();
-            }
-        }
-
-
-
-        // Verify a hash against a string.
         private static bool VerifyHash( HashAlgorithm algorithm, string input, string hash )
         {
             var hashOfInput             = GetHash( algorithm, input );
             StringComparer comparer     = StringComparer.OrdinalIgnoreCase;
 
-            return comparer.Compare(hashOfInput, hash) == 0;
+            return comparer.Compare( hashOfInput, hash ) == 0;
         }
 
+
         /*
-            Get SHA256 for files in folder
-            Confirmed against sha256sum
+            Double Hashing Functionality
+
+            @usage      : byte[] text = Encoding.UTF8.GetBytes( "Text );
+                          var asd = Hash.Compute( text, 2 );
+                          var asd = Hash.Compute( "sha256", text, 2 );
         */
 
-        static public string SHA256Hash( string folder )
-        {
+        #region "Cryptography: Double Hash"
 
-            if ( Directory.Exists( folder ) )
+            public static byte[] Compute( string algorithm, byte[] input, int offset, int count )
             {
-
-                var files    = Directory.GetFiles( folder, "*", SearchOption.AllDirectories).OrderBy( p => p ).ToArray();
-                var s       = new byte[ 64 ];
-                byte[] m;
-                byte[] x;
-
-                foreach ( var file in files )
+                using ( var hash = ( HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
                 {
-                    byte[] path_bytes = Encoding.UTF8.GetBytes( file );
-
-                    Console.WriteLine( BytesToString( path_bytes ) );
-                    try
-                    {
-                        using ( IncrementalHash sha256 = IncrementalHash.CreateHash( HashAlgorithmName.SHA256 ) )
-                        {
-                            x = sha256.GetHashAndReset();
-                        }
-
-                        return BytesToString( x );
-                    }
-                    catch
-                    {
-                        Console.WriteLine( "Error" );
-                    }
-                   
+                    return hash.ComputeHash( input, offset, count );
                 }
-
             }
-            else
+
+            public static byte[] Compute( string algorithm, byte[] input ) =>
+                Compute( algorithm, input, 0, input.Length );
+
+            public static byte[] Compute( string algorithm, byte[] input, int offset, int count, int iters )
             {
-                //Console.WriteLine("The directory specified could not be found.");
+                if ( iters <= 0 )
+                    throw new ArgumentException( "Iterations must be greater than zero", nameof( iters ) );
+
+                var result = Compute( algorithm, input, offset, count );
+
+                for ( var i = 0; i < iters - 1; ++i )
+                    result = Compute( algorithm, result );
+
+                return result;
             }
 
-            return string.Empty;
-        }
+            public static byte[] Compute( string algorithm, byte[] input, int iters ) =>
+                Compute( algorithm, input, 0, input.Length, iters );
+
+        #endregion
+
+
 
         /*
-            Allows you to return the hash for each individual file, as well as the
-            overall folder hash.
+            Method > Hash > Strings
+            returns hash for string
 
-            developed to be compatible with other hashing utilities.
-
-            sha256sum for windows is broke, and returns the 0 byte hash for any folder.
-
-            @arg    : str algorithm
-            @arg    : str folder
+            @arg    : str algo
+            @arg    : str path
+            @ret    : str
         */
 
-        #region "Cryptography: Hash - Directory (Universal)"
+        #region "Cryptography: Hash > Strings"
 
-            static public string GetHash_Directory( string algorithm, string folder )
+        /*
+            MD5, SHA-2
+        */
+
+        public static string GetHash_String_SHA2( string algo, string str )
+            {
+                using (var hash = (HashAlgorithm)CryptoConfig.CreateFromName( algo ) )
+                {
+                    byte[] bytes    = hash.ComputeHash( Encoding.UTF8.GetBytes( str ) );
+                    return BytesToString( bytes );
+                }
+            }
+
+            /*
+                SHA-3
+            */
+
+            public static string GetHash_String_SHA3( string algo, string str )
+            {
+                using (var hash = SHA3.Create( algo ) )
+                {
+                    byte[] bytes    = hash.ComputeHash( Encoding.UTF8.GetBytes( str ) );
+                    return BytesToString( bytes );
+                }
+            }
+
+        #endregion
+
+
+
+        /*
+            Method > Hash > File
+            returns hash for specified file
+
+            @arg    : str algo
+            @arg    : str path
+            @ret    : str
+        */
+
+        #region "Cryptography: Hash > File"
+
+            /*
+                MD5, SHA-2
+            */
+
+            public static string GetHash_File_SHA2( string algo, string path )
+            {
+                using ( FileStream stream = File.OpenRead( path ) )
+                {
+                    using ( var hash = (HashAlgorithm)CryptoConfig.CreateFromName( algo ) )
+                    {
+                        byte[] bytes    = hash.ComputeHash( stream );
+                        return BytesToString( bytes );
+                    }
+                }
+            }
+
+            /*
+                SHA-3
+            */
+
+            public static string GetHash_File_SHA3( string algo, string path )
+            {
+                using ( FileStream stream = File.OpenRead( path ) )
+                {
+                    SHA3 sha3       = SHA3.Create( algo );
+                    byte[] bytes    = sha3.ComputeHash( stream );
+
+                    return BytesToString( bytes );
+                }
+            }
+
+
+        #endregion
+
+
+
+        /*
+            Method > Hash > Directory
+            returns hash for specified directory
+
+            @arg    : str algo
+            @arg    : str path
+            @ret    : str
+        */
+
+        #region "Cryptography: Hash > Directory"
+
+            /*
+                MD5, SHA-2
+            */
+
+            static public string GetHash_Directory_SHA2( string algorithm, string folder )
             {
 
                 var files                   = Directory.GetFiles( folder, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
@@ -563,104 +314,98 @@ namespace XSum
                 }
             }
 
-        #endregion
+            /*
+                SHA-3
+            */
 
-
-        /*
-            Allows you to return the hash for each individual file, as well as the
-            overall folder hash.
-
-            developed to be compatible with other hashing utilities.
-
-            sha256sum for windows is broke, and returns the 0 byte hash for any folder.
-
-            @arg    : str algorithm
-            @arg    : str folder
-        */
-
-        #region "Cryptography: Hash - Directory (Universal)"
-
-            static public string GetHash_MD5_Directory( string directory )
+            static public string GetHash_Directory_SHA3( string algo, string folder )
             {
 
-                var files               = Directory.GetFiles( directory, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
-                MD5 file_total          = MD5.Create( );
-                int bytesToReadAtOnce   = 2048;
-                var buffer              = new byte[ 8192 ];
-
-                foreach ( string file in files )
+                var files                   = Directory.GetFiles( folder, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
+                using (var file_total       = SHA3.Create( algo ) )
                 {
-                    MD5 file_single = MD5.Create( );
+                    int bytes_read_chunk    = 2048;
 
-                    // hash contents
-                    // NOTE: Good for small files, high memory usage for large files
-                    // may cause issues for other algorithms
-                    // byte[] file_bytes = File.ReadAllBytes( file );
-                    // file_single.TransformFinalBlock( file_bytes, 0, file_bytes.Length ); does not work with md5
-
-                    using ( FileStream inputFile = File.OpenRead( file ) )
+                    foreach ( string file in files )
                     {
-                        byte[] content  = new byte[ bytesToReadAtOnce ];
-                        int bytesRead   = 0;
-
-                        // Read the file only in chunks, allowing minimal memory usage.
-                        while ( ( bytesRead = inputFile.Read( content, 0, bytesToReadAtOnce ) ) > 0 )
+                        using (var file_single = SHA3.Create( algo ) )
                         {
-                            file_total.TransformBlock   ( content, 0, bytesRead, content, 0 );
-                            file_single.TransformBlock  ( content, 0, bytesRead, content, 0 );
+                            using ( FileStream file_contents = File.OpenRead( file ) )
+                            {
+                                byte[] bytes_content    = new byte[ bytes_read_chunk ];
+                                int bytes_read          = 0;
+
+                                // (optimization) read file in chunks
+                                while ( ( bytes_read = file_contents.Read( bytes_content, 0, bytes_read_chunk ) ) > 0 )
+                                {
+                                    file_total.TransformBlock   ( bytes_content, 0, bytes_read, bytes_content, 0 );
+                                    file_single.TransformBlock  ( bytes_content, 0, bytes_read, bytes_content, 0 );
+                                }
+
+                                // close file_single block with 0 length
+                                file_single.TransformFinalBlock( bytes_content, 0, 0 );
+                            }
+
+                            if ( AppInfo.bIsDebug( ) )
+                            {
+                                Console.WriteLine( file );
+                                Console.WriteLine( BitConverter.ToString( file_single.Hash ).Replace( "-", "" ).ToUpper( ) );
+                                Console.WriteLine( "\n");
+                            }
+
                         }
-
-                        // Close file_single block with 0 length
-                        file_single.TransformFinalBlock( content, 0, 0 );
-
-                        Console.WriteLine( file );
-                        Console.WriteLine( BitConverter.ToString( file_single.Hash ).Replace( "-", "" ).ToUpper( ) );
-                        Console.WriteLine( "\n");
                     }
+
+                    // close total hash block
+                    file_total.TransformFinalBlock( new byte[ 0 ], 0, 0 );
+
+                    return BytesToString( file_total.Hash );
                 }
-
-                // close hash block
-                file_total.TransformFinalBlock(new byte[ 0 ], 0, 0 );
-
-                return BytesToString( file_total.Hash );
             }
+
+
 
         #endregion
 
-        /*
-            Double Hashing Functionality
 
-            @usage      : byte[] text = Encoding.UTF8.GetBytes( "Text );
-                          var asd = Hash.Compute( text, 2 );
-                          var asd = Hash.Compute( "sha256", text, 2 );
+
+        /*
+            Method > Management
+
+            the initial methods called when getting hash for item
         */
 
-        public static byte[] Compute( string algorithm, byte[] input, int offset, int count )
-        {
-            using ( var hash = ( HashAlgorithm)CryptoConfig.CreateFromName( algorithm ) )
+        #region "Cryptography: Hash > Manage"
+
+            /*
+                Management > MD5, SHA1, SHA-2
+            */
+
+            public static string Hash_Manage_SHA2( string algo, string src )
             {
-                return hash.ComputeHash( input, offset, count );
+                if ( Directory.Exists( src ) )
+                    return Hash.GetHash_Directory_SHA2( algo,  src );
+                else if ( File.Exists( src ) )
+                    return Hash.GetHash_File_SHA2( algo, src );
+                else
+                    return Hash.GetHash_String_SHA2( algo, src );
             }
-        }
 
-        public static byte[] Compute( string algorithm, byte[] input ) =>
-            Compute( algorithm, input, 0, input.Length );
+            /*
+                Management > SHA-3
+            */
 
-        public static byte[] Compute( string algorithm, byte[] input, int offset, int count, int iters )
-        {
-            if ( iters <= 0 )
-                throw new ArgumentException( "Iterations must be greater than zero", nameof( iters ) );
+            public static string Hash_Manage_SHA3( string algo, string src )
+            {
+                if ( Directory.Exists( src ) )
+                    return Hash.GetHash_Directory_SHA3( algo,  src );
+                else if ( File.Exists( src ) )
+                    return Hash.GetHash_File_SHA3( algo, src );
+                else
+                    return Hash.GetHash_String_SHA3( algo, src );
+            }
 
-            var result = Compute( algorithm, input, offset, count );
-
-            for ( var i = 0; i < iters - 1; ++i )
-                result = Compute( algorithm, result );
-
-            return result;
-        }
-
-        public static byte[] Compute( string algorithm, byte[] input, int iters ) =>
-            Compute( algorithm, input, 0, input.Length, iters );
+        #endregion
 
     }
 

@@ -16,6 +16,8 @@ using System.Text.RegularExpressions;
 using System.Security.Principal;
 using System.Security.Cryptography;
 using Cfg = XSum.Properties.Settings;
+using SHA3CS.Security.Cryptography;
+using System.Security.Policy;
 
 #endregion
 
@@ -394,12 +396,12 @@ namespace XSum
                 { ".gitignore",         true },
                 { ".github",            true },
                 { ".gitea",             true },
-                { "SHA*.asc",           true },
-                { "SHA*.sig",           true },
                 { "MD5*.asc",           true },
+                { "SHA*.asc",           true },
+                { "MD5*.txt",           true },
+                { "SHA*.txt",           true },
                 { "MD5*.sig",           true },
-                { "SHA256.txt",         true },
-                { "SHA256.sig",         true },
+                { "SHA*.sig",           true },
                 { xsum_path_exe,        true },
             };
 
@@ -598,11 +600,15 @@ namespace XSum
             static IDictionary<string, Func<string, string>> Dict_Hashes_Populate( )
             {
                 var dict_GetHash        = new Dictionary<string, Func<string, string>>( );
-                dict_GetHash.Add        ( "md5",    ( p ) => Hash.GetHash_MD5       ( p ) );
-                dict_GetHash.Add        ( "sha1",   ( p ) => Hash.GetHash_SHA1      ( p ) );
-                dict_GetHash.Add        ( "sha256", ( p ) => Hash.GetHash_SHA2_256  ( p ) );
-                dict_GetHash.Add        ( "sha384", ( p ) => Hash.GetHash_SHA2_384  ( p ) );
-                dict_GetHash.Add        ( "sha512", ( p ) => Hash.GetHash_SHA2_512  ( p ) );
+                dict_GetHash.Add        ( "md5",        ( p ) => Hash.Hash_Manage_SHA2      ( "md5",        p ) );
+                dict_GetHash.Add        ( "sha1",       ( p ) => Hash.Hash_Manage_SHA2      ( "sha1",       p ) );
+                dict_GetHash.Add        ( "sha256",     ( p ) => Hash.Hash_Manage_SHA2      ( "sha256",     p ) );
+                dict_GetHash.Add        ( "sha384",     ( p ) => Hash.Hash_Manage_SHA2      ( "sha384",     p ) );
+                dict_GetHash.Add        ( "sha512",     ( p ) => Hash.Hash_Manage_SHA2      ( "sha512",     p ) );
+                dict_GetHash.Add        ( "sha3224",    ( p ) => Hash.Hash_Manage_SHA3      ( "sha3224",    p ) );
+                dict_GetHash.Add        ( "sha3256",    ( p ) => Hash.Hash_Manage_SHA3      ( "sha3256",    p ) );
+                dict_GetHash.Add        ( "sha3384",    ( p ) => Hash.Hash_Manage_SHA3      ( "sha3384",    p ) );
+                dict_GetHash.Add        ( "sha3512",    ( p ) => Hash.Hash_Manage_SHA3      ( "sha3512",    p ) );
 
                 return dict_GetHash;
             }
@@ -1924,7 +1930,7 @@ namespace XSum
             if ( targ_bIsFolder )
             {
                 targ_hash               = Path.GetFullPath( arg_Target_File );
-                targ_hash               = Hash.GetHash_Directory( arg_Algo,  targ_hash );
+                targ_hash               = dict_GetHash[ arg_Algo ]( targ_hash );
                 targ_hash               = ( arg_LC_Enabled ? targ_hash.ToLower( ) : targ_hash );
             }
  
@@ -1940,9 +1946,13 @@ namespace XSum
 
             if ( targ_bIsFile )
             {
+                Console.WriteLine( "A1");
                 targ_hash               = Path.Combine( xsum_path_dir, arg_Target_File );
+                Console.WriteLine( "A2");
                 targ_hash               = dict_GetHash[ arg_Algo ]( targ_hash );
+                Console.WriteLine( "A3");
                 targ_hash               = ( arg_LC_Enabled ? targ_hash.ToLower( ) : targ_hash );
+                Console.WriteLine( "A4");
             }
 
             /*
@@ -1955,7 +1965,7 @@ namespace XSum
             if ( String.IsNullOrEmpty( targ_hash ) )
             {
                 targ_bIsString          = true;
-                targ_hash               = Hash.GetHash_String( arg_Algo, arg_Target_File );
+                targ_hash               = dict_GetHash[ arg_Algo ]( arg_Target_File );
                 targ_hash               = ( arg_LC_Enabled ? targ_hash.ToLower( ) : targ_hash );
             }
 
@@ -2652,7 +2662,7 @@ namespace XSum
             int i_success           = 0;                                                        // total files correct hash
             int i_error             = 0;                                                        // total files mismatch hash
 
-            string item_hash        = ( targ_bIsFolder ? Hash.GetHash_Directory( arg_Algo,  arg_Target_File ) : null );
+            string item_hash        = ( targ_bIsFolder ? dict_GetHash[ arg_Algo ]( arg_Target_File ) : null );
             item_hash               = (  arg_LC_Enabled ? item_hash.ToLower( ) : item_hash );
 
             string item_Target      = null;
