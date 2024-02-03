@@ -35,9 +35,9 @@ namespace XSum
 
         #region "Define: Paths"
 
-            static string xsum_path_full        = Process.GetCurrentProcess( ).MainModule.FileName;     // XSum full path to exe
-            static string xsum_path_dir         = Path.GetDirectoryName( xsum_path_full );              // XSum path to folder only
-            static string xsum_path_exe         = Path.GetFileName( xsum_path_full );                   // XSum exe name only
+            readonly static string xsum_path_full   = Process.GetCurrentProcess( ).MainModule.FileName;     // XSum full path to exe
+            readonly static string xsum_path_dir    = Path.GetDirectoryName( xsum_path_full );              // XSum path to folder only
+            readonly static string xsum_path_exe    = Path.GetFileName( xsum_path_full );                   // XSum exe name only
 
         #endregion
 
@@ -62,8 +62,8 @@ namespace XSum
 
         #region "Define: Classes"
 
-            private AppInfo AppInfo             = new AppInfo( );
-            private Benchmark Benchmark         = new Benchmark( );
+            readonly private AppInfo AppInfo        = new AppInfo( );
+            readonly private Benchmark Benchmark    = new Benchmark( );
 
         #endregion
 
@@ -77,7 +77,7 @@ namespace XSum
 
         #region "Define: Delegates"
 
-        delegate string del_sf          ( string format, params object[] arg );
+            delegate string del_sf          ( string format, params object[] arg );
             static del_sf       sf          = String.Format;
 
             delegate void del_write         ( string format, params object[] arg );
@@ -216,7 +216,7 @@ namespace XSum
 
         #region "Define: Miscellaneous"
 
-            static string assemblyName      = Assembly.GetEntryAssembly( ).GetName( ).Name;
+            readonly static string assemblyName      = Assembly.GetEntryAssembly( ).GetName( ).Name;
 
         #endregion
 
@@ -385,6 +385,17 @@ namespace XSum
                 { "SHA*.txt",       true },
                 { "MD5*.txt",       true },
                 { "BLAKE*.txt",     true },
+            };
+
+            /*
+                pre-defined hash digests
+            */
+
+            private static Dictionary<string, bool> dict_SignedDigests = new Dictionary<string, bool>
+            {
+                { "MD5*.asc",       true },
+                { "SHA*.asc",       true },
+                { "BLAKE*.asc",     true },
             };
 
             /*
@@ -751,6 +762,11 @@ namespace XSum
                 }
                 else
                 {
+
+                    /*
+                        Create list of recognized auto-verify digests to look for if user manually double-clicks xsum
+                    */
+
                     var ProcParent = AppInfo.GetParentProcess( Process.GetCurrentProcess( ) );
                     if ( ProcParent.ProcessName == "explorer" )
                     {
@@ -760,12 +776,13 @@ namespace XSum
                         nl( );
                         c2( sf( " {0,-24} {1,-30}", "[#Red][/]", "Could not locate a valid hash digest file with the name:" ) );
                         nl( );
-                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]SHA*.asc[/]" ) );
-                        nl( );
-                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]MD5*.asc[/]" ) );
-                        nl( );
-                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]BLAKE*.asc[/]" ) );
-                        nl( );
+
+                        foreach( KeyValuePair<string, bool> item in dict_SignedDigests )
+                        {
+                            c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]" + item.Key + "[/]" ) );
+                            nl( );
+                        }
+
                         nl( );
                         c2( sf( " {0,-24} {1,-30}", "[#Red][/]", "Press any key to exit.[/]" ) );
                         nl( );

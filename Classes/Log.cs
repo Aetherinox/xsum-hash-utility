@@ -1,10 +1,4 @@
-﻿/*
-    @app        : xSum
-    @repo       : https://github.com/Aetherinox/XSum
-    @author     : Aetherinox
-*/
-
-#region "Using"
+﻿#region "Using"
 
 using System;
 using System.IO;

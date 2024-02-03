@@ -1,10 +1,4 @@
-﻿/*
-    @app        : MobaXterm Keygen
-    @repo       : https://github.com/Aetherinox/MobaXtermKeygen
-    @author     : Aetherinox
-*/
-
-#region "Using"
+﻿#region "Using"
 
 using XSum;
 using System;

@@ -1,9 +1,14 @@
-﻿using System;
+﻿
+#region "Using"
+
+using System;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Collections;
 using System.IO;
+
+#endregion
 
 namespace XSum
 {
