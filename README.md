@@ -922,11 +922,12 @@ xSum will be typically launched using **Command Prompt** or **Powershell** and e
 
 However, xSum has the ability to be launched as a regular executable. When you click on the xsum.exe executable, the utility will automatically go into **Verify Mode**. In order to utilize this mode, xsum.exe must be in the same folder as a hash digest file, which can be any of the following:
 
+- MD5.*.asc
 - SHA1.*.asc
 - SHA256.*.asc
 - SHA384.*.asc
 - SHA512.*.asc
-- MD5.*.asc
+- BLAKE.*.asc
 
 <br />
 
