@@ -1,0 +1,70 @@
+<Project>
+
+	<PropertyGroup>
+		<Owners>Aetherinox</Owners>
+		<Authors>Aetherinox</Authors>
+		<RepositoryUrl>https://github.com/Aetherinox/xsum-shahash-utility</RepositoryUrl>
+		<Copyright>Copyright © 2024-$([System.DateTime]::Today.Year) $(Authors)</Copyright>
+		<Title>xSum Hash Utility</Title>
+		<Description>Create, sign, and verify your application with a hash digest. Each hash digest consists of a single file which lists every file associated to your project and the hash associated to each file. Once the hash digest is generated, you may sign it using your GPG key.</Description>
+
+		<RootNamespace>$(MSBuildProjectName)</RootNamespace>
+		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
+		<AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
+		<Product>$(MSBuildProjectName)</Product>
+
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+		<PackageTags>xsum hash Blake2b Blake2s SHA1 SHA3 SHA256 SHA512 MD5 HashAlgorithm Cryptography</PackageTags>
+		<PackageReleaseNotes>View $(RepositoryUrl)/releases for release-specific notes.</PackageReleaseNotes>
+
+		<LangVersion>12</LangVersion>
+		<WarningLevel>7</WarningLevel>
+		<Features>strict</Features>
+		<Nullable>annotations</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+		<Configurations>Debug;Release;Dist</Configurations>
+		<Configuration Condition="'$(Configuration)'=='Release'">Release</Configuration>
+        <Configuration Condition="'$(Configuration)'=='Dist'">Dist</Configuration>
+        <Configuration Condition="'$(Configuration)'=='Debug'">Debug</Configuration>
+
+        <ProjectRoot>$(MSBuildProjectDirectory)\</ProjectRoot>
+		<RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+		<BaseIntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+		<BaseOutputBinPath>$(RepositoryRoot)bin\</BaseOutputBinPath>
+		<BaseOutputPath>$(BaseOutputBinPath)\</BaseOutputPath>
+		<IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
+		<OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
+		<PackageOutputPath>$(RepositoryRoot)nuget\</PackageOutputPath>
+		<IntDir>$(IntermediateOutputPath)$(TargetFramework)\</IntDir>
+		<OutDir>$(OutputPath)$(TargetFramework)\</OutDir>
+
+		<AssemblyInfoFile>$(IntDir)_AssemblyInfo.cs</AssemblyInfoFile>
+		<AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)aetherx_9a.priv.pfx</AssemblyOriginatorKeyFile>
+		<PublicKey>00a4000004800000140100000602000000a40000525341310008000001000100117aa1d438e0a76c30ba6b57e84ca7bdec681c21c9f5db4e09520e0e5447252d72960bab1587ee871ee505a574db56084ba60715f6a544de78a05f6cf79e81d68188cf758d89ad1ca7a9c419dbed7369995319936c2134342182055eaba8e45b641f9fd7a39c23ee1773d5d92b8864f5233430942e30f0d7a045df55c2058c9d40225bf2143c373f23cf6168a0c810d16a8953ce99408ad990046f744a17bc7fdc54c8c71cacd260b20cb8f74128eb4d14a2a7101b2daa11e331bccc86666cf5dfe421531627ee817989efdb96fc4f4fd13709df1ab292f6e90ed190e8ca8f6c0f59879063ab465df52c40b9e785068d0104e70c348adbf090f0c0e4abec5fbc</PublicKey>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'!='Debug'">
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>portable</DebugType>
+		<Optimize>true</Optimize>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Dist' Or '$(Configuration)'=='Coverage'">
+		<Deterministic>true</Deterministic>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsTrimmable>
+		<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(Configuration)'=='Dist' Or '$(Configuration)'=='Coverage'">
+		<None Include="$(MSBuildThisFileDirectory)logo.png" Pack="true" PackagePath="/" />
+		<None Include="$(ProjectRoot)readme.md" Pack="true" PackagePath="/" />
+		<None Include="$(RepositoryRoot)license" Pack="true" PackagePath="/" />
+		<SourceRoot Include="$(RepositoryRoot)" />
+	</ItemGroup>
+
+</Project>

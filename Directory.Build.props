@@ -1,0 +1,40 @@
+<Project>
+
+	<Import Project="$(MSBuildThisFileDirectory)\Common.props" />
+
+	<PropertyGroup>
+		<DefineConstants Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">$(DefineConstants);BUILTIN_NULLABLE</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Nullable>annotations</Nullable>
+		<Nullable Condition="$(DefineConstants.Contains('BUILTIN_NULLABLE'))">enable</Nullable>
+		<SignAssembly>true</SignAssembly>
+		<PolySharpIncludeRuntimeSupportedAttributes>true</PolySharpIncludeRuntimeSupportedAttributes>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'!='Debug'">
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Dist'">
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<DeterministicSourcePaths>true</DeterministicSourcePaths>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="PolySharp" Version="1.13.2" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)'=='Dist' or '$(Configuration)'=='Coverage'">
+		<PackageReference Include="SauceControl.InheritDoc" Version="1.4.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)'!='Dist'">
+		<InternalsVisibleTo Include="$(MSBuildProjectName).Test" />
+	</ItemGroup>
+
+</Project>

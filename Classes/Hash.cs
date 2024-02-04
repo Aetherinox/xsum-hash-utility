@@ -66,6 +66,7 @@ namespace XSum
             method : file stream
 
             @arg    : str path
+            @ret    : str
         */
 
         private static System.IO.FileStream GetFileStream( string path )
@@ -508,6 +509,7 @@ namespace XSum
 
                     foreach ( string file in files )
                     {
+
                         using (var file_single = Blake2s.CreateHashAlgorithm( hash_size ) )
                         {
                             using ( FileStream file_contents = File.OpenRead( file ) )

@@ -70,7 +70,7 @@ namespace XSum
             if ( System.Diagnostics.Debugger.IsAttached )
                 return true;
 
-            if ( Cfg.Default.app_bDevmode )
+            if ( XSum.App.Settings.app_bDevmode )
                 return true;
 
             #if DEBUG
@@ -205,7 +205,7 @@ namespace XSum
         {
             get
             {
-                if (System.Deployment.Application.ApplicationDeployment.IsNetworkDeployed)
+                if ( System.Deployment.Application.ApplicationDeployment.IsNetworkDeployed )
                 {
                     Version ver = System.Deployment.Application.ApplicationDeployment.CurrentDeployment.CurrentVersion;
                     return string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
@@ -213,7 +213,7 @@ namespace XSum
                 else
                 {
                     var ver = Assembly.GetExecutingAssembly().GetName().Version;
-                    return string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
+                    return string.Format( "{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
                 }
             }
         }

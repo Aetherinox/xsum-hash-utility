@@ -17,8 +17,8 @@ using System.Security.Principal;
 using System.Security.Cryptography;
 using Cfg = XSum.Properties.Settings;
 using SHA3M.Security.Cryptography;
-using System.Security.Policy;
 using Blake2Fast;
+using System.Security.Cryptography.X509Certificates;
 
 #endregion
 
@@ -27,6 +27,29 @@ namespace XSum
 
     public class App
     {
+
+        #region "Global Settings"
+
+            /*
+                Global Settings
+
+                app_bDevmode        : bool
+                Determines if debug mode is enabled
+
+                bShowedUpdates      : bool
+                This determines if the app should show the update notification. This value must be set otherwise,
+                every time the user goes from the About / Contribute WinForm back to Parent, the update notification will appear over and over.
+            */
+
+            public static class Settings
+            {
+                public static bool bShowedUpdates = false;
+                public static bool app_bDevmode = false;
+            }
+
+        #endregion
+
+
 
         /*
             Define: Paths
@@ -1643,6 +1666,43 @@ namespace XSum
                                     arg_Debug_Enabled = true;
                                     break;
 
+                                /*
+                                    CASE > DEBUG > WHERE
+
+                                    Lists the paths in use by xsum
+                                */
+
+                                case "-mw":
+                                    if ( arg_VerifyMode_Enabled || arg_GenMode_Enabled || arg_Benchmark_Enabled )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Can't be used with [#Yellow]--generate[/], [#Yellow]--verify[/], or [#Yellow]--benchmark[/] arguments[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+
+                                    var algorithm_list      = Dict_Hashes_Populate( );
+                                    bool bFind_GPG          = FindProgram( "gpg.exe" );
+                                    string status_gpg       = ( bFind_GPG ? "Installed" : "Not Installed" );
+
+                                    nl( );
+                                    c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Full Path:[/]", "[#Gray]" + xsum_path_full + "[/]" ) );
+                                    nl( );
+                                    c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Directory:[/]", "[#Gray]" + xsum_path_dir + "[/]" ) );
+                                    nl( );
+                                    c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Exe:[/]", "[#Gray]" + xsum_path_exe + "[/]" ) );
+                                    nl( );
+                                    c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Ignores:[/]", "[#Gray]" + dict_Ignored.Count + "[/]" ) );
+                                    nl( );
+                                    c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Algorithms:[/]", "[#Gray]" + algorithm_list.Count + "[/]" ) );
+                                    nl( );
+                                    c2( sf( " {0,-28} {1,-30}", "[#DarkGray]GPG:[/]", "[#Gray]" + status_gpg + "[/]" ) );
+                                    nl( );
+
+                                    return (int)ExitCode.Success;
+
                             }
 
                         }
@@ -1836,7 +1896,7 @@ namespace XSum
 
                     using ( StreamWriter writer = new StreamWriter( file_saveto, !bOverwrite ) )
                     {
-                        writer.WriteLine( output.ToString() );
+                        writer.WriteLine( output.ToString( ) );
                     }
                 }
             } );

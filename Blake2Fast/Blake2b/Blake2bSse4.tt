@@ -1,0 +1,437 @@
+<#@ template language="C#" hostspecific="true" #>
+<#@ output extension=".cs" encoding="utf-8" #>
+<# var alg = b2b; string isa = "Sse41"; #>
+<#@ include file="..\_Blake2Simd.ttinclude" #><#@ include file="..\_Blake2Alg.ttinclude" #>
+<#+
+
+void loadrormasks() {
+}
+
+void loadiv() {
+#>
+var row3l = Sse2.LoadVector128(piv);
+var row3h = Sse2.LoadVector128(piv + Vector128<ulong>.Count);
+var row4l = Sse2.LoadVector128(piv + Vector128<ulong>.Count * 2);
+var row4h = Sse2.LoadVector128(piv + Vector128<ulong>.Count * 3);
+<#+
+}
+
+void loadstate() {
+#>
+var row1l = Sse2.LoadVector128(sh + zero);
+var row1h = Sse2.LoadVector128(sh + zero + Vector128<ulong>.Count);
+var row2l = Sse2.LoadVector128(sh + zero + Vector128<ulong>.Count * 2);
+var row2h = Sse2.LoadVector128(sh + zero + Vector128<ulong>.Count * 3);
+<#+
+	WriteLine(null);
+#>
+row4l = Sse2.Xor(row4l, Sse2.LoadVector128(sh + Vector128<ulong>.Count * 4)); // t[]
+row4h = Sse2.Xor(row4h, Sse2.LoadVector128(sh + Vector128<ulong>.Count * 5)); // f[]
+<#+
+}
+
+void loadmsg1() {
+#>
+var m0 = Sse2.LoadVector128(m);
+var m1 = Sse2.LoadVector128(m + Vector128<ulong>.Count);
+var m2 = Sse2.LoadVector128(m + Vector128<ulong>.Count * 2);
+var m3 = Sse2.LoadVector128(m + Vector128<ulong>.Count * 3);
+<#+
+}
+
+void loadmsg2() {
+#>
+var m4 = Sse2.LoadVector128(m + Vector128<ulong>.Count * 4);
+var m5 = Sse2.LoadVector128(m + Vector128<ulong>.Count * 5);
+var m6 = Sse2.LoadVector128(m + Vector128<ulong>.Count * 6);
+var m7 = Sse2.LoadVector128(m + Vector128<ulong>.Count * 7);
+<#+
+}
+
+void csebreak() {
+#>
+var vz = Sse2.CompareGreaterThan(b0.AsInt32(), b0.AsInt32()).AsUInt64();
+m0 = Sse2.Xor(m0, vz);
+m2 = Sse2.Xor(m2, vz);
+m3 = Sse2.Xor(m3, vz);
+m4 = Sse2.Xor(m4, vz);
+m6 = Sse2.Xor(m6, vz);
+<#+
+}
+
+void finalize() {
+#>
+row1l = Sse2.Xor(row1l, row3l);
+row1h = Sse2.Xor(row1h, row3h);
+row1l = Sse2.Xor(row1l, Sse2.LoadVector128(sh));
+row1h = Sse2.Xor(row1h, Sse2.LoadVector128(sh + Vector128<ulong>.Count));
+Sse2.Store(sh, row1l);
+Sse2.Store(sh + Vector128<ulong>.Count, row1h);
+<#+
+	WriteLine(null);
+#>
+row2l = Sse2.Xor(row2l, row4l);
+row2h = Sse2.Xor(row2h, row4h);
+row2l = Sse2.Xor(row2l, Sse2.LoadVector128(sh + Vector128<ulong>.Count * 2));
+row2h = Sse2.Xor(row2h, Sse2.LoadVector128(sh + Vector128<ulong>.Count * 3));
+Sse2.Store(sh + Vector128<ulong>.Count * 2, row2l);
+Sse2.Store(sh + Vector128<ulong>.Count * 3, row2h);
+<#+
+}
+
+void diagonalize(bool first = false) {
+#>
+<#= first ? "var " : "" #>t0 = Sse2.Shuffle(row1l.AsDouble(), row1h.AsDouble(), 0b_01).AsUInt64();
+<#= first ? "var " : "" #>t1 = Sse2.Shuffle(row1h.AsDouble(), row1l.AsDouble(), 0b_01).AsUInt64();
+row1l = t1;
+row1h = t0;
+<#+
+	WriteLine(null);
+#>
+b0 = row4l;
+row4l = row4h;
+row4h = b0;
+<#+
+	WriteLine(null);
+#>
+t0 = Sse2.Shuffle(row3l.AsDouble(), row3h.AsDouble(), 0b_01).AsUInt64();
+t1 = Sse2.Shuffle(row3h.AsDouble(), row3l.AsDouble(), 0b_01).AsUInt64();
+row3l = t0;
+row3h = t1;
+<#+
+}
+
+void undiagonalize() {
+#>
+t0 = Sse2.Shuffle(row1h.AsDouble(), row1l.AsDouble(), 0b_01).AsUInt64();
+t1 = Sse2.Shuffle(row1l.AsDouble(), row1h.AsDouble(), 0b_01).AsUInt64();
+row1l = t1;
+row1h = t0;
+<#+
+	WriteLine(null);
+#>
+b0 = row4l;
+row4l = row4h;
+row4h = b0;
+<#+
+	WriteLine(null);
+#>
+t0 = Sse2.Shuffle(row3h.AsDouble(), row3l.AsDouble(), 0b_01).AsUInt64();
+t1 = Sse2.Shuffle(row3l.AsDouble(), row3h.AsDouble(), 0b_01).AsUInt64();
+row3l = t0;
+row3h = t1;
+<#+
+}
+
+void g1(bool first = false) {
+#>
+row1l = Sse2.Add(Sse2.Add(row1l, b0), row2l);
+row1h = Sse2.Add(Sse2.Add(row1h, b1), row2h);
+<#+
+	WriteLine(null);
+#>
+row4l = Sse2.Xor(row4l, row1l);
+row4h = Sse2.Xor(row4h, row1h);
+<#+
+	WriteLine(null);
+#>
+row4l = Sse2.Shuffle(row4l.AsUInt32(), 0b_10_11_00_01).AsUInt64();
+row4h = Sse2.Shuffle(row4h.AsUInt32(), 0b_10_11_00_01).AsUInt64();
+<#+
+	WriteLine(null);
+#>
+row3l = Sse2.Add(row3l, row4l);
+row3h = Sse2.Add(row3h, row4h);
+<#+
+	WriteLine(null);
+#>
+row2l = Sse2.Xor(row2l, row3l);
+row2h = Sse2.Xor(row2h, row3h);
+<#+
+	WriteLine(null);
+#>
+<#= first ? "var " : "" #>r24 = Vector128.Create((byte)3, 4, 5, 6, 7, 0, 1, 2, 11, 12, 13, 14, 15, 8, 9, 10);
+row2l = Ssse3.Shuffle(row2l.AsByte(), r24).AsUInt64();
+row2h = Ssse3.Shuffle(row2h.AsByte(), r24).AsUInt64();
+<#+
+}
+
+void g2(bool first = false) {
+#>
+row1l = Sse2.Add(Sse2.Add(row1l, b0), row2l);
+row1h = Sse2.Add(Sse2.Add(row1h, b1), row2h);
+<#+
+	WriteLine(null);
+#>
+row4l = Sse2.Xor(row4l, row1l);
+row4h = Sse2.Xor(row4h, row1h);
+<#+
+	WriteLine(null);
+#>
+<#= first ? "var " : "" #>r16 = Vector128.Create((byte)2, 3, 4, 5, 6, 7, 0, 1, 10, 11, 12, 13, 14, 15, 8, 9);
+row4l = Ssse3.Shuffle(row4l.AsByte(), r16).AsUInt64();
+row4h = Ssse3.Shuffle(row4h.AsByte(), r16).AsUInt64();
+<#+
+	WriteLine(null);
+#>
+row3l = Sse2.Add(row3l, row4l);
+row3h = Sse2.Add(row3h, row4h);
+<#+
+	WriteLine(null);
+#>
+row2l = Sse2.Xor(row2l, row3l);
+row2h = Sse2.Xor(row2h, row3h);
+<#+
+	WriteLine(null);
+#>
+row2l = Sse2.Xor(Sse2.ShiftRightLogical(row2l, 63), Sse2.Add(row2l, row2l));
+row2h = Sse2.Xor(Sse2.ShiftRightLogical(row2h, 63), Sse2.Add(row2h, row2h));
+<#+
+}
+
+void loadcode(int round, int part) {
+	int r = round % 10 * 10 + part;
+	switch (r) {
+		case 0:
+#>
+<#= round == 0 ? "var " : "" #>b0 = Sse2.UnpackLow(m0, m1);
+<#= round == 0 ? "var " : "" #>b1 = Sse2.UnpackLow(m2, m3);
+<#+
+			break;
+		case 1:
+#>
+b0 = Sse2.UnpackHigh(m0, m1);
+b1 = Sse2.UnpackHigh(m2, m3);
+<#+
+			break;
+		case 2:
+#>
+b0 = Sse2.UnpackLow(m7, m4);
+b1 = Sse2.UnpackLow(m5, m6);
+<#+
+			break;
+		case 3:
+#>
+b0 = Sse2.UnpackHigh(m7, m4);
+b1 = Sse2.UnpackHigh(m5, m6);
+<#+
+			break;
+		case 10:
+#>
+b0 = Sse2.UnpackLow(m7, m2);
+b1 = Sse2.UnpackHigh(m4, m6);
+<#+
+			break;
+		case 11:
+#>
+b0 = Sse2.UnpackLow(m5, m4);
+b1 = Sse2.Shuffle(m7.AsDouble(), m3.AsDouble(), 0b_01).AsUInt64();
+<#+
+			break;
+		case 12:
+#>
+b0 = Sse2.UnpackHigh(m2, m0);
+b1 = Sse41.Blend(m0.AsUInt16(), m5.AsUInt16(), 0b_1111_0000).AsUInt64();
+<#+
+			break;
+		case 13:
+#>
+b0 = Sse2.Shuffle(m1.AsDouble(), m6.AsDouble(), 0b_01).AsUInt64();
+b1 = Sse41.Blend(m1.AsUInt16(), m3.AsUInt16(), 0b_1111_0000).AsUInt64();
+<#+
+			break;
+		case 20:
+#>
+b0 = Sse2.Shuffle(m5.AsDouble(), m6.AsDouble(), 0b_01).AsUInt64();
+b1 = Sse2.UnpackHigh(m2, m7);
+<#+
+			break;
+		case 21:
+#>
+b0 = Sse2.UnpackLow(m4, m0);
+b1 = Sse41.Blend(m1.AsUInt16(), m6.AsUInt16(), 0b_1111_0000).AsUInt64();
+<#+
+			break;
+		case 22:
+#>
+b0 = Sse2.Shuffle(m4.AsDouble(), m5.AsDouble(), 0b_01).AsUInt64();
+b1 = Sse2.UnpackHigh(m1, m3);
+<#+
+			break;
+		case 23:
+#>
+b0 = Sse2.UnpackLow(m2, m7);
+b1 = Sse41.Blend(m3.AsUInt16(), m0.AsUInt16(), 0b_1111_0000).AsUInt64();
+<#+
+			break;
+		case 30:
+#>
+b0 = Sse2.UnpackHigh(m3, m1);
+b1 = Sse2.UnpackHigh(m6, m5);
+<#+
+			break;
+		case 31:
+#>
+b0 = Sse2.UnpackHigh(m4, m0);
+b1 = Sse2.UnpackLow(m6, m7);
+<#+
+			break;
+		case 32:
+#>
+b0 = Sse2.Shuffle(m7.AsDouble(), m1.AsDouble(), 0b_01).AsUInt64();
+b1 = Sse2.Shuffle(m2.AsUInt32(), 0b_01_00_11_10).AsUInt64();
+<#+
+			break;
+		case 33:
+#>
+b0 = Sse2.UnpackLow(m4, m3);
+b1 = Sse2.UnpackLow(m5, m0);
+<#+
+			break;
+		case 40:
+#>
+b0 = Sse2.UnpackHigh(m4, m2);
+b1 = Sse2.UnpackLow(m1, m5);
+<#+
+			break;
+		case 41:
+#>
+b0 = Sse41.Blend(m0.AsUInt16(), m3.AsUInt16(), 0b_1111_0000).AsUInt64();
+b1 = Sse41.Blend(m2.AsUInt16(), m7.AsUInt16(), 0b_1111_0000).AsUInt64();
+<#+
+			break;
+		case 42:
+#>
+b0 = Sse2.Shuffle(m1.AsDouble(), m7.AsDouble(), 0b_01).AsUInt64();
+b1 = Sse2.Shuffle(m5.AsDouble(), m3.AsDouble(), 0b_01).AsUInt64();
+<#+
+			break;
+		case 43:
+#>
+b0 = Sse2.UnpackHigh(m6, m0);
+b1 = Sse2.UnpackLow(m6, m4);
+<#+
+			break;
+		case 50:
+#>
+b0 = Sse2.UnpackLow(m1, m3);
+b1 = Sse2.UnpackLow(m0, m4);
+<#+
+			break;
+		case 51:
+#>
+b0 = Sse2.UnpackLow(m6, m5);
+b1 = Sse2.UnpackHigh(m5, m1);
+<#+
+			break;
+		case 52:
+#>
+b0 = Sse2.Shuffle(m0.AsDouble(), m2.AsDouble(), 0b_01).AsUInt64();
+b1 = Sse2.UnpackHigh(m3, m7);
+<#+
+			break;
+		case 53:
+#>
+b0 = Sse2.Shuffle(m4.AsDouble(), m6.AsDouble(), 0b_11).AsUInt64();
+b1 = Sse2.Shuffle(m2.AsDouble(), m7.AsDouble(), 0b_01).AsUInt64();
+<#+
+			break;
+		case 60:
+#>
+b0 = Sse41.Blend(m6.AsUInt16(), m0.AsUInt16(), 0b_1111_0000).AsUInt64();
+b1 = Sse2.Shuffle(m7.AsDouble(), m2.AsDouble(), 0b_00).AsUInt64();
+<#+
+			break;
+		case 61:
+#>
+b0 = Sse2.Shuffle(m2.AsDouble(), m7.AsDouble(), 0b_11).AsUInt64();
+b1 = Sse2.Shuffle(m6.AsDouble(), m5.AsDouble(), 0b_01).AsUInt64();
+<#+
+			break;
+		case 62:
+#>
+b0 = Sse2.Shuffle(m4.AsDouble(), m0.AsDouble(), 0b_00).AsUInt64();
+b1 = Sse41.Blend(m3.AsUInt16(), m4.AsUInt16(), 0b_1111_0000).AsUInt64();
+<#+
+			break;
+		case 63:
+#>
+b0 = Sse2.UnpackHigh(m5, m3);
+b1 = Sse2.Shuffle(m1.AsUInt32(), 0b_01_00_11_10).AsUInt64();
+<#+
+			break;
+		case 70:
+#>
+b0 = Sse2.UnpackHigh(m6, m3);
+b1 = Sse41.Blend(m6.AsUInt16(), m1.AsUInt16(), 0b_1111_0000).AsUInt64();
+<#+
+			break;
+		case 71:
+#>
+b0 = Sse2.Shuffle(m5.AsDouble(), m7.AsDouble(), 0b_01).AsUInt64();
+b1 = Sse2.UnpackHigh(m0, m4);
+<#+
+			break;
+		case 72:
+#>
+b0 = Sse41.Blend(m1.AsUInt16(), m2.AsUInt16(), 0b_1111_0000).AsUInt64();
+b1 = Sse2.Shuffle(m7.AsDouble(), m4.AsDouble(), 0b_01).AsUInt64();
+<#+
+			break;
+		case 73:
+#>
+b0 = Sse2.Shuffle(m5.AsDouble(), m0.AsDouble(), 0b_00).AsUInt64();
+b1 = Sse2.Shuffle(m2.AsDouble(), m3.AsDouble(), 0b_00).AsUInt64();
+<#+
+			break;
+		case 80:
+#>
+b0 = Sse2.UnpackLow(m3, m7);
+b1 = Sse2.Shuffle(m5.AsDouble(), m0.AsDouble(), 0b_01).AsUInt64();
+<#+
+			break;
+		case 81:
+#>
+b0 = Sse2.Shuffle(m7.AsDouble(), m4.AsDouble(), 0b_11).AsUInt64();
+b1 = Sse2.Shuffle(m1.AsDouble(), m4.AsDouble(), 0b_01).AsUInt64();
+<#+
+			break;
+		case 82:
+#>
+b0 = Sse2.Shuffle(m5.AsDouble(), m6.AsDouble(), 0b_00).AsUInt64();
+b1 = Sse2.Shuffle(m6.AsDouble(), m0.AsDouble(), 0b_11).AsUInt64();
+<#+
+			break;
+		case 83:
+#>
+b0 = Sse2.Shuffle(m2.AsDouble(), m1.AsDouble(), 0b_01).AsUInt64();
+b1 = Sse2.Shuffle(m3.AsDouble(), m2.AsDouble(), 0b_01).AsUInt64();
+<#+
+			break;
+		case 90:
+#>
+b0 = Sse2.Shuffle(m5.AsDouble(), m4.AsDouble(), 0b_00).AsUInt64();
+b1 = Sse2.UnpackHigh(m3, m0);
+<#+
+			break;
+		case 91:
+#>
+b0 = Sse2.UnpackLow(m1, m2);
+b1 = Sse41.Blend(m3.AsUInt16(), m2.AsUInt16(), 0b_1111_0000).AsUInt64();
+<#+
+			break;
+		case 92:
+#>
+b0 = Sse2.UnpackHigh(m6, m7);
+b1 = Sse2.UnpackHigh(m4, m1);
+<#+
+			break;
+		case 93:
+#>
+b0 = Sse2.Shuffle(m0.AsDouble(), m5.AsDouble(), 0b_10).AsUInt64();
+b1 = Sse2.UnpackLow(m7, m6);
+<#+
+			break;
+	}
+}
+#>

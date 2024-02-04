@@ -67,7 +67,7 @@ IF %dir_home:~-1%==\ SET dir_home=%dir_home:~0,-1%
 :: -----------------------------------------------------------------------------------------------------
 
 SET ILMERGE_VERSION=3.0.41
-SET SN_KEY=aetherx_9a_sn.pub.snk
+SET SN_KEY=aetherx.snk
 
 :: -----------------------------------------------------------------------------------------------------
 ::  target executable name
@@ -79,8 +79,8 @@ SET APP_NAME=xsum.exe
 ::  Set build, used for directory. Typically Release or Debug
 :: -----------------------------------------------------------------------------------------------------
 
-SET PATH_ROOT=bin\Release
-SET PATH_PLATFORM=net481
+SET PATH_ROOT=bin
+SET PATH_CONFIGURATION=Dist
 SET PATH_PUBLISH=publish
 
 :: -----------------------------------------------------------------------------------------------------
@@ -95,14 +95,13 @@ SET PATH_ILMERGE=%USERPROFILE%\.nuget\packages\ilmerge\%ILMERGE_VERSION%\tools\n
 
 echo Merging %APP_NAME% ...
 
-"%PATH_ILMERGE%"\ILMerge.exe %PATH_ROOT%\%PATH_PLATFORM%\%PATH_PUBLISH%\%APP_NAME%  ^
-    /lib:%PATH_ROOT%\%PATH_PLATFORM%\%PATH_PUBLISH% ^
-    /out:%PATH_ROOT%\%PATH_PLATFORM%\%PATH_PUBLISH%\%APP_NAME% ^
+"%PATH_ILMERGE%"\ILMerge.exe %PATH_ROOT%\%PATH_CONFIGURATION%\%APP_NAME%  ^
+    /lib:%PATH_ROOT%\%PATH_CONFIGURATION% ^
+    /out:%PATH_ROOT%\%PATH_CONFIGURATION%\%APP_NAME% ^
     System.Buffers.dll ^
-    System.Management.Automation.dll ^
+    System.Numerics.Vectors.dll ^
     System.Memory.dll ^
-    SauceControl.Blake2Fast.dll ^
-    System.Numerics.Vectors.dll
+    System.Runtime.CompilerServices.Unsafe.dll
 
     GOTO SIGN_EXE_DLL_CUROLDER
 
@@ -116,7 +115,7 @@ echo Merging %APP_NAME% ...
     ::  sign EXE
     :: -----------------------------------------------------------------------------------------------------
 
-    for /R %PATH_ROOT%\%PATH_PLATFORM%\%PATH_PUBLISH% %%f in ( *.exe ) do (
+    for /R %PATH_ROOT%\%PATH_CONFIGURATION%\%PATH_PUBLISH% %%f in ( *.exe ) do (
         call signtool sign /sha1 "%CERT_THUMBPRINT%" /fd SHA256 /d "Aetherx" /du "https://github.com/Aetherinox" /t http://timestamp.comodoca.com/authenticode "%%f"
     )
 

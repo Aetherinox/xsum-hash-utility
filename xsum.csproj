@@ -6,25 +6,54 @@
     <AssemblyDescription>Command-line utility for Windows which generates and verifies the hash of directories and files</AssemblyDescription>
     <AssemblyProduct>DevOps</AssemblyProduct>
     <Authors>Aetherinox</Authors>
-    <RepositoryUrl>https://github.com/aetherinox/xsum</RepositoryUrl>
-    <Copyright>Copyright © 2024</Copyright> 
+    <RepositoryUrl>https://github.com/Aetherinox/xsum-hash-utility</RepositoryUrl>
+    <Copyright>Copyright (c) 2024</Copyright> 
     <OutputType>Exe</OutputType>
-    <Version>1.0.0.0</Version>
+    <Version>1.1.0.0</Version>
     <ApplicationIcon>xsum.ico</ApplicationIcon>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>aetherx_9a.priv.pfx</AssemblyOriginatorKeyFile>
-    <PackageProjectUrl>https://github.com/Aetherinox/xsum</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Aetherinox/xsum-hash-utility</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
+    <Title>xSum</Title>
+    <Description>Create, sign, and verify your application with a hash digest. Each hash digest consists of a single file which lists every file associated to your project and the hash associated to each file. Once the hash digest is generated, you may sign it using your GPG key.</Description>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>hash;sha1;sha-256;sha-512;blake2b;blake2s;sha3</PackageTags>
   </PropertyGroup>
+
+	<PropertyGroup>
+		<DefineConstants>$(DefineConstants);BLAKE2_PUBLIC;BLAKE2_CRYPTOGRAPHY</DefineConstants>
+		<DefineConstants Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">$(DefineConstants);BUILTIN_SPAN</DefineConstants>
+		<DefineConstants Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.0'))">$(DefineConstants);HWINTRINSICS</DefineConstants>
+		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
+		<BaseIntermediateOutputPath />
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<PackageOutputPath />
+		<NeutralLanguage>en</NeutralLanguage>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<BaseOutputPath></BaseOutputPath>
+		<StartupObject>XSum.App</StartupObject>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <NoWarn>1701;1702;1591</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <NoWarn>1701;1702;1591</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|AnyCPU'">
+	  <NoWarn>1701;1702;1591</NoWarn>
+	</PropertyGroup>
 
   <ItemGroup>
     <Content Include="xsum.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ilmerge" Version="3.0.41" />
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" />
-    <PackageReference Include="SauceControl.Blake2Fast" Version="2.0.0" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
 
@@ -55,16 +84,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Docs\images\logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>settings.Designer.cs</LastGenOutput>
     </None>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
-
-  <Target Name="ILMerge">
-    <!-- the ILMergePath property points to the location of ILMerge.exe console application -->
-    <Exec Command="$(ILMergeConsolePath) bin\Release\net481\xsum.exe  /out:xsum-stable.exe bin\Release\net481\System.Management.Automation.dll " />
-  </Target>
 
 <Target Name="BeforeBuild">
     <ItemGroup>
@@ -76,10 +108,6 @@
         <Output TaskParameter="OutputFile" ItemName="Compile" />
         <Output TaskParameter="OutputFile" ItemName="FileWrites" />
     </WriteCodeFragment>
-</Target>
-
-<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-  <Exec Command="call &quot;$(SolutionDir)build.bat&quot;" />
 </Target>
 
 </Project>

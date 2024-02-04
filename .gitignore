@@ -66,6 +66,10 @@
 
 /bin/Release/.vshistory*
 
+/bin/Dist/*
+!/bin/Dist/
+!/bin/Dist/*.exe
+
 # Allow: SHA3
 !/SHA3*
 /SHA3/.vshistory*
@@ -106,3 +110,5 @@
 !*.ico
 !*.md
 !*.bat
+!*.props
+!*.targets
