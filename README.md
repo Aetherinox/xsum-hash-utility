@@ -258,10 +258,9 @@ To verify a hash digest, you need:
 
 A **hash digest** is usually one of the following files:
 - MD5.txt
-- SHA1.txt
-- SHA256.txt
-- SHA384.txt
-- SHA512.txt
+- SHA*.txt
+- SHA3*.txt
+- BLAKE*.txt
 
 <br />
 
