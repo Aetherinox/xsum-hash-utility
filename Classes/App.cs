@@ -19,6 +19,7 @@ using Cfg = XSum.Properties.Settings;
 using SHA3M.Security.Cryptography;
 using Blake2Fast;
 using System.Security.Cryptography.X509Certificates;
+using Aetherx.Algo;
 
 #endregion
 
@@ -642,6 +643,9 @@ namespace XSum
             {
                 var dict_GetHash        = new Dictionary<string, Func<string, string>>( );
 
+                dict_GetHash.Add        ( "crc8",           ( p ) => Hash.Hash_Manage_CRC       ( "8",          p ) );
+                dict_GetHash.Add        ( "crc16",          ( p ) => Hash.Hash_Manage_CRC       ( "16",         p ) );
+                dict_GetHash.Add        ( "crc32",          ( p ) => Hash.Hash_Manage_CRC       ( "32",         p ) );
                 dict_GetHash.Add        ( "md5",            ( p ) => Hash.Hash_Manage_SHA2      ( "md5",        p ) );
                 dict_GetHash.Add        ( "sha1",           ( p ) => Hash.Hash_Manage_SHA2      ( "sha1",       p ) );
                 dict_GetHash.Add        ( "sha256",         ( p ) => Hash.Hash_Manage_SHA2      ( "sha256",     p ) );
@@ -750,6 +754,14 @@ namespace XSum
 
             static int Main( string[] args )
             {
+
+                // using text
+                var text            = "test";
+                var textBuffer      = System.Text.Encoding.UTF8.GetBytes ( text );
+                var textCrc         = Crc32.ComputeChecksum ( textBuffer );
+                //Console.WriteLine ( "Text Algo: {0:X8}", textCrc );
+
+
 
                 /*
                     This is for automatic verification. It's only used by the developer.
@@ -2050,13 +2062,9 @@ namespace XSum
 
             if ( targ_bIsFile )
             {
-                Console.WriteLine( "A1");
                 targ_hash               = Path.Combine( xsum_path_dir, arg_Target_File );
-                Console.WriteLine( "A2");
                 targ_hash               = dict_GetHash[ arg_Algo ]( targ_hash );
-                Console.WriteLine( "A3");
                 targ_hash               = ( arg_LC_Enabled ? targ_hash.ToLower( ) : targ_hash );
-                Console.WriteLine( "A4");
             }
 
             /*

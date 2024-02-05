@@ -47,6 +47,13 @@
 /bin/Release/*.dll
 /bin/Release/*exe.config
 
+/bin/Dist/*
+/bin/Dist/*.pdb
+/bin/Dist/*.exe
+/bin/Dist/*.manifest
+/bin/Dist/*.application
+/bin/Dist/*.dll
+
 /MSBuildCode/*
 !/MSBuildCode/
 
@@ -66,10 +73,6 @@
 
 /bin/Release/.vshistory*
 
-/bin/Dist/*
-!/bin/Dist/
-!/bin/Dist/*.exe
-
 # Allow: SHA3
 !/SHA3*
 /SHA3/.vshistory*
@@ -81,6 +84,10 @@
 # Allow: Blake3
 !/Blake3*
 /Blake3/.vshistory*
+
+# Allow: CRC
+!/CRC*
+/CRC/.vshistory*
 
 # Allow: Classes
 !/Classes*
@@ -113,3 +120,4 @@
 !*.props
 !*.targets
 !*.Config
+/bin/Dist/xsum.exe.config

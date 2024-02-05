@@ -8,6 +8,10 @@ using System.Security.Cryptography;
 using System.Text;
 using SHA3M.Security.Cryptography;
 using Blake2Fast;
+using System.Management.Automation.Language;
+using System.Runtime.CompilerServices;
+using System.Collections.Generic;
+using Aetherx.Algo;
 
 #endregion
 
@@ -157,8 +161,31 @@ namespace XSum
         #region "Cryptography: Hash > Strings"
 
         /*
-            MD5, SHA-2
+            Algo
         */
+
+            /*
+                CRC
+            */
+
+            public static string GetHash_String_CRC( string arg, string str )
+            {
+                int size   = 32;
+                Int32.TryParse( arg, out size );
+
+                var str_bytes       = System.Text.Encoding.UTF8.GetBytes ( str );
+
+                if ( size == 8 )
+                    return String.Format( "{0:X3}", Crc8.ComputeChecksum ( CRC8.Standard, str_bytes ) );
+                else if ( size == 16 )
+                    return String.Format( "{0:X4}", Crc16.ComputeChecksum ( CRC16.Standard, str_bytes ) );
+                else 
+                    return String.Format( "{0:X8}", Crc32.ComputeChecksum ( str_bytes ) );
+            }
+
+            /*
+                MD5, SHA-2
+            */
 
             public static string GetHash_String_SHA2( string algo, string str )
             {
@@ -244,6 +271,26 @@ namespace XSum
         */
 
         #region "Cryptography: Hash > File"
+
+            /*
+                Algo
+            */
+
+            public static string GetHash_File_CRC( string arg, string path )
+            {
+                int size   = 32;
+                Int32.TryParse( arg, out size );
+
+                using ( FileStream stream = File.OpenRead( path ) )
+                {
+                    if ( size == 8 )
+                        return String.Format( "{0:X3}", Crc8.ComputeChecksum ( CRC8.Standard, Helpers.FSReadFull( stream ) ) );
+                    else if ( size == 16 )
+                        return String.Format( "{0:X4}", Crc16.ComputeChecksum ( CRC16.Standard, Helpers.FSReadFull( stream ) ) );
+                    else 
+                        return String.Format( "{0:X8}", Crc32.ComputeChecksum ( Helpers.FSReadFull( stream ) ) );
+                }
+            }
 
             /*
                 MD5, SHA-2
@@ -334,6 +381,56 @@ namespace XSum
         */
 
         #region "Cryptography: Hash > Directory"
+
+
+            /*
+                Algo
+            */
+
+            static public string GetHash_Directory_CRC( string algo, string folder )
+            {
+
+                var files                   = Directory.GetFiles( folder, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
+                using (var file_total       = (HashAlgorithm)CryptoConfig.CreateFromName( algo ) )
+                {
+                    int bytes_read_chunk    = 2048;
+
+                    foreach ( string file in files )
+                    {
+                        using (var file_single = (HashAlgorithm)CryptoConfig.CreateFromName( algo ) )
+                        {
+                            using ( FileStream file_contents = File.OpenRead( file ) )
+                            {
+                                byte[] bytes_content    = new byte[ bytes_read_chunk ];
+                                int bytes_read          = 0;
+
+                                // (optimization) read file in chunks
+                                while ( ( bytes_read = file_contents.Read( bytes_content, 0, bytes_read_chunk ) ) > 0 )
+                                {
+                                    file_total.TransformBlock   ( bytes_content, 0, bytes_read, bytes_content, 0 );
+                                    file_single.TransformBlock  ( bytes_content, 0, bytes_read, bytes_content, 0 );
+                                }
+
+                                // close file_single block with 0 length
+                                file_single.TransformFinalBlock( bytes_content, 0, 0 );
+                            }
+
+                            if ( AppInfo.bIsDebug( ) )
+                            {
+                                Console.WriteLine( file );
+                                Console.WriteLine( BitConverter.ToString( file_single.Hash ).Replace( "-", "" ).ToUpper( ) );
+                                Console.WriteLine( "\n");
+                            }
+
+                        }
+                    }
+
+                    // close total hash block
+                    file_total.TransformFinalBlock( new byte[ 0 ], 0, 0 );
+
+                    return BytesToString( file_total.Hash );
+                }
+            }
 
             /*
                 MD5, SHA-2
@@ -556,6 +653,24 @@ namespace XSum
         */
 
         #region "Cryptography: Hash > Manage"
+
+            /*
+                Management > Algo
+
+                @arg        : str algo
+                @arg        : str src
+                @ret        : str
+            */
+
+            public static string Hash_Manage_CRC( string algo, string src )
+            {
+                if ( Directory.Exists( src ) )
+                    return Hash.GetHash_Directory_CRC( algo,  src );
+                else if ( File.Exists( src ) )
+                    return Hash.GetHash_File_CRC( algo, src );
+                else
+                    return Hash.GetHash_String_CRC( algo, src );
+            }
 
             /*
                 Management > MD5, SHA1, SHA-2
