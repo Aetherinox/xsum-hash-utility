@@ -7,6 +7,10 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System.Collections;
 using System.IO;
+using System.Collections.ObjectModel;
+using System.Management.Automation;
+using System.ComponentModel;
+using System.Linq;
 
 #endregion
 
@@ -19,6 +23,19 @@ namespace XSum
 
     public class Helpers
     {
+
+        /*
+            Define > File Name
+            utilized with Log module.
+        */
+
+        #region "Define: Fileinfo"
+
+            readonly static string log_file = "Helpers.cs";
+
+        #endregion
+
+
 
         /*
             Format Wildcard
@@ -306,6 +323,142 @@ namespace XSum
                 return ms.ToArray( );
             }
         }
+
+
+        public string StringJoin(string[] array)
+        {
+            return string.Join(string.Empty, array);
+        }
+
+        public static string StringLast( string str, int len_tail )
+        {
+           if(len_tail >= str.Length) return str;
+           return str.Substring(str.Length - len_tail);
+        }
+
+        public static bool StringValidateEmail( string str )
+        {                       
+            return Regex.IsMatch(str, @"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*");
+        }
+
+        /*
+            Execute powershell query
+            checks to see if a target file has been signed with x509 cert
+
+            @param      : str query
+            @return     : str
+        */
+
+        #region "Method: Exec Powershell Queries"
+
+            static public string PowershellQ( string[] queries, bool bShowOutput = false )
+            {
+                using ( PowerShell ps = PowerShell.Create( ) )
+                {
+                    for ( int i = 0; i < queries.Length; i++ ) 
+                    {
+                        if ( bShowOutput )
+                            Console.WriteLine( "PowerShell Query: " + queries[ i ] );
+
+                        ps.AddScript    ( queries[ i ] );
+                        Log.Send        ( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ PSQ.Execute ]", String.Format( "{0}", queries[ i ] ) );
+                    }
+
+                    Collection<PSObject> PSOutput = ps.Invoke( );
+                    StringBuilder sb = new StringBuilder( );
+
+                    string resp = "";
+                    foreach ( PSObject PSItem in PSOutput )
+                    {
+                        if ( PSItem != null )
+                        {
+                            Log.Send( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ PSQ.Result ]", String.Format( "{0}", PSItem ) );
+                            sb.AppendLine( PSItem.ToString( ) );
+
+                            if ( bShowOutput )
+                                Console.WriteLine( PSItem.ToString( ) );
+                        }
+                    }
+
+                    if ( ps.Streams.Error.Count > 0 )
+                    {
+                        resp += Environment.NewLine + string.Format( "{0} Error(s): ", ps.Streams.Error.Count );
+                        foreach ( ErrorRecord err in ps.Streams.Error )
+                                resp += Environment.NewLine + err.ToString();
+
+                        Log.Send( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ PSQ.Error ]", String.Format( "{0}", resp ) );
+                    }
+
+                    return sb.ToString( );
+                }
+            }
+
+        #endregion
+
+        /*
+            Find Program
+
+            Reads the Windows path entries and checks to see if a specified exe exists.
+        */
+
+        #region "Method: FindProgram"
+
+            /*
+                Route Terminal Output
+                Hacky method for keeping console commands from printing re-route output
+
+                Utilized in combination with Method FindProgram.
+            */
+
+            static public void RouteOutput( string input ) { }
+
+            public static bool FindProgram( string appexe )
+            {
+                try
+                {
+                    using ( Process p = new Process( ) )
+                    {
+                        p.StartInfo.UseShellExecute         = false;
+                        p.StartInfo.FileName                = "where";
+                        p.StartInfo.Arguments               = appexe;
+                        p.StartInfo.RedirectStandardOutput  = true;
+                        p.OutputDataReceived                += (s, e) => RouteOutput( e.Data );
+                        p.Start( );
+                        p.BeginOutputReadLine( );
+                        p.WaitForExit( );
+
+                        return p.ExitCode == 0;
+                    }
+                }
+                catch( Win32Exception )
+                {
+                    throw new Exception( "'where' command is not on path" );
+                }
+            }
+
+        #endregion
+
+        /*
+            Helpers > Check Full Path
+        */
+
+        #region "Method: Path > Check Full"
+
+            /*
+                Helpers > Path > Check Rooted / Full Path
+                returns if a specified path is root.
+                Utilized for output directories.
+            */
+
+            public static bool IsFullPath( string path )
+            {
+                return !String.IsNullOrWhiteSpace( path )
+                    && path.IndexOfAny( System.IO.Path.GetInvalidPathChars( ).ToArray( ) ) == -1
+                    && Path.IsPathRooted( path )
+                    && !Path.GetPathRoot( path ).Equals(Path.DirectorySeparatorChar.ToString( ), StringComparison.Ordinal );
+            }
+
+        #endregion
 
     }
 

@@ -77,31 +77,32 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-			internal static ushort ComputeInternal ( params byte[] bytes )
+			internal static ushort ComputeInternal ( params byte[] b )
 			{
-				return ComputeInternal ( bytes, 0, bytes?.Length ?? 0 );
+				return ComputeInternal ( b, 0, b?.Length ?? 0 );
 			}
 
             /*
                 Compute > Internal
             */
 
-			internal static ushort ComputeInternal ( byte[] bytes, int start, int len, ushort initialValue = StartValue )
+			internal static ushort ComputeInternal ( byte[] b, int start, int len, ushort initialValue = StartValue )
 			{
-				if ( bytes == null ) { throw new ArgumentNullException ( nameof ( bytes ) ); }
-				if ( bytes.Length == 0 ) { throw new ArgumentOutOfRangeException ( nameof ( bytes ) ); }
-				if ( start < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
-				if ( start >= bytes.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+				if ( b == null )		{ throw new ArgumentNullException ( nameof ( b ) ); }
+				if ( b.Length == 0 )	{ throw new ArgumentOutOfRangeException ( nameof ( b ) ); }
+				if ( start < 0 )		{ throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+
+				if ( start >= b.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
 
 				var crc		= initialValue;
 				var end		= start + len - 1;
 
-				if ( end > bytes.Length ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
-				if ( len < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+				if ( end > b.Length )	{ throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+				if ( len < 0 )			{ throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
 
 				for ( int i = start; i <= end; ++i )
 				{
-					crc = ( ushort )( ( crc >> 8 ) ^ table[ ( byte )( crc ^ bytes[ i ] ) ] );
+					crc = ( ushort )( ( crc >> 8 ) ^ table[ ( byte )( crc ^ b[ i ] ) ] );
 				}
 
 				return crc;
@@ -155,31 +156,32 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-			internal static ushort ComputeInternal ( params byte[] bytes )
+			internal static ushort ComputeInternal ( params byte[] b )
 			{
-				return ComputeInternal ( bytes, 0, bytes?.Length ?? 0 );
+				return ComputeInternal ( b, 0, b?.Length ?? 0 );
 			}
 
             /*
                 Compute > Internal
             */
 
-			internal static ushort ComputeInternal ( byte[] bytes, int start, int len )
+			internal static ushort ComputeInternal ( byte[] b, int start, int len )
 			{
-				if ( bytes == null ) { throw new ArgumentNullException ( nameof ( bytes ) ); }
-				if ( bytes.Length == 0 ) { throw new ArgumentOutOfRangeException ( nameof ( bytes ) ); }
-				if ( start < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
-				if ( start >= bytes.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+				if ( b == null )		{ throw new ArgumentNullException ( nameof ( b ) ); }
+				if ( b.Length == 0 )	{ throw new ArgumentOutOfRangeException ( nameof ( b ) ); }
+				if ( start < 0 )		{ throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+
+				if ( start >= b.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
 
 				var crc		= StartValue;
 				var end		= start + len - 1;
 
-				if ( end > bytes.Length ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
-				if ( len < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+				if ( end > b.Length )	{ throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+				if ( len < 0 )			{ throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
 
 				for ( int i = start; i <= end; ++i )
 				{
-					crc = ( ushort )( ( crc >> 8 ) ^ table[( byte )( crc ^ bytes[i] )] );
+					crc = ( ushort )( ( crc >> 8 ) ^ table[ ( byte )( crc ^ b[ i ] ) ] );
 				}
 
 				return (ushort)(~crc);
@@ -230,31 +232,32 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-			internal static ushort ComputeInternal ( params byte[] bytes )
+			internal static ushort ComputeInternal ( params byte[] b )
 			{
-				return ComputeInternal ( bytes, 0, bytes?.Length ?? 0 );
+				return ComputeInternal ( b, 0, b?.Length ?? 0 );
 			}
 
             /*
                 Compute > Internal
             */
 
-			internal static ushort ComputeInternal ( byte[] bytes, int start, int len )
+			internal static ushort ComputeInternal ( byte[] b, int start, int len )
 			{
-				if ( bytes == null ) { throw new ArgumentNullException ( nameof ( bytes ) ); }
-				if ( bytes.Length == 0 ) { throw new ArgumentOutOfRangeException ( nameof ( bytes ) ); }
-				if ( start < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
-				if ( start >= bytes.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+				if ( b == null )		{ throw new ArgumentNullException ( nameof ( b ) ); }
+				if ( b.Length == 0 )	{ throw new ArgumentOutOfRangeException ( nameof ( b ) ); }
+				if ( start < 0 )		{ throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+
+				if ( start >= b.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
 
 				var crc		= InitialValue;
 				var end		= start + len - 1;
 
-				if ( end > bytes.Length ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
-				if ( len < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+				if ( end > b.Length )	{ throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+				if ( len < 0 )			{ throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
 
 				for ( int i = start; i <= end; ++i )
 				{
-					crc = ( ushort )( ( crc >> 8 ) ^ table[( byte )( crc ^ bytes[i] )] );
+					crc = ( ushort )( ( crc >> 8 ) ^ table[ ( byte )( crc ^ b[ i ] ) ] );
 				}
 
 				return crc;
@@ -270,18 +273,18 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-			public static ushort ComputeInternal ( params byte[] bytes )
+			public static ushort ComputeInternal ( params byte[] b )
 			{
-				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, bytes );
+				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, b );
 			}
 
             /*
                 Compute > Internal
             */
 
-			public static ushort ComputeInternal ( byte[] bytes, int start, int len )
+			public static ushort ComputeInternal ( byte[] b, int start, int len )
             {
-				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, bytes, start, len );
+				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, b, start, len );
 			}
 		}
 
@@ -293,18 +296,18 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-			public static ushort ComputeInternal ( params byte[] bytes )
+			public static ushort ComputeInternal ( params byte[] b )
 			{
-				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, bytes );
+				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, b );
 			}
 
             /*
                 Compute > Internal
             */
 
-			public static ushort ComputeInternal ( byte[] bytes, int start, int len )
+			public static ushort ComputeInternal ( byte[] b, int start, int len )
 			{
-				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, bytes, start, len );
+				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, b, start, len );
 			}
 		}
 
@@ -317,18 +320,18 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-			public static ushort ComputeInternal ( params byte[] bytes )
+			public static ushort ComputeInternal ( params byte[] b )
 			{
-				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, bytes );
+				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, b );
 			}
 
             /*
                 Compute > Internal
             */
 
-			public static ushort ComputeInternal ( byte[] bytes, int start, int len )
+			public static ushort ComputeInternal ( byte[] b, int start, int len )
 			{
-				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, bytes, start, len );
+				return Crc16CcittBaseImpl.ComputeInternal ( StartValue, b, start, len );
 			}
 		}
 
@@ -367,31 +370,32 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-			internal static ushort ComputeInternal ( ushort initialValue, params byte[] bytes )
+			internal static ushort ComputeInternal ( ushort initialValue, params byte[] b )
 			{
-				return ComputeInternal ( initialValue, bytes, 0, bytes?.Length ?? 0 );
+				return ComputeInternal ( initialValue, b, 0, b?.Length ?? 0 );
 			}
 
             /*
                 Compute > Internal
             */
 
-			internal static ushort ComputeInternal ( ushort initialValue, byte[] bytes, int start, int len )
+			internal static ushort ComputeInternal ( ushort initialValue, byte[] b, int start, int len )
 			{
-				if ( bytes == null ) { throw new ArgumentNullException ( nameof ( bytes ) ); }
-				if ( bytes.Length == 0 ) { throw new ArgumentOutOfRangeException ( nameof ( bytes ) ); }
-				if ( start < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
-				if ( start >= bytes.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+				if ( b == null )		{ throw new ArgumentNullException ( nameof ( b ) ); }
+				if ( b.Length == 0 )	{ throw new ArgumentOutOfRangeException ( nameof ( b ) ); }
+				if ( start < 0 )		{ throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+
+				if ( start >= b.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
 
 				var crc		= initialValue;
 				var end		= start + len - 1;
 
-				if ( end > bytes.Length ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
-				if ( len < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+				if ( end > b.Length )	{ throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+				if ( len < 0 )			{ throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
 
 				for ( int i = start; i <= end; ++i )
 				{
-					crc = ( ushort )( ( crc << 8 ) ^ Table[( ( crc >> 8 ) ^ ( 0xff & bytes[i] ) )] );
+					crc = ( ushort )( ( crc << 8 ) ^ Table[ ( ( crc >> 8 ) ^ ( 0xff & b[ i ] ) ) ] );
 				}
 
 				return crc;
@@ -402,7 +406,7 @@ namespace Aetherx.Algo
 
             var text            = "test";
             var textBuffer      = System.Text.Encoding.UTF8.GetBytes ( text );
-            var textCrc         = Aetherx.Algo.Crc16.ComputeChecksum ( CRC16.Standard, textBuffer );
+            var textCrc         = Aetherx.Algo.Crc16.ComputeHash ( CRC16.Standard, textBuffer );
             Console.WriteLine ( "Text Algo: {0:X4}", textCrc );
 
 		*/
@@ -413,39 +417,39 @@ namespace Aetherx.Algo
 				Compute > Checksum
 			*/
 
-			public static long ComputeChecksum ( CRC16 algo, params byte[] bytes )
+			public static long ComputeHash ( CRC16 algo, params byte[] b )
 			{
-				return ComputeChecksum ( algo, bytes, 0, bytes?.Length ?? 0 );
+				return ComputeHash( algo, b, 0, b?.Length ?? 0 );
 			}
 
 			/*
 				Compute > Checksum
 			*/
 
-			public static long ComputeChecksum ( CRC16 algo, byte[] bytes, int start, int len )
+			public static long ComputeHash ( CRC16 algo, byte[] b, int start, int len )
 			{
 				switch ( algo )
 				{
 					case CRC16.Standard:
-						return Standard.ComputeInternal ( bytes, start, len );
+						return Standard.ComputeInternal( b, start, len );
 
 					case CRC16.CCITT:
-						return CCITT.ComputeInternal ( bytes, start, len );
+						return CCITT.ComputeInternal( b, start, len );
 
 					case CRC16.CCITT_KERMIT:
-						return CCITT_KERMIT.ComputeInternal ( bytes, start, len );
+						return CCITT_KERMIT.ComputeInternal( b, start, len );
 
 					case CRC16.CCITT_0XFfff:
-						return CCITT_0XFfff.ComputeInternal ( bytes, start, len );
+						return CCITT_0XFfff.ComputeInternal( b, start, len );
 
 					case CRC16.CCITT_0X1D0F:
-						return CCITT_0X1D0F.ComputeInternal ( bytes, start, len );
+						return CCITT_0X1D0F.ComputeInternal( b, start, len );
 
 					case CRC16.Dnp:
-						return DNP.ComputeInternal ( bytes, start, len );
+						return DNP.ComputeInternal( b, start, len );
 
 					case CRC16.Modbus:
-						return Standard.ComputeInternal ( bytes, start, len, ushort.MaxValue );
+						return Standard.ComputeInternal( b, start, len, ushort.MaxValue );
 				}
 
 				throw new ThrowException ( "Invalid algorithm specified" );

@@ -73,6 +73,10 @@
 
 /bin/Release/.vshistory*
 
+# Allow: GPG
+!/GnuPG*
+/GnuPG/.vshistory*
+
 # Allow: SHA3
 !/SHA3*
 /SHA3/.vshistory*

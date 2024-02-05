@@ -7,14 +7,17 @@ namespace SHA3M.Security.Cryptography
 {
     public abstract class SHA3Managed : SHA3
     {
-        private int keccakR;
+        private int Kecc_R;
         private int hashSize;
+
         public override int HashSize => hashSize;
-        protected int SizeInBytes => keccakR / 8;
+        protected int SizeInBytes => Kecc_R / 8;
         protected int HashByteLength => HashSize / 8;
-        private const int KeccakB = 1600;
-        private const int KeccakNumberOfRounds = 24;
-        private const int KeccakLaneSizeInBits = 8 * 8;
+
+        private const int Kecc_KB               = 1600;
+        private const int Kecc_NumRounds        = 24;
+        private const int Kecc_LaneSizeBits     = 8 * 8;
+
         private static readonly ulong[] RoundConstants = new ulong[]
         {
             0x0000000000000001UL,
@@ -42,103 +45,123 @@ namespace SHA3M.Security.Cryptography
             0x0000000080000001UL,
             0x8000000080008008UL
         };
+
         private ulong[] state;
         private byte[] buffer;
-        private int buffLength;
-        internal SHA3Managed(int hashBitLength)
+        private int len_Buffer;
+
+        internal SHA3Managed( int len_HashBit )
         {
-            if (hashBitLength != 224 && hashBitLength != 256 && hashBitLength != 384 && hashBitLength != 512)
-                throw new ArgumentException("hashBitLength must be 224, 256, 384, or 512", nameof(hashBitLength));
-            hashSize = hashBitLength;
-            switch (hashBitLength)
+            if ( len_HashBit != 224 && len_HashBit != 256 && len_HashBit != 384 && len_HashBit != 512 )
+                throw new ArgumentException( "len_HashBit requires 224, 256, 384, or 512", nameof( len_HashBit ) );
+
+            hashSize = len_HashBit;
+            switch ( len_HashBit )
             {
                 case 224:
-                    keccakR = 1152;
+                    Kecc_R = 1152;
                     break;
+
                 case 256:
-                    keccakR = 1088;
+                    Kecc_R = 1088;
                     break;
+
                 case 384:
-                    keccakR = 832;
+                    Kecc_R = 832;
                     break;
+
                 case 512:
-                    keccakR = 576;
+                    Kecc_R = 576;
                     break;
             }
+
             Initialize();
         }
 
-        public override void Initialize()
+        public override void Initialize( )
         {
-            buffer = new byte[SizeInBytes];
-            buffLength = 0;
-            state = new ulong[5 * 5];//1600 bits
+            buffer      = new byte[ SizeInBytes ];
+            len_Buffer  = 0;
+            state       = new ulong[5 * 5]; //1600 bits
         }
 
-        private void AddToBuffer(ReadOnlySpan<byte> array, ref int offset, ref int count)
+        private void AddToBuffer( ReadOnlySpan<byte> array, ref int offset, ref int count )
         {
-            int amount = Math.Min(count, buffer.Length - buffLength);
-            array.Slice(offset, amount).CopyTo(new Span<byte>(buffer, buffLength, amount));
-            offset += amount;
-            buffLength += amount;
-            count -= amount;
+            int amt = Math.Min( count, buffer.Length - len_Buffer );
+            array.Slice( offset, amt ).CopyTo(new Span<byte>( buffer, len_Buffer, amt ) );
+
+            offset      += amt;
+            len_Buffer  += amt;
+            count       -= amt;
         }
 
-        protected override void HashCore(byte[] array, int ibStart, int cbSize)
+        protected override void HashCore( byte[] arr, int ibStart, int cbSize )
         {
-            base.HashCore(array, ibStart, cbSize);
-            if (cbSize == 0)
-                return;
-            int stride = SizeInBytes >> 3;
-            ulong[] utemps = new ulong[stride];
-            if (buffLength == SizeInBytes)
-                throw new Exception("Unexpected error, the internal buffer is full");
-            AddToBuffer(array, ref ibStart, ref cbSize);
-            if (buffLength == SizeInBytes)//buffer full
+            base.HashCore( arr, ibStart, cbSize );
+            if ( cbSize == 0 ) return;
+
+            int stride      = SizeInBytes >> 3;
+            ulong[] utemps  = new ulong[ stride ];
+
+            if ( len_Buffer == SizeInBytes )
+                throw new Exception( "Unexpected error, buffer full" );
+
+            AddToBuffer( arr, ref ibStart, ref cbSize );
+            if (len_Buffer == SizeInBytes) //buffer full
             {
-                Buffer.BlockCopy(buffer, 0, utemps, 0, SizeInBytes);
-                KeccakF(utemps, stride);
-                buffLength = 0;
+                Buffer.BlockCopy( buffer, 0, utemps, 0, SizeInBytes );
+                KeccakF( utemps, stride );
+                len_Buffer = 0;
             }
-            for (; cbSize >= SizeInBytes; cbSize -= SizeInBytes, ibStart += SizeInBytes)
+
+            for (; cbSize >= SizeInBytes; cbSize -= SizeInBytes, ibStart += SizeInBytes )
             {
-                Buffer.BlockCopy(array, ibStart, utemps, 0, SizeInBytes);
-                KeccakF(utemps, stride);
+                Buffer.BlockCopy( arr, ibStart, utemps, 0, SizeInBytes );
+                KeccakF( utemps, stride );
             }
-            if (cbSize > 0)//some left over
+
+            if ( cbSize > 0 ) //remaining
             {
-                Buffer.BlockCopy(array, ibStart, buffer, buffLength, cbSize);
-                buffLength += cbSize;
+                Buffer.BlockCopy( arr, ibStart, buffer, len_Buffer, cbSize );
+                len_Buffer += cbSize;
             }
         }
 
-        protected override byte[] HashFinal()
+        protected override byte[] HashFinal( )
         {
-            byte[] outb = new byte[HashByteLength];
-            //    padding
-            Array.Clear(buffer, buffLength, SizeInBytes - buffLength);
-            if (UseKeccakPadding)
-                buffer[buffLength++] = 1;//reference had =, others have ^=
+            byte[] outb = new byte[ HashByteLength ];
+            Array.Clear( buffer, len_Buffer, SizeInBytes - len_Buffer ); // padding
+
+            if ( bUseKeccPadding )
+                buffer[ len_Buffer++ ] = 1;
             else
-                buffer[buffLength++] = 6;
-            buffer[SizeInBytes - 1] |= 0x80;
-            int stride = SizeInBytes >> 3;
-            ulong[] utemps = new ulong[stride];
+                buffer[ len_Buffer++ ] = 6;
+
+            buffer[ SizeInBytes - 1 ] |= 0x80;
+
+            int stride      = SizeInBytes >> 3;
+            ulong[] utemps  = new ulong[ stride ];
+
             Buffer.BlockCopy(buffer, 0, utemps, 0, SizeInBytes);
+
             KeccakF(utemps, stride);
+
             Buffer.BlockCopy(state, 0, outb, 0, HashByteLength);
+
             return outb;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ulong ROL(ulong a, int offset) => ((a) << (offset % KeccakLaneSizeInBits)) ^ ((a) >> (KeccakLaneSizeInBits - (offset % KeccakLaneSizeInBits)));
+        private ulong ROL(ulong a, int offset) => ((a) << (offset % Kecc_LaneSizeBits)) ^ ((a) >> (Kecc_LaneSizeBits - (offset % Kecc_LaneSizeBits)));
 
-        private void KeccakF(Span<ulong> inb, int laneCount)
+        private void KeccakF( Span<ulong> inb, int laneCount )
         {
-            Span<ulong> state = this.state;
-            ReadOnlySpan<ulong> RoundConstants = SHA3Managed.RoundConstants;
-            while (--laneCount >= 0)
-                state[laneCount] ^= inb[laneCount];
+            Span<ulong> state               = this.state;
+            ReadOnlySpan<ulong> RndConst    = SHA3Managed.RoundConstants;
+
+            while ( --laneCount >= 0 )
+                state[ laneCount ] ^= inb[ laneCount ];
+
             ulong Aba, Abe, Abi, Abo, Abu;
             ulong Aga, Age, Agi, Ago, Agu;
             ulong Aka, Ake, Aki, Ako, Aku;
@@ -152,43 +175,41 @@ namespace SHA3M.Security.Cryptography
             ulong Ema, Eme, Emi, Emo, Emu;
             ulong Esa, Ese, Esi, Eso, Esu;
 
-            //copyFromState(A, state)
-            Aba = state[0];
-            Abe = state[1];
-            Abi = state[2];
-            Abo = state[3];
-            Abu = state[4];
-            Aga = state[5];
-            Age = state[6];
-            Agi = state[7];
-            Ago = state[8];
-            Agu = state[9];
-            Aka = state[10];
-            Ake = state[11];
-            Aki = state[12];
-            Ako = state[13];
-            Aku = state[14];
-            Ama = state[15];
-            Ame = state[16];
-            Ami = state[17];
-            Amo = state[18];
-            Amu = state[19];
-            Asa = state[20];
-            Ase = state[21];
-            Asi = state[22];
-            Aso = state[23];
-            Asu = state[24];
+            Aba = state[ 0 ];
+            Abe = state[ 1 ];
+            Abi = state[ 2 ];
+            Abo = state[ 3 ];
+            Abu = state[ 4 ];
+            Aga = state[ 5 ];
+            Age = state[ 6 ];
+            Agi = state[ 7 ];
+            Ago = state[ 8 ];
+            Agu = state[ 9 ];
+            Aka = state[ 10 ];
+            Ake = state[ 11 ];
+            Aki = state[ 12 ];
+            Ako = state[ 13 ];
+            Aku = state[ 14 ];
+            Ama = state[ 15 ];
+            Ame = state[ 16 ];
+            Ami = state[ 17 ];
+            Amo = state[ 18 ];
+            Amu = state[ 19 ];
+            Asa = state[ 20 ];
+            Ase = state[ 21 ];
+            Asi = state[ 22 ];
+            Aso = state[ 23 ];
+            Asu = state[ 24 ];
 
-            for (int round = 0; round < KeccakNumberOfRounds; round += 2)
+            for (int round = 0; round < Kecc_NumRounds; round += 2)
             {
-                //    prepareTheta
+                // Theta
                 BCa = Aba ^ Aga ^ Aka ^ Ama ^ Asa;
                 BCe = Abe ^ Age ^ Ake ^ Ame ^ Ase;
                 BCi = Abi ^ Agi ^ Aki ^ Ami ^ Asi;
                 BCo = Abo ^ Ago ^ Ako ^ Amo ^ Aso;
                 BCu = Abu ^ Agu ^ Aku ^ Amu ^ Asu;
 
-                //thetaRhoPiChiIotaPrepareTheta(round  , A, E)
                 Da = BCu ^ ROL(BCe, 1);
                 De = BCa ^ ROL(BCi, 1);
                 Di = BCe ^ ROL(BCo, 1);
@@ -205,12 +226,12 @@ namespace SHA3M.Security.Cryptography
                 BCo = ROL(Amo, 21);
                 Asu ^= Du;
                 BCu = ROL(Asu, 14);
-                Eba = BCa ^ ((~BCe) & BCi);
-                Eba ^= RoundConstants[round];
-                Ebe = BCe ^ ((~BCi) & BCo);
-                Ebi = BCi ^ ((~BCo) & BCu);
-                Ebo = BCo ^ ((~BCu) & BCa);
-                Ebu = BCu ^ ((~BCa) & BCe);
+                Eba = BCa ^ ( ( ~BCe ) & BCi );
+                Eba ^= RndConst[round];
+                Ebe = BCe ^ ( ( ~BCi ) & BCo );
+                Ebi = BCi ^ ( ( ~BCo ) & BCu );
+                Ebo = BCo ^ ( ( ~BCu ) & BCa );
+                Ebu = BCu ^ ( ( ~BCa ) & BCe );
 
                 Abo ^= Do;
                 BCa = ROL(Abo, 28);
@@ -229,20 +250,20 @@ namespace SHA3M.Security.Cryptography
                 Egu = BCu ^ ((~BCa) & BCe);
 
                 Abe ^= De;
-                BCa = ROL(Abe, 1);
+                BCa = ROL( Abe, 1 );
                 Agi ^= Di;
-                BCe = ROL(Agi, 6);
+                BCe = ROL( Agi, 6 );
                 Ako ^= Do;
-                BCi = ROL(Ako, 25);
+                BCi = ROL( Ako, 25 );
                 Amu ^= Du;
-                BCo = ROL(Amu, 8);
+                BCo = ROL( Amu, 8 );
                 Asa ^= Da;
-                BCu = ROL(Asa, 18);
-                Eka = BCa ^ ((~BCe) & BCi);
-                Eke = BCe ^ ((~BCi) & BCo);
-                Eki = BCi ^ ((~BCo) & BCu);
-                Eko = BCo ^ ((~BCu) & BCa);
-                Eku = BCu ^ ((~BCa) & BCe);
+                BCu = ROL( Asa, 18 );
+                Eka = BCa ^ ( ( ~BCe ) & BCi );
+                Eke = BCe ^ ( ( ~BCi ) & BCo );
+                Eki = BCi ^ ( ( ~BCo ) & BCu );
+                Eko = BCo ^ ( ( ~BCu ) & BCa );
+                Eku = BCu ^ ( ( ~BCa ) & BCe );
 
                 Abu ^= Du;
                 BCa = ROL(Abu, 27);
@@ -283,7 +304,7 @@ namespace SHA3M.Security.Cryptography
                 BCo = Ebo ^ Ego ^ Eko ^ Emo ^ Eso;
                 BCu = Ebu ^ Egu ^ Eku ^ Emu ^ Esu;
 
-                //thetaRhoPiChiIotaPrepareTheta(round+1, E, A)
+                // thetaRhoPiChiIotaPrepareTheta(round+1, E, A)
                 Da = BCu ^ ROL(BCe, 1);
                 De = BCa ^ ROL(BCi, 1);
                 Di = BCe ^ ROL(BCo, 1);
@@ -301,7 +322,7 @@ namespace SHA3M.Security.Cryptography
                 Esu ^= Du;
                 BCu = ROL(Esu, 14);
                 Aba = BCa ^ ((~BCe) & BCi);
-                Aba ^= RoundConstants[round + 1];
+                Aba ^= RndConst[round + 1];
                 Abe = BCe ^ ((~BCi) & BCo);
                 Abi = BCi ^ ((~BCo) & BCu);
                 Abo = BCo ^ ((~BCu) & BCa);
@@ -372,32 +393,31 @@ namespace SHA3M.Security.Cryptography
                 Asu = BCu ^ ((~BCa) & BCe);
             }
 
-            //copyToState(state, A)
-            state[0] = Aba;
-            state[1] = Abe;
-            state[2] = Abi;
-            state[3] = Abo;
-            state[4] = Abu;
-            state[5] = Aga;
-            state[6] = Age;
-            state[7] = Agi;
-            state[8] = Ago;
-            state[9] = Agu;
-            state[10] = Aka;
-            state[11] = Ake;
-            state[12] = Aki;
-            state[13] = Ako;
-            state[14] = Aku;
-            state[15] = Ama;
-            state[16] = Ame;
-            state[17] = Ami;
-            state[18] = Amo;
-            state[19] = Amu;
-            state[20] = Asa;
-            state[21] = Ase;
-            state[22] = Asi;
-            state[23] = Aso;
-            state[24] = Asu;
+            state[ 0 ]  = Aba;
+            state[ 1 ]  = Abe;
+            state[ 2 ]  = Abi;
+            state[ 3 ]  = Abo;
+            state[ 4 ]  = Abu;
+            state[ 5 ]  = Aga;
+            state[ 6 ]  = Age;
+            state[ 7 ]  = Agi;
+            state[ 8 ]  = Ago;
+            state[ 9 ]  = Agu;
+            state[ 10 ] = Aka;
+            state[ 11 ] = Ake;
+            state[ 12 ] = Aki;
+            state[ 13 ] = Ako;
+            state[ 14 ] = Aku;
+            state[ 15 ] = Ama;
+            state[ 16 ] = Ame;
+            state[ 17 ] = Ami;
+            state[ 18 ] = Amo;
+            state[ 19 ] = Amu;
+            state[ 20 ] = Asa;
+            state[ 21 ] = Ase;
+            state[ 22 ] = Asi;
+            state[ 23 ] = Aso;
+            state[ 24 ] = Asu;
 
         }
     }

@@ -17,9 +17,7 @@ using System.Security.Principal;
 using System.Security.Cryptography;
 using Cfg = XSum.Properties.Settings;
 using SHA3M.Security.Cryptography;
-using Blake2Fast;
-using System.Security.Cryptography.X509Certificates;
-using Aetherx.Algo;
+using Starksoft.Aspen.GnuPG;
 
 #endregion
 
@@ -263,131 +261,6 @@ namespace XSum
                 ErrorMissingArg     = 2,
                 ErrorMissingDep     = 4,
                 ErrorGeneric        = 8,
-            }
-
-        #endregion
-
-
-
-        /*
-            Execute powershell query
-            checks to see if a target file has been signed with x509 cert
-
-            @param      : str query
-            @return     : str
-        */
-
-        #region "Method: Exec Powershell Queries"
-
-            static public string PowershellQ( string[] queries, bool bShowOutput = false )
-            {
-                using ( PowerShell ps = PowerShell.Create( ) )
-                {
-                    for ( int i = 0; i < queries.Length; i++ ) 
-                    {
-                        if ( bShowOutput )
-                            Console.WriteLine( "PowerShell Query: " + queries[ i ] );
-
-                        ps.AddScript    ( queries[ i ] );
-                        Log.Send        ( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ PSQ.Execute ]", String.Format( "{0}", queries[ i ] ) );
-                    }
-
-                    Collection<PSObject> PSOutput = ps.Invoke( );
-                    StringBuilder sb = new StringBuilder( );
-
-                    string resp = "";
-                    foreach ( PSObject PSItem in PSOutput )
-                    {
-                        if ( PSItem != null )
-                        {
-                            Log.Send( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ PSQ.Result ]", String.Format( "{0}", PSItem ) );
-                            sb.AppendLine( PSItem.ToString( ) );
-
-                            if ( bShowOutput )
-                                Console.WriteLine( PSItem.ToString( ) );
-                        }
-                    }
-
-                    if ( ps.Streams.Error.Count > 0 )
-                    {
-                        resp += Environment.NewLine + string.Format( "{0} Error(s): ", ps.Streams.Error.Count );
-                        foreach ( ErrorRecord err in ps.Streams.Error )
-                                resp += Environment.NewLine + err.ToString();
-
-                        Log.Send( log_file, new System.Diagnostics.StackTrace( true ).GetFrame( 0 ).GetFileLineNumber( ), "[ PSQ.Error ]", String.Format( "{0}", resp ) );
-                    }
-
-                    return sb.ToString( );
-                }
-            }
-
-        #endregion
-
-
-
-        /*
-            Find Program
-
-            Reads the Windows path entries and checks to see if a specified exe exists.
-        */
-
-        #region "Method: FindProgram"
-
-            /*
-                Route Terminal Output
-                Hacky method for keeping console commands from printing re-route output
-
-                Utilized in combination with Method FindProgram.
-            */
-
-            static public void RouteOutput( string input ) { }
-
-            public static bool FindProgram( string appexe )
-            {
-                try
-                {
-                    using ( Process p = new Process( ) )
-                    {
-                        p.StartInfo.UseShellExecute         = false;
-                        p.StartInfo.FileName                = "where";
-                        p.StartInfo.Arguments               = appexe;
-                        p.StartInfo.RedirectStandardOutput  = true;
-                        p.OutputDataReceived                += (s, e) => RouteOutput( e.Data );
-                        p.Start( );
-                        p.BeginOutputReadLine( );
-                        p.WaitForExit( );
-
-                        return p.ExitCode == 0;
-                    }
-                }
-                catch( Win32Exception )
-                {
-                    throw new Exception( "'where' command is not on path" );
-                }
-            }
-
-        #endregion
-
-
-
-        /*
-            Helpers > Check Full Path
-        */
-
-        #region "Method: Path > Check Full"
-
-            /*
-                Helpers > Path > Check Rooted / Full Path
-                returns if a specified path is root.
-                Utilized for output directories.
-            */
-
-            public static bool IsFullPath( string path )
-            {
-                return !String.IsNullOrWhiteSpace( path )
-                    && path.IndexOfAny( System.IO.Path.GetInvalidPathChars( ).ToArray( ) ) == -1
-                    && Path.IsPathRooted( path )
-                    && !Path.GetPathRoot( path ).Equals(Path.DirectorySeparatorChar.ToString( ), StringComparison.Ordinal );
             }
 
         #endregion
@@ -744,8 +617,6 @@ namespace XSum
 
         #endregion
 
-
-
         /*
             Main
         */
@@ -754,14 +625,6 @@ namespace XSum
 
             static int Main( string[] args )
             {
-
-                // using text
-                var text            = "test";
-                var textBuffer      = System.Text.Encoding.UTF8.GetBytes ( text );
-                var textCrc         = Crc32.ComputeChecksum ( textBuffer );
-                //Console.WriteLine ( "Text Algo: {0:X8}", textCrc );
-
-
 
                 /*
                     This is for automatic verification. It's only used by the developer.
@@ -932,7 +795,7 @@ namespace XSum
 
                                         string property     = args[ i ];
                                         if ( property.StartsWith( "-" ) )
-                                        { 
+                                        {
                                             i--;
                                             break;
                                         }
@@ -1131,7 +994,7 @@ namespace XSum
                                 case "--list-keys":
                                 case "--keys":
                                 case "-y":
-                                    if ( !FindProgram( "gpg.exe" ) )
+                                    if ( !Helpers.FindProgram( "gpg.exe" ) )
                                     {
                                         nl( );
                                         c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Cannot sign digests without [#Yellow]gpg.exe[/]" ) );
@@ -1139,6 +1002,10 @@ namespace XSum
                                         c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "You must install [#Yellow]GPG[/] and add it to your Windows[/]" ) );
                                         nl( );
                                         c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "environment variables before you can use this feature.[/]" ) );
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]https://gpg4win.org/[/]" ) );
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red][/]", "   · [#Yellow]https://gnupg.org/download/[/]" ) );
                                         nl( );
 
                                         return (int)ExitCode.ErrorMissingArg;
@@ -1160,7 +1027,7 @@ namespace XSum
 
                                     string ps_query     = "gpg --list-secret-keys --keyid-format=\"" + arg_GPG_ListKeys + "\"";
                                     string[] ps_exec    = new String[] { ps_query };
-                                    string ps_result    = PowershellQ( ps_exec, true );
+                                    string ps_result    = Helpers.PowershellQ( ps_exec, false );
 
                                     return (int)ExitCode.Success;
 
@@ -1696,7 +1563,7 @@ namespace XSum
 
 
                                     var algorithm_list      = Dict_Hashes_Populate( );
-                                    bool bFind_GPG          = FindProgram( "gpg.exe" );
+                                    bool bFind_GPG          = Helpers.FindProgram( "gpg.exe" );
                                     string status_gpg       = ( bFind_GPG ? "Installed" : "Not Installed" );
 
                                     nl( );
@@ -1875,7 +1742,7 @@ namespace XSum
             {
                 string file_saveto = null;
 
-                if ( IsFullPath( file ) )
+                if ( Helpers.IsFullPath( file ) )
                 {
                     if ( Path.HasExtension( file ) )
                         file_saveto         = file;
@@ -2474,7 +2341,7 @@ namespace XSum
                 make sure gpg is installed and the path is added to your windows environment variables
             */
 
-            bool bFind_GPG = FindProgram( "gpg.exe" );
+            bool bFind_GPG = Helpers.FindProgram( "gpg.exe" );
 
             if ( !bFind_GPG )
             {
@@ -2548,14 +2415,30 @@ namespace XSum
 
             /*
                 GPG > Clear Signature or Detached
+
+                Contains a list of every file and hash for the project.
+
+                Verify using:
+                    gpg --verify SHA256.txt.asc
+
+                Generated using:
+                    gpg --sign --armor --default-key GPG_KEY --clear-sign -o SHA*.txt.asc
             */
 
             string gpg_sign_type        = "Clear Signature";
             string gpg_sign_output      = String.Format( "{0}.{1}", arg_Target_File, "asc" );
-            string ps_query             = "gpg --batch --yes -q --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output + "\" --clearsign \"" + arg_Target_File + "\"";
+            string ps_query             = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output + "\" --clearsign \"" + arg_Target_File + "\"";
 
             /*
                 GPG > Detached Sign
+
+                Validates the original files that were signed a clearsign sig. This file only contains the detached sign
+
+                Verify using:
+                    gpg --verify SHA256.txt.sig sha256.txt
+
+                Generated using:
+                    gpg --sign --armor --default-key GPG_KEY --detach-sign -o SHA*.txt.sig
             */
 
             if ( arg_GPG_DetachSign )
@@ -2571,7 +2454,7 @@ namespace XSum
             */
 
             string[] ps_exec = new String[] { ps_query };
-            string ps_result = PowershellQ( ps_exec, arg_Debug_Enabled );
+            string ps_result = Helpers.PowershellQ( ps_exec, arg_Debug_Enabled );
 
             /*
                 Notice to user
@@ -2583,6 +2466,8 @@ namespace XSum
             c2( sf( " {0,-28} {1,-30}", "[#Green][/]", "Saved signature to [#Yellow]" + gpg_sign_output + "[/]" ) );
             nl( );
 
+            
+
             return (int)ExitCode.ErrorGeneric;
         }
 
@@ -2591,8 +2476,6 @@ namespace XSum
 
             Verifies a hash digest.
             Triggered when user specifies --verify
-
-            @arg        : bool bSilenceProgress
         */
 
         static public int Action_Verify( )
@@ -3094,6 +2977,57 @@ namespace XSum
 
                 WriteOutput( arg_Output_File, arg_Algo, sb_output, arg_Overwrite_Enabled ).Wait( );
 
+            }
+
+            /*
+                Validate GPG keys
+            */
+
+            foreach( KeyValuePair<string, bool> item in dict_SignedDigests )
+            {
+                string[] digest_files = System.IO.Directory.GetFiles( xsum_path_dir, item.Key, System.IO.SearchOption.TopDirectoryOnly );
+
+                if ( digest_files.Length > 0 )
+                {
+                    foreach( string digest in digest_files )
+                    {
+                        string file_name            = Path.GetFileName( digest );
+
+                        MemoryStream output         = new MemoryStream();
+                        FileStream fileStream       = new FileStream( file_name, FileMode.Open, FileAccess.Read, FileShare.Read );
+
+                        Gpg gpg                     = new Gpg("C:\\Program Files (x86)\\GnuPG\\bin\\gpg.exe");
+                        gpg.OutputType              = OutputTypes.AsciiArmor;
+                        gpg.OutputSignatureType     = OutputSignatureTypes.ClearText;
+                        gpg.IgnoreErrors            = true;
+                        output.Position             = 0;
+
+                        MemoryStream outputVer      = new MemoryStream( );
+                        var result                  = gpg.Verify( fileStream, outputVer );
+
+                        string gpg_key_id           = result.user_key;
+                        string gpg_user_name        = result.user_name;
+                        string dad = "Asd";
+
+                        if ( String.IsNullOrEmpty( gpg_key_id ) && String.IsNullOrEmpty( gpg_user_name ) )
+                        {
+                            nl( );
+                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "No valid GPG signature found for target file [#Yellow]" + file_name + "[/]" ) );
+                            nl( );
+
+                            continue;
+                        }
+
+                        nl( );
+                        c2( sf( " {0,-24} {1,-30}", "[#Green]Success[/]", "Successfully found GPG signature for file [#Yellow]" + file_name + "[/]" ) );
+                        nl( );
+                        nl( );
+                        c2( sf( " {0,-27} {1,-30}", "[#DarkGray]Key ID:[/]", "[#Gray]" + gpg_key_id + "[/]" ) );
+                        nl( );
+                        c2( sf( " {0,-27} {1,-30}", "[#DarkGray]Signature:[/]", "[#Gray]" + gpg_user_name + "[/]" ) );
+                        nl( );
+                    }
+                }
             }
 
             if ( arg_SelfVerify_Enabled )

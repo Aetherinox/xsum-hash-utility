@@ -2,7 +2,7 @@
 	@Title		: Algorithms > CRC
 	@Website	: https://github.com/Aetherinox/xsum-shahash-utility
 	@Authors	: Aetherinox
-				: Steve Whitley
+                : Steve Whitley
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -70,31 +70,32 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-		    internal static ushort ComputeInternal ( params byte[] bytes )
+		    internal static ushort ComputeInternal ( params byte[] b )
 		    {
-			    return ComputeInternal ( bytes, 0, bytes?.Length ?? 0 );
+			    return ComputeInternal ( b, 0, b?.Length ?? 0 );
 		    }
 
             /*
                 Compute > Internal
             */
 
-		    internal static ushort ComputeInternal ( byte[] bytes, int start, int len, ushort initialValue = StartValue )
+		    internal static ushort ComputeInternal ( byte[] b, int start, int len, ushort initialValue = StartValue )
 		    {
-                if ( bytes == null ) { throw new ArgumentNullException ( nameof ( bytes ) ); }
-                if ( bytes.Length == 0 ) { throw new ArgumentOutOfRangeException ( nameof ( bytes ) ); }
-                if ( start < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
-                if ( start >= bytes.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+                if ( b == null )        { throw new ArgumentNullException ( nameof ( b ) ); }
+                if ( b.Length == 0 )    { throw new ArgumentOutOfRangeException ( nameof ( b ) ); }
+                if ( start < 0 )        { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+
+                if ( start >= b.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
 
                 var crc     = initialValue;
                 var end     = start + len - 1;
 
-                if ( end > bytes.Length ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
-                if ( len < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+                if ( end > b.Length )   { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+                if ( len < 0 )          { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
 
                 for ( int i = start; i <= end; ++i )
                 {
-                    crc = table[ crc ^ bytes[ i ] ];
+                    crc = table[ crc ^ b[ i ] ];
                 }
 
                 return crc;
@@ -134,31 +135,32 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-		    internal static ushort ComputeInternal ( params byte[] bytes )
+		    internal static ushort ComputeInternal ( params byte[] b )
 		    {
-			    return ComputeInternal ( bytes, 0, bytes?.Length ?? 0 );
+			    return ComputeInternal ( b, 0, b?.Length ?? 0 );
 		    }
 
             /*
                 Compute > Internal
             */
 
-		    internal static ushort ComputeInternal ( byte[] bytes, int start, int len, ushort initialValue = StartValue )
+		    internal static ushort ComputeInternal ( byte[] b, int start, int len, ushort initialValue = StartValue )
 		    {
-                if ( bytes == null ) { throw new ArgumentNullException ( nameof ( bytes ) ); }
-                if ( bytes.Length == 0 ) { throw new ArgumentOutOfRangeException ( nameof ( bytes ) ); }
-                if ( start < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
-                if ( start >= bytes.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+                if ( b == null )        { throw new ArgumentNullException ( nameof ( b ) ); }
+                if ( b.Length == 0 )    { throw new ArgumentOutOfRangeException ( nameof ( b ) ); }
+                if ( start < 0 )        { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+
+                if ( start >= b.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
 
                 var crc     = initialValue;
                 var end     = start + len - 1;
 
-                if ( end > bytes.Length ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
-                if ( len < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+                if ( end > b.Length )   { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+                if ( len < 0 )          { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
 
                 for ( int i = start; i <= end; ++i )
                 {
-                    crc = table[ crc ^ bytes[ i ] ];
+                    crc = table[ crc ^ b[ i ] ];
                 }
 
                 return crc;
@@ -198,31 +200,32 @@ namespace Aetherx.Algo
                 Compute > Internal
             */
 
-		    internal static ushort ComputeInternal ( params byte[] bytes )
+		    internal static ushort ComputeInternal ( params byte[] b )
 		    {
-			    return ComputeInternal ( bytes, 0, bytes?.Length ?? 0 );
+			    return ComputeInternal ( b, 0, b?.Length ?? 0 );
 		    }
 
             /*
                 Compute > Internal
             */
 
-		    internal static ushort ComputeInternal ( byte[] bytes, int start, int length, ushort initialValue = StartValue )
+		    internal static ushort ComputeInternal ( byte[] b, int start, int len, ushort initialValue = StartValue )
 		    {
-                if ( bytes == null ) { throw new ArgumentNullException ( nameof ( bytes ) ); }
-                if ( bytes.Length == 0 ) { throw new ArgumentOutOfRangeException ( nameof ( bytes ) ); }
-                if ( start < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
-                if ( start >= bytes.Length && length > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+                if ( b == null )        { throw new ArgumentNullException ( nameof ( b ) ); }
+                if ( b.Length == 0 )    { throw new ArgumentOutOfRangeException ( nameof ( b ) ); }
+                if ( start < 0 )        { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+
+                if ( start >= b.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
 
                 var crc     = initialValue;
-                var end     = start + length - 1;
+                var end     = start + len - 1;
 
-                if ( end > bytes.Length ) { throw new ArgumentOutOfRangeException ( nameof ( length ) ); }
-                if ( length < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( length ) ); }
+                if ( end > b.Length )   { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+                if ( len < 0 )          { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
 
                 for ( int i = start; i <= end; ++i )
                 {
-                    crc = table[crc ^ bytes[i]];
+                    crc = table[ crc ^ b[ i ] ];
                 }
 
                 return crc;
@@ -234,7 +237,7 @@ namespace Aetherx.Algo
 
             var text            = "Message";
             var text_bytes      = System.Text.Encoding.UTF8.GetBytes ( text );
-            var text_crc        = Aetherx.Algo.Crc8.ComputeChecksum ( CRC8.Standard, text_bytes );
+            var text_crc        = Aetherx.Algo.Crc8.ComputeHash ( CRC8.Standard, text_bytes );
             Console.WriteLine   ( "Text Algo: {0:X3}", text_crc );
         */
 
@@ -244,27 +247,27 @@ namespace Aetherx.Algo
                 Compute > Checksum
             */
 
-            public static long ComputeChecksum ( CRC8 algo, params byte[] bytes )
+            public static long ComputeHash ( CRC8 algo, params byte[] b )
             {
-                return ComputeChecksum ( algo, bytes, 0, bytes?.Length ?? 0 );
+                return ComputeHash ( algo, b, 0, b?.Length ?? 0 );
             }
 
             /*
                 Compute > Checksum
             */
 
-            public static long ComputeChecksum ( CRC8 algo, byte[] bytes, int start, int len )
+            public static long ComputeHash ( CRC8 algo, byte[] b, int start, int len )
             {
 			    switch ( algo )
 			    {
 				    case CRC8.Standard:
-					    return Standard.ComputeInternal ( bytes, start, len );
+					    return Standard.ComputeInternal ( b, start, len );
 
 				    case CRC8.DVBS2:
-					    return DVBS2.ComputeInternal ( bytes, start, len );
+					    return DVBS2.ComputeInternal ( b, start, len );
 
 				    case CRC8.Maxim:
-					    return Maxim.ComputeInternal ( bytes, start, len );
+					    return Maxim.ComputeInternal ( b, start, len );
 			    }
 
 			    throw new ThrowException ( "Unknown Algorithm" );

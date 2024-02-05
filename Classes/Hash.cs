@@ -176,11 +176,11 @@ namespace XSum
                 var str_bytes       = System.Text.Encoding.UTF8.GetBytes ( str );
 
                 if ( size == 8 )
-                    return String.Format( "{0:X3}", Crc8.ComputeChecksum ( CRC8.Standard, str_bytes ) );
+                    return String.Format( "{0:X3}", Crc8.ComputeHash ( CRC8.Standard, str_bytes ) );
                 else if ( size == 16 )
-                    return String.Format( "{0:X4}", Crc16.ComputeChecksum ( CRC16.Standard, str_bytes ) );
+                    return String.Format( "{0:X4}", Crc16.ComputeHash ( CRC16.Standard, str_bytes ) );
                 else 
-                    return String.Format( "{0:X8}", Crc32.ComputeChecksum ( str_bytes ) );
+                    return String.Format( "{0:X8}", Crc32.ComputeHash ( str_bytes ) );
             }
 
             /*
@@ -284,11 +284,11 @@ namespace XSum
                 using ( FileStream stream = File.OpenRead( path ) )
                 {
                     if ( size == 8 )
-                        return String.Format( "{0:X3}", Crc8.ComputeChecksum ( CRC8.Standard, Helpers.FSReadFull( stream ) ) );
+                        return String.Format( "{0:X3}", Crc8.ComputeHash ( CRC8.Standard, Helpers.FSReadFull( stream ) ) );
                     else if ( size == 16 )
-                        return String.Format( "{0:X4}", Crc16.ComputeChecksum ( CRC16.Standard, Helpers.FSReadFull( stream ) ) );
+                        return String.Format( "{0:X4}", Crc16.ComputeHash ( CRC16.Standard, Helpers.FSReadFull( stream ) ) );
                     else 
-                        return String.Format( "{0:X8}", Crc32.ComputeChecksum ( Helpers.FSReadFull( stream ) ) );
+                        return String.Format( "{0:X8}", Crc32.ComputeHash ( Helpers.FSReadFull( stream ) ) );
                 }
             }
 
@@ -381,7 +381,6 @@ namespace XSum
         */
 
         #region "Cryptography: Hash > Directory"
-
 
             /*
                 Algo

@@ -2,7 +2,7 @@
 	@Title		: Algorithms > CRC
 	@Website	: https://github.com/Aetherinox/xsum-shahash-utility
 	@Authors	: Aetherinox
-				: Steve Whitley
+                : Steve Whitley
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +81,7 @@ namespace Aetherx.Algo
         /*
             var text            = "test";
             var textBuffer      = System.Text.Encoding.UTF8.GetBytes ( text );
-            var textCrc         = Aetherx.Algo.Crc32.ComputeChecksum ( textBuffer );
+            var textCrc         = Aetherx.Algo.Crc32.ComputeHash ( textBuffer );
             Console.WriteLine ( "Text Algo: {0:X8}", textCrc );
         */
 
@@ -92,31 +92,32 @@ namespace Aetherx.Algo
 			*/
 
 
-            public static long ComputeChecksum ( params byte[] bytes )
+            public static long ComputeHash ( params byte[] b )
             {
-                return ComputeChecksum ( bytes, 0, bytes?.Length ?? 0 );
+                return ComputeHash ( b, 0, b?.Length ?? 0 );
             }
 
             /*
                 Compute > Checksum
             */
 
-            public static long ComputeChecksum( byte[] bytes, int start, int len )
+            public static long ComputeHash( byte[] b, int start, int len )
             {
-                if ( bytes == null ) { throw new ArgumentNullException ( nameof ( bytes ) ); }
-                if ( bytes.Length == 0 ) { throw new ArgumentOutOfRangeException ( nameof ( bytes ) ); }
-                if ( start < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
-                if ( start >= bytes.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+                if ( b == null )        { throw new ArgumentNullException ( nameof ( b ) ); }
+                if ( b.Length == 0 )    { throw new ArgumentOutOfRangeException ( nameof ( b ) ); }
+                if ( start < 0 )        { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
+
+                if ( start >= b.Length && len > 1 ) { throw new ArgumentOutOfRangeException ( nameof ( start ) ); }
 
                 var crc     = StartValue;
                 var end     = start + len - 1;
 
-                if ( end > bytes.Length ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
-                if ( len < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+                if ( end > b.Length )   { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
+                if ( len < 0 )          { throw new ArgumentOutOfRangeException ( nameof ( len ) ); }
 
                 for ( int i = start; i <= end; ++i )
                 {
-                    crc = ( uint )( ( crc >> 8 ) ^ table[( byte )( ( ( crc ) & 0xff ) ^ bytes[ i ] )] );
+                    crc = ( uint )( ( crc >> 8 ) ^ table[( byte )( ( ( crc ) & 0xff ) ^ b[ i ] )] );
                 }
 
                 return ~crc;
