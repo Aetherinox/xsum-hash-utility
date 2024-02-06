@@ -12,6 +12,7 @@ using System.Management.Automation;
 using System.ComponentModel;
 using System.Linq;
 using Cfg = XSum.Properties.Settings;
+using static System.Net.Mime.MediaTypeNames;
 
 #endregion
 
@@ -340,6 +341,11 @@ namespace XSum
         public static bool StringValidateEmail( string str )
         {                       
             return Regex.IsMatch(str, @"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*");
+        }
+
+        public static bool StringContains( string search, string find )
+        {
+            return Regex.IsMatch( search, $@"\b{find}\b", RegexOptions.IgnoreCase );
         }
 
         /*

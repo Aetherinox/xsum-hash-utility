@@ -15,6 +15,7 @@ using System.Security.Principal;
 using Starksoft.Aspen.GnuPG;
 using Isopoh.Cryptography.Argon2;
 using Cfg = XSum.Properties.Settings;
+using static System.Net.Mime.MediaTypeNames;
 
 #endregion
 
@@ -360,7 +361,7 @@ namespace XSum
             static bool     arg_Iterations_Enabled  = false;                        // --iterations arg specified
             static int      arg_Iterations_Min      = 1;                            // --iterations min value
             static int      arg_Iterations_Max      = 500000;                       // --iterations max value
-            static int      arg_Iterations          = 0;                            // --iterations number
+            static int      arg_Iterations          = 1;                            // --iterations number
             static bool     arg_Buffer_Enabled      = false;                        // --buffer arg specified
             static int      arg_Buffer              = 0;                            // --buffer number
             static int      arg_Buffer_Min          = 5242880;                      // --buffer min value
@@ -383,10 +384,14 @@ namespace XSum
             static int      arg_AG2_hashlen         = Cfg.Default.ag2_hashlen_def;  // argon 2 hash length
             static int      arg_AG2_hashlen_min     = Cfg.Default.ag2_hashlen_min;  // argon 2 hash length
             static int      arg_AG2_hashlen_max     = Cfg.Default.ag2_hashlen_max;  // argon 2 hash length
+            static int      arg_AG2_threads         = Environment.ProcessorCount / 2;
+            static int      arg_AG2_threads_min     = 1;
+            static int      arg_AG2_threads_max     = Environment.ProcessorCount;
+            static int      arg_AG2_lanes           = 4;
+            static int      arg_AG2_lanes_min       = 1;
+            static int      arg_AG2_lanes_max       = Environment.ProcessorCount * 4;
 
         #endregion
-
-
 
         /*
             Help Dialog
@@ -559,7 +564,7 @@ namespace XSum
                 dict_GetHash.Add        ( "blake2s256",     ( p ) => Hash.Hash_Manage_B2S       ( "32",         p ) );
                 dict_GetHash.Add        ( "blake2s384",     ( p ) => Hash.Hash_Manage_B2S       ( "48",         p ) );
                 dict_GetHash.Add        ( "blake2s512",     ( p ) => Hash.Hash_Manage_B2S       ( "64",         p ) );
-                dict_GetHash.Add        ( "argon2",         ( p ) => Hash.Hash_Manage_AG2       ( p, arg_AG2_salt, arg_AG2_memory, arg_AG2_hashlen ) );
+                dict_GetHash.Add        ( "argon2",         ( p ) => Hash.Hash_Manage_AG2       ( p, arg_AG2_salt, arg_AG2_memory, arg_AG2_hashlen, arg_Iterations, arg_AG2_threads, arg_AG2_lanes ) );
 
                 return dict_GetHash;
             }
@@ -647,9 +652,6 @@ namespace XSum
 
             static int Main( string[] args )
             {
-
-                var password = "password1";
-                var passwordHash = Argon2.Hash(password);
 
                 /*
                     This is for automatic verification. It's only used by the developer.
@@ -1423,10 +1425,10 @@ namespace XSum
                                 case "--iterations":
                                 case "--iteration":
                                 case "-i":
-                                    if ( !arg_Benchmark_Enabled )
+                                    if ( !arg_Benchmark_Enabled && !Helpers.StringContains( arg_Algo, "argon2" ) )
                                     {
                                         nl( );
-                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--benchmark[/]" ) );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Must be used with [#Yellow]--benchmark[/] or when using the algorithm [#Yellow]--argon2[/]" ) );
                                         nl( );
 
                                         return (int)ExitCode.ErrorMissingArg;
@@ -1599,7 +1601,6 @@ namespace XSum
                                 */
 
                                 case "--memory":
-
                                     for ( ++i ; i < args.Length ; i++ )
                                     {
                                         string property     = args[ i ];
@@ -1622,21 +1623,21 @@ namespace XSum
                                         arg_AG2_memory          = Int32.Parse( property );
                                     }
 
-                                    // memory less than than 1kb
-                                    if ( arg_AG2_memory < arg_AG2_memory_min )
+                                    // greater than maximum
+                                    if ( arg_AG2_memory > arg_AG2_memory_max )
                                     {
                                         nl( );
-                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Memory must be at least [#Yellow]" + arg_AG2_memory_min.ToString( ) + "[/]kb" ) );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Memory cannot exceed [#Yellow]" + arg_AG2_memory_max.ToString( ) + "[/]kb" ) );
                                         nl( );
 
                                         return (int)ExitCode.ErrorMissingArg;
                                     }
 
-                                    // memory larger than 4GB
-                                    if ( arg_AG2_memory > arg_AG2_memory_max )
+                                    // less than minimum
+                                    if ( arg_AG2_memory < arg_AG2_memory_min )
                                     {
                                         nl( );
-                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Memory cannot exceed [#Yellow]" + arg_AG2_memory_max.ToString( ) + "[/]kb" ) );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Memory must be at least [#Yellow]" + arg_AG2_memory_min.ToString( ) + "[/]kb" ) );
                                         nl( );
 
                                         return (int)ExitCode.ErrorMissingArg;
@@ -1648,8 +1649,7 @@ namespace XSum
                                     CASE > ARGON 2 > HASH LENGTH
                                 */
 
-                                case "--hashlength":
-
+                                case "--length":
                                     for ( ++i ; i < args.Length ; i++ )
                                     {
                                         string property     = args[ i ];
@@ -1670,28 +1670,149 @@ namespace XSum
                                         }
 
                                         arg_AG2_hashlen          = Int32.Parse( property );
-
-                                        // hash less than 4
-                                        if ( arg_AG2_hashlen > arg_AG2_hashlen_max )
-                                        {
-                                            nl( );
-                                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Memory cannot exceed [#Yellow]" + arg_AG2_hashlen_max.ToString( ) + "[/] characters" ) );
-                                            nl( );
-
-                                            return (int)ExitCode.ErrorMissingArg;
-                                        }
-
-                                        // hash greater than 32
-                                        if ( arg_AG2_hashlen < arg_AG2_hashlen_min )
-                                        {
-                                            nl( );
-                                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Hash length must be at least [#Yellow]" + arg_AG2_hashlen_min.ToString( ) + "[/] characters" ) );
-                                            nl( );
-
-                                            return (int)ExitCode.ErrorMissingArg;
-                                        }
                                     }
-                                    break;
+
+                                    // greater than maximum
+                                    if ( arg_AG2_hashlen > arg_AG2_hashlen_max )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Length cannot exceed [#Yellow]" + arg_AG2_hashlen_max.ToString( ) + "[/] characters" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    // less than minimum
+                                    if ( arg_AG2_hashlen < arg_AG2_hashlen_min )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Length must be at least [#Yellow]" + arg_AG2_hashlen_min.ToString( ) + "[/] characters" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                break;
+
+                                /*
+                                    CASE > ARGON 2 > THREADS
+                                */
+
+                                case "--threads":
+                                    for ( ++i ; i < args.Length ; i++ )
+                                    {
+                                        string property     = args[ i ];
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        // not a valid number
+                                        if ( !Helpers.bIsNumber( property ) )
+                                        {
+                                            nl( );
+                                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Value [#Yellow]" + property.ToString( ) + "[/] is not a valid [#Yellow]number[/]" ) );
+                                            nl( );
+
+                                            return (int)ExitCode.ErrorMissingArg;
+                                        }
+
+                                        arg_AG2_threads         = Int32.Parse( property );
+                                    }
+
+                                    // can't find argon 2 algorithm
+                                    if ( !Helpers.StringContains( arg_Algo, "argon2" ) )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Requires you to use Argon2 [#Yellow]--algo argon2[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    // greater than maximum
+                                    if ( arg_AG2_threads > arg_AG2_threads_max )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Threads cannot exceed [#Yellow]" + arg_AG2_threads_max.ToString( ) + "[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    // less than minimum
+                                    if ( arg_AG2_threads < arg_AG2_threads_min )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Threads must be at least [#Yellow]" + arg_AG2_threads_min.ToString( ) + "[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                break;
+
+                                /*
+                                    CASE > ARGON 2 > LANES
+                                */
+
+                                case "--lanes":
+
+                                    for ( ++i ; i < args.Length ; i++ )
+                                    {
+                                        string property     = args[ i ];
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        // not a valid number
+                                        if ( !Helpers.bIsNumber( property ) )
+                                        {
+                                            nl( );
+                                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Value [#Yellow]" + property.ToString( ) + "[/] is not a valid [#Yellow]number[/]" ) );
+                                            nl( );
+
+                                            return (int)ExitCode.ErrorMissingArg;
+                                        }
+
+                                        arg_AG2_lanes           = Int32.Parse( property );
+                                    }
+
+                                    // can't find argon 2 algorithm
+                                    if ( !Helpers.StringContains( arg_Algo, "argon2" ) )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Requires you to use Argon2 [#Yellow]--algo argon2[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    // greater than max
+                                    if ( arg_AG2_lanes > arg_AG2_lanes_max )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Lanes cannot exceed [#Yellow]" + arg_AG2_lanes_max.ToString( ) + "[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    // less than minimum
+                                    if ( arg_AG2_lanes < arg_AG2_lanes_min )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Lanes must be at least [#Yellow]" + arg_AG2_lanes_min.ToString( ) + "[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                break;
+
 
 
                                 /*

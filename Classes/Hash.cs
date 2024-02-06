@@ -14,6 +14,7 @@ using Isopoh.Cryptography.SecureArray;
 using System.Threading;
 using Cfg = XSum.Properties.Settings;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 #endregion
 
@@ -265,7 +266,7 @@ namespace XSum
                 Memory arg is initially a string since the user can input their own. Then convert to integer just because its easier.
             */
 
-            public static string GetHash_String_AG2( string input, string salt, int memory, int len )
+            public static string GetHash_String_AG2( string input, string salt, int memory = 1024, int len = 4, int iterations = 1, int threads = 1, int lanes = 1 )
             {
 
                 byte[] input_bytes  = Encoding.UTF8.GetBytes( input );
@@ -274,10 +275,10 @@ namespace XSum
                 {
                     Type            = Argon2Type.DataIndependentAddressing,
                     Version         = Argon2Version.Nineteen,
-                    TimeCost        = 10,
+                    TimeCost        = iterations,
                     MemoryCost      = memory,
-                    Lanes           = 4,
-                    Threads         = Environment.ProcessorCount, // higher than "Lanes" doesn't help (or hurt)
+                    Lanes           = lanes,
+                    Threads         = threads, // higher than "Lanes" doesn't help (or hurt)
                     Password        = input_bytes,
                     Salt            = Encoding.UTF8.GetBytes( salt ), // >= 8 bytes if not null
                     HashLength      = len // needs > 4
@@ -788,13 +789,13 @@ namespace XSum
                 @ret        : str memory
             */
 
-            public static string Hash_Manage_AG2( string input, string salt, int memory, int len )
+            public static string Hash_Manage_AG2( string input, string salt, int memory = 1024, int len = 4, int iterations = 1, int threads = 1, int lanes = 1 )
             {
 
                 if ( AppInfo.bIsDebug( ) )
                 {
                     StackTrace stackTrace = new StackTrace( ); 
-                    Console.WriteLine( stackTrace.GetFrame( 1 ).GetMethod( ).Name );
+                    Console.WriteLine( stackTrace.GetFrame( 1 ).GetMethod( ).Name);
                 }
 
                 if ( Directory.Exists( input ) )
@@ -808,7 +809,7 @@ namespace XSum
                     return "Error";
                 }
                 else
-                    return Hash.GetHash_String_AG2( input, salt, memory, len );
+                    return Hash.GetHash_String_AG2( input, salt, memory, len, iterations, threads, lanes );
             }
 
 
