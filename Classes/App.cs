@@ -12,23 +12,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Security.Principal;
-using System.Security.Cryptography;
-using Cfg = XSum.Properties.Settings;
-using SHA3M.Security.Cryptography;
 using Starksoft.Aspen.GnuPG;
+using Isopoh.Cryptography.Argon2;
+using Cfg = XSum.Properties.Settings;
 
 #endregion
 
 namespace XSum
 {
 
-    public static class StringExtensions
-    {
-        public static bool Contains(this string source, string toCheck, StringComparison comp)
-        {
-            return source?.IndexOf( toCheck, comp ) >= 0;
-        }
-    }
+    /*
+        Main App
+    */
 
     public class App
     {
@@ -289,6 +284,7 @@ namespace XSum
                 { "SHA*.txt",       true },
                 { "MD5*.txt",       true },
                 { "BLAKE*.txt",     true },
+                { "ARGON*.txt",     true },
             };
 
             /*
@@ -301,6 +297,7 @@ namespace XSum
                 { "MD5*.asc",       true },
                 { "SHA*.asc",       true },
                 { "BLAKE*.asc",     true },
+                { "ARGON*.asc",     true },
             };
 
             /*
@@ -317,14 +314,17 @@ namespace XSum
                 { "MD5*.asc",           true },
                 { "SHA*.asc",           true },
                 { "BLAKE*.asc",         true },
+                { "ARGON*.asc",         true },
                 { "CRC*.txt",           true },
                 { "MD5*.txt",           true },
                 { "SHA*.txt",           true },
                 { "BLAKE*.txt",         true },
+                { "ARGON*.txt",         true },
                 { "CRC*.sig",           true },
                 { "MD5*.sig",           true },
                 { "SHA*.sig",           true },
                 { "BLAKE*.sig",         true },
+                { "ARGON*.sig",         true },
                 { xsum_path_exe,        true },
             };
 
@@ -375,6 +375,14 @@ namespace XSum
             static bool     arg_GPG_DetachSign      = false;                        // --gpg detachsign file
             static string   arg_GPG_ListKeys        = "long";                       // --gpg list-keys
             static bool     arg_ClrScreen_Enabled   = false;                        // --clear arg specified
+            static string   arg_AG2_salt            = Cfg.Default.ag2_salt;         // argon 2 default salt
+            static int      arg_AG2_salt_min        = Cfg.Default.ag2_salt_min;     // argon 2 min character limit
+            static int      arg_AG2_memory          = Cfg.Default.ag2_memory_def;   // argon 2 default memory
+            static int      arg_AG2_memory_min      = Cfg.Default.ag2_memory_min;   // argon 2 min memory ( 1KB )
+            static int      arg_AG2_memory_max      = Cfg.Default.ag2_memory_max;   // argon 2 max memory ( 4GB )
+            static int      arg_AG2_hashlen         = Cfg.Default.ag2_hashlen_def;  // argon 2 hash length
+            static int      arg_AG2_hashlen_min     = Cfg.Default.ag2_hashlen_min;  // argon 2 hash length
+            static int      arg_AG2_hashlen_max     = Cfg.Default.ag2_hashlen_max;  // argon 2 hash length
 
         #endregion
 
@@ -551,6 +559,7 @@ namespace XSum
                 dict_GetHash.Add        ( "blake2s256",     ( p ) => Hash.Hash_Manage_B2S       ( "32",         p ) );
                 dict_GetHash.Add        ( "blake2s384",     ( p ) => Hash.Hash_Manage_B2S       ( "48",         p ) );
                 dict_GetHash.Add        ( "blake2s512",     ( p ) => Hash.Hash_Manage_B2S       ( "64",         p ) );
+                dict_GetHash.Add        ( "argon2",         ( p ) => Hash.Hash_Manage_AG2       ( p, arg_AG2_salt, arg_AG2_memory, arg_AG2_hashlen ) );
 
                 return dict_GetHash;
             }
@@ -639,6 +648,9 @@ namespace XSum
             static int Main( string[] args )
             {
 
+                var password = "password1";
+                var passwordHash = Argon2.Hash(password);
+
                 /*
                     This is for automatic verification. It's only used by the developer.
                     I may make this work for users some day.
@@ -675,7 +687,7 @@ namespace XSum
                 {
 
                     /*
-                        Create list of recognized auto-verify digests to look for if user manually double-clicks xsum
+                        Create list of recognized auto-verify digests to look for if user manually double-clicks XSum
                     */
 
                     var ProcParent = AppInfo.GetParentProcess( Process.GetCurrentProcess( ) );
@@ -1403,7 +1415,7 @@ namespace XSum
                                     break;
 
                                 /*
-                                    CASE > ROUNDS
+                                    CASE > ITERATIONS
 
                                     benchmark rounds
                                 */
@@ -1444,6 +1456,7 @@ namespace XSum
                                         arg_Iterations      = Int32.Parse( property );
                                     }
 
+                                    // user defined --iterations but didnt give a value
                                     if ( arg_Benchmark_Enabled && String.IsNullOrEmpty( arg_Iterations.ToString( ) ) )
                                     {
                                         nl( );
@@ -1474,7 +1487,7 @@ namespace XSum
                                         return (int)ExitCode.ErrorMissingArg;
                                     }
 
-                                    break;
+                                break;
 
                                 /*
                                     CASE > BUFFER
@@ -1548,18 +1561,141 @@ namespace XSum
                                         return (int)ExitCode.ErrorMissingArg;
                                     }
 
-                                    break;
+                                break;
 
                                 /*
-                                    CASE > DEFAULT
+                                    CASE > ARGON 2 > SALT
                                 */
 
-                                default:
-                                    c2( sf( "\n[#Red]Error:     [/]Unknown argument {0}\n", a ) );
-                                    return (int)ExitCode.ErrorGeneric;
+                                case "--salt":
+
+                                    for ( ++i ; i < args.Length ; i++ )
+                                    {
+                                        string property     = args[ i ];
+
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        arg_AG2_salt = property;
+                                    }
+
+                                    // salt less than 8 bytes
+                                    if ( arg_AG2_salt.Length < arg_AG2_salt_min || String.IsNullOrEmpty( arg_AG2_salt ) )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Salt must be [#Yellow]" + arg_AG2_salt_min.ToString( ) +  "[/] characters or longer. Invalid salt: [#Yellow]" + arg_AG2_salt.ToString( ) + "[/]" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                break;
 
                                 /*
-                                    CASE > DEBUG / Dev Mode
+                                    CASE > ARGON 2 > MEMORY
+                                */
+
+                                case "--memory":
+
+                                    for ( ++i ; i < args.Length ; i++ )
+                                    {
+                                        string property     = args[ i ];
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        // not a valid number
+                                        if ( !Helpers.bIsNumber( property ) )
+                                        {
+                                            nl( );
+                                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Value [#Yellow]" + property.ToString( ) + "[/] is not a valid [#Yellow]number[/]" ) );
+                                            nl( );
+
+                                            return (int)ExitCode.ErrorMissingArg;
+                                        }
+
+                                        arg_AG2_memory          = Int32.Parse( property );
+                                    }
+
+                                    // memory less than than 1kb
+                                    if ( arg_AG2_memory < arg_AG2_memory_min )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Memory must be at least [#Yellow]" + arg_AG2_memory_min.ToString( ) + "[/]kb" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                    // memory larger than 4GB
+                                    if ( arg_AG2_memory > arg_AG2_memory_max )
+                                    {
+                                        nl( );
+                                        c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Memory cannot exceed [#Yellow]" + arg_AG2_memory_max.ToString( ) + "[/]kb" ) );
+                                        nl( );
+
+                                        return (int)ExitCode.ErrorMissingArg;
+                                    }
+
+                                break;
+
+                                /*
+                                    CASE > ARGON 2 > HASH LENGTH
+                                */
+
+                                case "--hashlength":
+
+                                    for ( ++i ; i < args.Length ; i++ )
+                                    {
+                                        string property     = args[ i ];
+                                        if ( property.StartsWith( "-" ) )
+                                        { 
+                                            i--;
+                                            break;
+                                        }
+
+                                        // not a valid number
+                                        if ( !Helpers.bIsNumber( property ) )
+                                        {
+                                            nl( );
+                                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Value [#Yellow]" + property.ToString( ) + "[/] is not a valid [#Yellow]number[/]" ) );
+                                            nl( );
+
+                                            return (int)ExitCode.ErrorMissingArg;
+                                        }
+
+                                        arg_AG2_hashlen          = Int32.Parse( property );
+
+                                        // hash less than 4
+                                        if ( arg_AG2_hashlen > arg_AG2_hashlen_max )
+                                        {
+                                            nl( );
+                                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Memory cannot exceed [#Yellow]" + arg_AG2_hashlen_max.ToString( ) + "[/] characters" ) );
+                                            nl( );
+
+                                            return (int)ExitCode.ErrorMissingArg;
+                                        }
+
+                                        // hash greater than 32
+                                        if ( arg_AG2_hashlen < arg_AG2_hashlen_min )
+                                        {
+                                            nl( );
+                                            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Hash length must be at least [#Yellow]" + arg_AG2_hashlen_min.ToString( ) + "[/] characters" ) );
+                                            nl( );
+
+                                            return (int)ExitCode.ErrorMissingArg;
+                                        }
+                                    }
+                                    break;
+
+
+                                /*
+                                    CASE > DEBUG > ENABLE
 
                                     Enter debug / developer mode.
                                 */
@@ -1572,7 +1708,7 @@ namespace XSum
                                 /*
                                     CASE > DEBUG > DIAGNOSTICS
 
-                                    Lists the paths in use by xsum
+                                    Lists the paths in use by XSum
                                 */
 
                                 case "--diag":
@@ -1612,6 +1748,14 @@ namespace XSum
                                     nl( );
 
                                     return (int)ExitCode.Success;
+
+                                /*
+                                    CASE > DEFAULT
+                                */
+
+                                default:
+                                    c2( sf( "\n[#Red]Error:     [/]Unknown argument {0}\n", a ) );
+                                    return (int)ExitCode.ErrorGeneric;
 
                             }
 
@@ -1831,6 +1975,25 @@ namespace XSum
 
         static public int Action_Generate( )
         {
+
+            /*
+                Don't allow user to specify the target file as the same name as the digest file that will be generated. Otherwise the app just quits.
+            */
+
+            foreach ( string pattern in dict_HashFiles.Keys )
+            {
+                bool bExists = Regex.IsMatch( arg_Target_File, Helpers.WildcardMatch( pattern ) );
+                if ( bExists )
+                {
+                    nl( );
+                    c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "You cannot target a pre-defined hash file[/]" ) );
+                    nl( );
+
+                    return (int)ExitCode.ErrorMissingArg;
+                }
+
+            }
+
             var dict_GetHash            = Dict_GetHashes( );                          // create dictionary for hash algos        
 
             /*
@@ -3168,6 +3331,33 @@ namespace XSum
 
         #endregion
 
+        
+        /*
+            Feature Not Available
+        */
+
+        static public void MaintFeatureSoon( )
+        {
+            nl( );
+            c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "This feature is not yet available[/]" ) );
+            nl( );
+
+            System. Environment.Exit( 0 );
+        }
+
     }
+
+    /*
+        Used for dictionary
+    */
+
+    public static class StringExtensions
+    {
+        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        {
+            return source?.IndexOf( toCheck, comp ) >= 0;
+        }
+    }
+
 
 }

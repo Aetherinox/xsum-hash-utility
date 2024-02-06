@@ -75,6 +75,9 @@
 !/bin/Release/net481/publish/
 !/bin/Release/net481/publish/*.exe
 
+# Allow: Argon2
+!/Argon2*
+
 # Allow: GPG
 !/GnuPG*
 

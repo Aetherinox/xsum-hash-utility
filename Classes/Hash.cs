@@ -8,10 +8,12 @@ using System.Security.Cryptography;
 using System.Text;
 using SHA3M.Security.Cryptography;
 using Blake2Fast;
-using System.Management.Automation.Language;
-using System.Runtime.CompilerServices;
-using System.Collections.Generic;
 using Aetherx.Algo;
+using Isopoh.Cryptography.Argon2;
+using Isopoh.Cryptography.SecureArray;
+using System.Threading;
+using Cfg = XSum.Properties.Settings;
+using System.Diagnostics;
 
 #endregion
 
@@ -255,6 +257,41 @@ namespace XSum
                 var hash        = Blake2Fast.Blake2s.ComputeHash( hash_size, bytes );
 
                 return BytesToString( hash );
+            }
+
+            /*
+                Argon2
+
+                Memory arg is initially a string since the user can input their own. Then convert to integer just because its easier.
+            */
+
+            public static string GetHash_String_AG2( string input, string salt, int memory, int len )
+            {
+
+                byte[] input_bytes  = Encoding.UTF8.GetBytes( input );
+
+                var config = new Argon2Config
+                {
+                    Type            = Argon2Type.DataIndependentAddressing,
+                    Version         = Argon2Version.Nineteen,
+                    TimeCost        = 10,
+                    MemoryCost      = memory,
+                    Lanes           = 4,
+                    Threads         = Environment.ProcessorCount, // higher than "Lanes" doesn't help (or hurt)
+                    Password        = input_bytes,
+                    Salt            = Encoding.UTF8.GetBytes( salt ), // >= 8 bytes if not null
+                    HashLength      = len // needs > 4
+                };
+
+                var argon2A         = new Argon2(config);
+                string hashString;
+
+                using( SecureArray<byte> hashA = argon2A.Hash( ) )
+                {
+                    hashString = config.EncodeString(hashA.Buffer);
+                }
+
+                return hashString;
             }
 
         #endregion
@@ -657,90 +694,121 @@ namespace XSum
                 Management > Algo
 
                 @arg        : str algo
-                @arg        : str src
+                @arg        : str input
                 @ret        : str
             */
 
-            public static string Hash_Manage_CRC( string algo, string src )
+            public static string Hash_Manage_CRC( string algo, string input )
             {
-                if ( Directory.Exists( src ) )
-                    return Hash.GetHash_Directory_CRC( algo,  src );
-                else if ( File.Exists( src ) )
-                    return Hash.GetHash_File_CRC( algo, src );
+                if ( Directory.Exists( input ) )
+                    return Hash.GetHash_Directory_CRC( algo,  input );
+                else if ( File.Exists( input ) )
+                    return Hash.GetHash_File_CRC( algo, input );
                 else
-                    return Hash.GetHash_String_CRC( algo, src );
+                    return Hash.GetHash_String_CRC( algo, input );
             }
 
             /*
                 Management > MD5, SHA1, SHA-2
 
                 @arg        : str algo
-                @arg        : str src
+                @arg        : str input
                 @ret        : str
             */
 
-            public static string Hash_Manage_SHA2( string algo, string src )
+            public static string Hash_Manage_SHA2( string algo, string input )
             {
-                if ( Directory.Exists( src ) )
-                    return Hash.GetHash_Directory_SHA2( algo,  src );
-                else if ( File.Exists( src ) )
-                    return Hash.GetHash_File_SHA2( algo, src );
+                if ( Directory.Exists( input ) )
+                    return Hash.GetHash_Directory_SHA2( algo,  input );
+                else if ( File.Exists( input ) )
+                    return Hash.GetHash_File_SHA2( algo, input );
                 else
-                    return Hash.GetHash_String_SHA2( algo, src );
+                    return Hash.GetHash_String_SHA2( algo, input );
             }
 
             /*
                 Management > SHA-3
 
                 @arg        : str algo
-                @arg        : str src
+                @arg        : str input
                 @ret        : str
             */
 
-            public static string Hash_Manage_SHA3( string algo, string src )
+            public static string Hash_Manage_SHA3( string algo, string input )
             {
-                if ( Directory.Exists( src ) )
-                    return Hash.GetHash_Directory_SHA3( algo,  src );
-                else if ( File.Exists( src ) )
-                    return Hash.GetHash_File_SHA3( algo, src );
+                if ( Directory.Exists( input ) )
+                    return Hash.GetHash_Directory_SHA3( algo,  input );
+                else if ( File.Exists( input ) )
+                    return Hash.GetHash_File_SHA3( algo, input );
                 else
-                    return Hash.GetHash_String_SHA3( algo, src );
+                    return Hash.GetHash_String_SHA3( algo, input );
             }
 
             /*
                 Management > Blake2 > 2B
 
                 @arg        : str arg
-                @arg        : str src
+                @arg        : str input
                 @ret        : str
             */
 
-            public static string Hash_Manage_B2B( string arg, string src )
+            public static string Hash_Manage_B2B( string arg, string input )
             {
-                if ( Directory.Exists( src ) )
-                    return Hash.GetHash_Directory_B2B( arg,  src );
-                else if ( File.Exists( src ) )
-                    return Hash.GetHash_File_B2B( arg, src );
+                if ( Directory.Exists( input ) )
+                    return Hash.GetHash_Directory_B2B( arg,  input );
+                else if ( File.Exists( input ) )
+                    return Hash.GetHash_File_B2B( arg, input );
                 else
-                    return Hash.GetHash_String_B2B( arg, src );
+                    return Hash.GetHash_String_B2B( arg, input );
             }
 
             /*
                 Management > Blake2 > 2S
 
                 @arg        : str arg
-                @arg        : str src
+                @arg        : str input
                 @ret        : str
             */
 
-            public static string Hash_Manage_B2S( string arg, string src )
+            public static string Hash_Manage_B2S( string arg, string input )
             {
-                if ( Directory.Exists( src ) )
-                    return Hash.GetHash_Directory_B2S( arg,  src );
-                else if ( File.Exists( src ) )
-                    return Hash.GetHash_File_B2S( arg, src );
+                if ( Directory.Exists( input ) )
+                    return Hash.GetHash_Directory_B2S( arg,  input );
+                else if ( File.Exists( input ) )
+                    return Hash.GetHash_File_B2S( arg, input );
                 else
-                    return Hash.GetHash_String_B2S( arg, src );
+                    return Hash.GetHash_String_B2S( arg, input );
+            }
+
+            /*
+                Management > Argon 2
+
+                @arg        : str arg
+                @arg        : str salt
+                @ret        : str memory
+            */
+
+            public static string Hash_Manage_AG2( string input, string salt, int memory, int len )
+            {
+
+                if ( AppInfo.bIsDebug( ) )
+                {
+                    StackTrace stackTrace = new StackTrace( ); 
+                    Console.WriteLine( stackTrace.GetFrame( 1 ).GetMethod( ).Name );
+                }
+
+                if ( Directory.Exists( input ) )
+                {
+                    App.MaintFeatureSoon( );
+                    return "Error";
+                }
+                else if ( File.Exists( input ) )
+                {
+                    App.MaintFeatureSoon( );
+                    return "Error";
+                }
+                else
+                    return Hash.GetHash_String_AG2( input, salt, memory, len );
             }
 
 

@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.ComponentModel;
 using System.Linq;
+using Cfg = XSum.Properties.Settings;
 
 #endregion
 

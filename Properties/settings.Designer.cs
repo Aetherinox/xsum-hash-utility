@@ -49,5 +49,77 @@ namespace XSum.Properties {
                 return ((string)(this["app_exe_name"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ddeEdGPCXQ0-Tk3rRoXsMMT04mjL4qa1")]
+        public string ag2_salt {
+            get {
+                return ((string)(this["ag2_salt"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        public int ag2_hashlen_def {
+            get {
+                return ((int)(this["ag2_hashlen_def"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public int ag2_hashlen_min {
+            get {
+                return ((int)(this["ag2_hashlen_min"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("32")]
+        public int ag2_hashlen_max {
+            get {
+                return ((int)(this["ag2_hashlen_max"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1024")]
+        public int ag2_memory_min {
+            get {
+                return ((int)(this["ag2_memory_min"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4194304")]
+        public int ag2_memory_max {
+            get {
+                return ((int)(this["ag2_memory_max"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("32768")]
+        public int ag2_memory_def {
+            get {
+                return ((int)(this["ag2_memory_def"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8")]
+        public int ag2_salt_min {
+            get {
+                return ((int)(this["ag2_salt_min"]));
+            }
+        }
     }
 }

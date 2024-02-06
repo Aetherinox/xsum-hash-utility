@@ -71,15 +71,16 @@ While there are numerous apps available for doing things such as this; I need a 
 ## Supported Algorithms
 Currently, the following algorithms are suppported. More are planned for later.
 
-| Algorithm | Family |
-| --- | --- |
-| `CRC` | 8, 16, 32 |
-| `MD5` | MD5 |
-| `SHA-1` | SHA-1 |
-| `SHA-2` | 256, 384, 512 |
-| `SHA-3` | 128, 224, 256, 384, 512 |
-| `Blake2b` | 128, 160, 256, 384, 512 |
-| `Blake2s` | 128, 160, 256, 384, 512 |
+| Algorithm | Family | Notes | 
+| --- | --- | --- |
+| `CRC` | 8, 16, 32 | |
+| `MD5` | MD5 | |
+| `SHA-1` | SHA-1 | |
+| `SHA-2` | 256, 384, 512 | |
+| `SHA-3` | 128, 224, 256, 384, 512 | |
+| `Blake2b` | 128, 160, 256, 384, 512 | |
+| `Blake2s` | 128, 160, 256, 384, 512 | |
+| `Argon2` | argon2i, argon2d | Strings Only |
 
 <br />
 
