@@ -71,11 +71,15 @@ While there are numerous apps available for doing things such as this; I need a 
 ## Supported Algorithms
 Currently, the following algorithms are suppported. More are planned for later.
 
+- CRC-8
+- CRC-16
+- CRC-32
 - MD5
 - SHA1
 - SHA2-256
 - SHA2-384
 - SHA2-512
+- SHA3-128
 - SHA3-224
 - SHA3-256
 - SHA3-384
@@ -257,6 +261,7 @@ To verify a hash digest, you need:
 <br />
 
 A **hash digest** is usually one of the following files:
+- CRC*.txt
 - MD5.txt
 - SHA*.txt
 - SHA3*.txt
@@ -921,6 +926,7 @@ xSum will be typically launched using **Command Prompt** or **Powershell** and e
 
 However, xSum has the ability to be launched as a regular executable. When you click on the xsum.exe executable, the utility will automatically go into **Verify Mode**. In order to utilize this mode, xsum.exe must be in the same folder as a hash digest file, which can be any of the following:
 
+- CRC.*.asc
 - MD5.*.asc
 - SHA1.*.asc
 - SHA256.*.asc
