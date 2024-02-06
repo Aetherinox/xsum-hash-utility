@@ -2426,9 +2426,26 @@ namespace XSum
                     gpg --sign --armor --default-key GPG_KEY --clear-sign -o SHA*.txt.asc
             */
 
-            string gpg_sign_type        = "Clear Signature";
-            string gpg_sign_output      = String.Format( "{0}.{1}", arg_Target_File, "asc" );
-            string ps_query             = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output + "\" --clearsign \"" + arg_Target_File + "\"";
+            string gpg_sign_type_cs     = "Clear Signature";
+            string gpg_sign_output_cs   = String.Format( "{0}.{1}", arg_Target_File, "asc" );
+            string gpg_cmd_run_cs       = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output_cs + "\" --clearsign \"" + arg_Target_File + "\"";
+
+            /*
+                Create Clear Signature
+            */
+
+            string[] ps_exec_cs         = new String[] { gpg_cmd_run_cs };
+            string ps_result_cs         = Helpers.PowershellQ( ps_exec_cs, arg_Debug_Enabled );
+
+            /*
+                Notice to user
+            */
+
+            nl( );
+            c2( sf( " {0,-28} {1,-30}", "[#Green]Success:[/]", "Created a [#Yellow]" + gpg_sign_type_cs + "[/] using the GPG id [#Yellow]" + arg_GPG_Key + "[/]" ) );
+            nl( );
+            c2( sf( " {0,-28} {1,-30}", "[#Green][/]", "Saved signature to [#Yellow]" + gpg_sign_output_cs + "[/]" ) );
+            nl( );
 
             /*
                 GPG > Detached Sign
@@ -2442,29 +2459,26 @@ namespace XSum
                     gpg --sign --armor --default-key GPG_KEY --detach-sign -o SHA*.txt.sig
             */
 
-            if ( arg_GPG_DetachSign )
-            {
-                gpg_sign_type           = "Detached Signature";
-                gpg_sign_output         = String.Format( "{0}.{1}", arg_Target_File, "sig" );
-                ps_query                = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output + "\" --detach-sign \"" + arg_Target_File + "\"";
-            }
 
+            string gpg_sign_type_dt     = "Detached Signature";
+            string gpg_sign_output_dt   = String.Format( "{0}.{1}", arg_Target_File, "sig" );
+            string gpg_cmd_run_dt       = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output_dt + "\" --detach-sign \"" + gpg_sign_output_cs + "\"";
 
             /*
-                Execute powershell query
+                Create Detached Signature
             */
 
-            string[] ps_exec = new String[] { ps_query };
-            string ps_result = Helpers.PowershellQ( ps_exec, arg_Debug_Enabled );
+            string[] ps_exec_dt         = new String[] { gpg_cmd_run_dt };
+            string ps_result_dt         = Helpers.PowershellQ( ps_exec_dt, arg_Debug_Enabled );
 
             /*
                 Notice to user
             */
 
             nl( );
-            c2( sf( " {0,-28} {1,-30}", "[#Green]Success:[/]", "Created a [#Yellow]" + gpg_sign_type + "[/] using the GPG id [#Yellow]" + arg_GPG_Key + "[/]" ) );
+            c2( sf( " {0,-28} {1,-30}", "[#Green]Success:[/]", "Created a [#Yellow]" + gpg_sign_type_dt + "[/] using the GPG id [#Yellow]" + arg_GPG_Key + "[/]" ) );
             nl( );
-            c2( sf( " {0,-28} {1,-30}", "[#Green][/]", "Saved signature to [#Yellow]" + gpg_sign_output + "[/]" ) );
+            c2( sf( " {0,-28} {1,-30}", "[#Green][/]", "Saved signature to [#Yellow]" + gpg_sign_output_dt + "[/]" ) );
             nl( );
 
             
