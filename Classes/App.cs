@@ -524,6 +524,7 @@ namespace XSum
                 dict_GetHash.Add        ( "sha256",         ( p ) => Hash.Hash_Manage_SHA2      ( "sha256",     p ) );
                 dict_GetHash.Add        ( "sha384",         ( p ) => Hash.Hash_Manage_SHA2      ( "sha384",     p ) );
                 dict_GetHash.Add        ( "sha512",         ( p ) => Hash.Hash_Manage_SHA2      ( "sha512",     p ) );
+                dict_GetHash.Add        ( "sha3128",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3128",    p ) );
                 dict_GetHash.Add        ( "sha3224",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3224",    p ) );
                 dict_GetHash.Add        ( "sha3256",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3256",    p ) );
                 dict_GetHash.Add        ( "sha3384",        ( p ) => Hash.Hash_Manage_SHA3      ( "sha3384",    p ) );

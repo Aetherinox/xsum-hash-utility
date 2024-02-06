@@ -52,12 +52,16 @@ namespace SHA3M.Security.Cryptography
 
         internal SHA3Managed( int len_HashBit )
         {
-            if ( len_HashBit != 224 && len_HashBit != 256 && len_HashBit != 384 && len_HashBit != 512 )
-                throw new ArgumentException( "len_HashBit requires 224, 256, 384, or 512", nameof( len_HashBit ) );
+            if ( len_HashBit != 128 && len_HashBit != 224 && len_HashBit != 256 && len_HashBit != 384 && len_HashBit != 512 )
+                throw new ArgumentException( "len_HashBit requires 128, 224, 256, 384, or 512", nameof( len_HashBit ) );
 
             hashSize = len_HashBit;
             switch ( len_HashBit )
             {
+                case 128:
+                    Kecc_R = 1344;
+                    break;
+
                 case 224:
                     Kecc_R = 1152;
                     break;
@@ -82,7 +86,7 @@ namespace SHA3M.Security.Cryptography
         {
             buffer      = new byte[ SizeInBytes ];
             len_Buffer  = 0;
-            state       = new ulong[5 * 5]; //1600 bits
+            state       = new ulong[ 8 * 8 ]; //4096 bits ( 8 * 8 * 64 )
         }
 
         private void AddToBuffer( ReadOnlySpan<byte> array, ref int offset, ref int count )

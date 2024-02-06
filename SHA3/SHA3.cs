@@ -45,6 +45,10 @@ namespace SHA3M.Security.Cryptography
             {
                 switch ( name.ToLower( ).Replace( "-", string.Empty ) )
                 {
+                    case "sha3128":
+                    case "sha3128managed":
+                        return new SHA3128Managed( );
+
                     case "sha3224":
                     case "sha3224managed":
                         return new SHA3224Managed( );
