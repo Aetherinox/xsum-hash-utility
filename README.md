@@ -3,7 +3,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/github/v/tag/Aetherinox/xsum-shahash-utility?logo=GitHub&label=version&color=ba5225) ![Downloads](https://img.shields.io/github/downloads/Aetherinox/xsum-shahash-utility/total) ![Repo Size](https://img.shields.io/github/repo-size/Aetherinox/xsum-shahash-utility?label=size&color=59702a) ![Last Commit)](https://img.shields.io/github/last-commit/Aetherinox/xsum-shahash-utility?color=b43bcc)
+![Version](https://img.shields.io/github/v/tag/Aetherinox/xsum-shahash-utility?logo=GitHub&label=version&color=ba5225) ![Downloads](https://img.shields.io/github/downloads/Aetherinox/xsum-shahash-utility/total) ![Repo Size](https://img.shields.io/github/repo-size/Aetherinox/xsum-shahash-utility?label=size&color=59702a) ![Last Commit)](https://img.shields.io/github/last-commit/Aetherinox/xsum-shahash-utility?color=b43bcc) [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FAetherinox%2Fxsum-hash-utility&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=views&edge_flat=false)](https://hits.seeyoufarm.com)
 
 </div>
 
