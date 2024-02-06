@@ -1554,7 +1554,7 @@ namespace XSum
                                 */
 
                                 case "--debug":
-                                case "-m":
+                                case "-z":
                                     arg_Debug_Enabled = true;
                                     break;
 
