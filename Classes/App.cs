@@ -363,6 +363,7 @@ namespace XSum
             static bool     arg_GPG_ClearSign       = false;                        // --gpg clearsign file
             static bool     arg_GPG_DetachSign      = false;                        // --gpg detachsign file
             static string   arg_GPG_ListKeys        = "long";                       // --gpg list-keys
+            static bool     arg_ClrScreen_Enabled   = false;                        // --clear arg specified
 
         #endregion
 
@@ -1039,7 +1040,6 @@ namespace XSum
                                 */
 
                                 case "--clearsign":
-                                case "--clear":
                                 case "-r":
                                 case "-cs":
                                     if ( !arg_SignMode_Enabled )
@@ -1075,6 +1075,18 @@ namespace XSum
                                     }
 
                                     arg_GPG_DetachSign     = true;
+
+                                    break;
+
+                                /*
+                                    CASE > CLEAR SCREEN
+
+                                    cleans console after each command
+                                */
+
+                                case "--clear":
+                                case "-cl":
+                                    arg_ClrScreen_Enabled   = true;
 
                                     break;
 
@@ -1597,7 +1609,12 @@ namespace XSum
 
                 }
 
+                /*
+                    Clean Screen
+                */
 
+                if ( arg_ClrScreen_Enabled )
+                    Console.Clear( );
 
                 /*
                     Action > Benchmark
@@ -2415,6 +2432,13 @@ namespace XSum
             }
 
             /*
+                Clearsign and Detach Defaults
+            */
+
+            string gpg_sign_output_cs   = String.Format( "{0}.{1}", arg_Target_File, "asc" );
+            string gpg_sign_output_dt   = String.Format( "{0}.{1}", arg_Target_File, "sig" );
+
+            /*
                 GPG > Clear Signature or Detached
 
                 Contains a list of every file and hash for the project.
@@ -2426,26 +2450,31 @@ namespace XSum
                     gpg --sign --armor --default-key GPG_KEY --clear-sign -o SHA*.txt.asc
             */
 
-            string gpg_sign_type_cs     = "Clear Signature";
-            string gpg_sign_output_cs   = String.Format( "{0}.{1}", arg_Target_File, "asc" );
-            string gpg_cmd_run_cs       = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output_cs + "\" --clearsign \"" + arg_Target_File + "\"";
+            if ( arg_GPG_ClearSign || !arg_GPG_DetachSign )
+            {
 
-            /*
-                Create Clear Signature
-            */
+                string gpg_sign_type_cs     = "Clear Signature";
+                string gpg_cmd_run_cs       = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output_cs + "\" --clearsign \"" + arg_Target_File + "\"";
 
-            string[] ps_exec_cs         = new String[] { gpg_cmd_run_cs };
-            string ps_result_cs         = Helpers.PowershellQ( ps_exec_cs, arg_Debug_Enabled );
+                /*
+                    Create Clear Signature
+                */
 
-            /*
-                Notice to user
-            */
+                string[] ps_exec_cs         = new String[] { gpg_cmd_run_cs };
+                string ps_result_cs         = Helpers.PowershellQ( ps_exec_cs, arg_Debug_Enabled );
 
-            nl( );
-            c2( sf( " {0,-28} {1,-30}", "[#Green]Success:[/]", "Created a [#Yellow]" + gpg_sign_type_cs + "[/] using the GPG id [#Yellow]" + arg_GPG_Key + "[/]" ) );
-            nl( );
-            c2( sf( " {0,-28} {1,-30}", "[#Green][/]", "Saved signature to [#Yellow]" + gpg_sign_output_cs + "[/]" ) );
-            nl( );
+                /*
+                    Notice to user
+                */
+
+                nl( );
+                c2( sf( " {0,-28} {1,-30}", "[#Green]Success:[/]", "Created [#Yellow]" + gpg_sign_type_cs + "[/] using GPG keyid [#Yellow]" + arg_GPG_Key + "[/]" ) );
+                nl( );
+                c2( sf( " {0,-31} {1,-30}", "[#DarkGray]Saved To:[/]", "[#DarkGray]" + gpg_sign_output_cs + "[/]" ) );
+                nl( );
+                c2( sf( " {0,-31} {1,-30}", "[#DarkGray]Derived File:[/]", "[#DarkGray]" + arg_Target_File + "[/]" ) );
+                nl( );
+            }
 
             /*
                 GPG > Detached Sign
@@ -2459,29 +2488,34 @@ namespace XSum
                     gpg --sign --armor --default-key GPG_KEY --detach-sign -o SHA*.txt.sig
             */
 
+            if ( arg_GPG_DetachSign || !arg_GPG_ClearSign  )
+            {
 
-            string gpg_sign_type_dt     = "Detached Signature";
-            string gpg_sign_output_dt   = String.Format( "{0}.{1}", arg_Target_File, "sig" );
-            string gpg_cmd_run_dt       = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output_dt + "\" --detach-sign \"" + gpg_sign_output_cs + "\"";
+                string gpg_target_dt         = ( arg_GPG_DetachSign ) ? arg_Target_File : gpg_sign_output_cs;
+                string gpg_sign_type_dt     = "Detached Signature";
+                string gpg_cmd_run_dt       = "gpg --batch --yes -q --armor --default-key \"" + arg_GPG_Key + "\" --output \"" + gpg_sign_output_dt + "\" --detach-sign \"" + gpg_target_dt + "\"";
 
-            /*
-                Create Detached Signature
-            */
+                /*
+                    Create Detached Signature
+                */
 
-            string[] ps_exec_dt         = new String[] { gpg_cmd_run_dt };
-            string ps_result_dt         = Helpers.PowershellQ( ps_exec_dt, arg_Debug_Enabled );
+                string[] ps_exec_dt         = new String[] { gpg_cmd_run_dt };
+                string ps_result_dt         = Helpers.PowershellQ( ps_exec_dt, arg_Debug_Enabled );
 
-            /*
-                Notice to user
-            */
+                /*
+                    Notice to user
+                */
 
-            nl( );
-            c2( sf( " {0,-28} {1,-30}", "[#Green]Success:[/]", "Created a [#Yellow]" + gpg_sign_type_dt + "[/] using the GPG id [#Yellow]" + arg_GPG_Key + "[/]" ) );
-            nl( );
-            c2( sf( " {0,-28} {1,-30}", "[#Green][/]", "Saved signature to [#Yellow]" + gpg_sign_output_dt + "[/]" ) );
-            nl( );
+                nl( );
+                c2( sf( " {0,-28} {1,-30}", "[#Green]Success:[/]", "Created [#Yellow]" + gpg_sign_type_dt + "[/] using GPG keyid [#Yellow]" + arg_GPG_Key + "[/]" ) );
+                nl( );
 
-            
+                c2( sf( " {0,-31} {1,-30}", "[#DarkGray]Saved To:[/]", "[#DarkGray]" + gpg_sign_output_dt + "[/]" ) );
+                nl( );
+                c2( sf( " {0,-31} {1,-30}", "[#DarkGray]Derived File:[/]", "[#DarkGray]" + gpg_target_dt + "[/]" ) );
+                nl( );
+
+            }
 
             return (int)ExitCode.ErrorGeneric;
         }
@@ -2845,7 +2879,7 @@ namespace XSum
                 Don't display if self-verification enabled
             */
 
-            if ( !arg_SelfVerify_Enabled )
+            if ( arg_Progress_Enabled )
             {
 
                 /*
