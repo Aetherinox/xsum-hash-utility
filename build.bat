@@ -80,7 +80,7 @@ SET APP_NAME=xsum.exe
 :: -----------------------------------------------------------------------------------------------------
 
 SET PATH_ROOT=bin
-SET PATH_CONFIGURATION=Dist
+SET PATH_CONFIGURATION=Publish
 SET PATH_PUBLISH=publish
 
 :: -----------------------------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ echo Merging %APP_NAME% ...
     ::  sign EXE
     :: -----------------------------------------------------------------------------------------------------
 
-    for /R %PATH_ROOT%\%PATH_CONFIGURATION%\%PATH_PUBLISH% %%f in ( *.exe ) do (
+    for /R %PATH_ROOT%\%PATH_CONFIGURATION%\ %%f in ( *.exe ) do (
         call signtool sign /sha1 "%CERT_THUMBPRINT%" /fd SHA256 /d "Aetherx" /du "https://github.com/Aetherinox" /t http://timestamp.comodoca.com/authenticode "%%f"
     )
 
@@ -126,6 +126,5 @@ echo Merging %APP_NAME% ...
 :: -----------------------------------------------------------------------------------------------------
 
 :FINISH
-    dir %APP_NAME%
     pause
     Exit /B 0

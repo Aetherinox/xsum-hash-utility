@@ -5,8 +5,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text;
-using System.Management.Automation;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -23,6 +21,14 @@ using Starksoft.Aspen.GnuPG;
 
 namespace XSum
 {
+
+    public static class StringExtensions
+    {
+        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        {
+            return source?.IndexOf( toCheck, comp ) >= 0;
+        }
+    }
 
     public class App
     {
@@ -279,6 +285,7 @@ namespace XSum
 
             private static Dictionary<string, bool> dict_HashFiles = new Dictionary<string, bool>
             {
+                { "CRC*.txt",       true },
                 { "SHA*.txt",       true },
                 { "MD5*.txt",       true },
                 { "BLAKE*.txt",     true },
@@ -290,6 +297,7 @@ namespace XSum
 
             private static Dictionary<string, bool> dict_SignedDigests = new Dictionary<string, bool>
             {
+                { "CRC*.asc",       true },
                 { "MD5*.asc",       true },
                 { "SHA*.asc",       true },
                 { "BLAKE*.asc",     true },
@@ -305,12 +313,15 @@ namespace XSum
                 { ".gitignore",         true },
                 { ".github",            true },
                 { ".gitea",             true },
+                { "CRC*.asc",           true },
                 { "MD5*.asc",           true },
                 { "SHA*.asc",           true },
                 { "BLAKE*.asc",         true },
+                { "CRC*.txt",           true },
                 { "MD5*.txt",           true },
                 { "SHA*.txt",           true },
                 { "BLAKE*.txt",         true },
+                { "CRC*.sig",           true },
                 { "MD5*.sig",           true },
                 { "SHA*.sig",           true },
                 { "BLAKE*.sig",         true },
@@ -513,7 +524,7 @@ namespace XSum
                 Blake2b specifies the number of bytes for the hash length.
             */
 
-            static IDictionary<string, Func<string, string>> Dict_Hashes_Populate( )
+            static IDictionary<string, Func<string, string>> Dict_GetHashes( )
             {
                 var dict_GetHash        = new Dictionary<string, Func<string, string>>( );
 
@@ -553,7 +564,7 @@ namespace XSum
             static string Hash_GetList( )
             {
                 string str_lst          = "";
-                var dict_GetHash        = Dict_Hashes_Populate( );
+                var dict_GetHash        = Dict_GetHashes( );
 
                 StringBuilder sb        = new StringBuilder( );
 
@@ -1029,7 +1040,7 @@ namespace XSum
 
                                     string ps_query     = "gpg --list-secret-keys --keyid-format=\"" + arg_GPG_ListKeys + "\"";
                                     string[] ps_exec    = new String[] { ps_query };
-                                    string ps_result    = Helpers.PowershellQ( ps_exec, false );
+                                    string ps_result    = Helpers.PowershellQ( ps_exec, true );
 
                                     return (int)ExitCode.Success;
 
@@ -1164,9 +1175,9 @@ namespace XSum
                                         Confirm algorithm
                                     */
 
-                                    var dict_GetHash = Dict_Hashes_Populate( );  // create dictionary for hash algos
+                                    var dict_GetHash = Dict_GetHashes( );  // create dictionary for hash algos
 
-                                    if ( !dict_GetHash.Any( x => x.Key.Contains( arg_Algo ) ) )
+                                    if ( !dict_GetHash.Any( x => x.Key.Contains( arg_Algo, StringComparison.OrdinalIgnoreCase ) ) )
                                     {
                                         nl( );
                                         c2( sf( " {0,-23} {1,-30}", "[#Red]Error[/]", "Unrecognized [#Yellow]--algorithn[/] specified\n" ) );
@@ -1559,12 +1570,13 @@ namespace XSum
                                     break;
 
                                 /*
-                                    CASE > DEBUG > WHERE
+                                    CASE > DEBUG > DIAGNOSTICS
 
                                     Lists the paths in use by xsum
                                 */
 
-                                case "-mw":
+                                case "--diag":
+                                case "-dg":
                                     if ( arg_VerifyMode_Enabled || arg_GenMode_Enabled || arg_Benchmark_Enabled )
                                     {
                                         nl( );
@@ -1574,10 +1586,10 @@ namespace XSum
                                         return (int)ExitCode.ErrorMissingArg;
                                     }
 
-
-                                    var algorithm_list      = Dict_Hashes_Populate( );
+                                    var algorithm_list      = Dict_GetHashes( );
                                     bool bFind_GPG          = Helpers.FindProgram( "gpg.exe" );
-                                    string status_gpg       = ( bFind_GPG ? "Installed" : "Not Installed" );
+                                    string gpg_where        = Helpers.FindProgramPath( "gpg.exe" );
+                                    string status_gpg       = ( bFind_GPG ? gpg_where : "Not Installed" );
 
                                     nl( );
                                     c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Full Path:[/]", "[#Gray]" + xsum_path_full + "[/]" ) );
@@ -1591,6 +1603,12 @@ namespace XSum
                                     c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Algorithms:[/]", "[#Gray]" + algorithm_list.Count + "[/]" ) );
                                     nl( );
                                     c2( sf( " {0,-28} {1,-30}", "[#DarkGray]GPG:[/]", "[#Gray]" + status_gpg + "[/]" ) );
+                                    nl( );
+                                    nl( );
+                                    c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Ignores:[/]", "[#Gray]" + arg_Ignored_List + "[/]" ) );
+                                    nl( );
+                                    nl( );
+                                    c2( sf( " {0,-28} {1,-30}", "[#DarkGray]Algorithms:[/]", "[#Gray]" + arg_Algo_List + "[/]" ) );
                                     nl( );
 
                                     return (int)ExitCode.Success;
@@ -1813,7 +1831,7 @@ namespace XSum
 
         static public int Action_Generate( )
         {
-            var dict_GetHash            = Dict_Hashes_Populate( );                          // create dictionary for hash algos        
+            var dict_GetHash            = Dict_GetHashes( );                          // create dictionary for hash algos        
 
             /*
                 Define > StringBuilder output
@@ -1853,7 +1871,7 @@ namespace XSum
                 return (int)ExitCode.ErrorMissingArg;
                 */
 
-                arg_Target_File = @".\";
+                arg_Target_File = @Directory.GetCurrentDirectory( );
             }
 
             /*
@@ -2317,7 +2335,7 @@ namespace XSum
 
             StringBuilder sb_digest     = new StringBuilder( );
             var dict_digest             = new Dictionary<string, string>( );
-            var dict_GetHash            = Dict_Hashes_Populate( );                                                      // create dictionary for hash algos
+            var dict_GetHash            = Dict_GetHashes( );                                                      // create dictionary for hash algos
             var dict_Ignore             = dict_Ignored;                                                                 // create dictionary for ignored files
 
             string item_get_hash        = dict_GetHash[ arg_Algo ]( item_path_full );                                   // get hash of file
@@ -2530,8 +2548,8 @@ namespace XSum
         static public int Action_Verify( )
         {
 
-            var dict_GetHash            = Dict_Hashes_Populate( );          // create dictionary for hash algos
-            var dict_Ignore             = dict_Ignored;                     // create dictionary for ignored files
+            var dict_GetHash            = Dict_GetHashes( );            // create dictionary for hash algos
+            var dict_Ignore             = dict_Ignored;                 // create dictionary for ignored files
 
             /*
                 Define > StringBuilder output

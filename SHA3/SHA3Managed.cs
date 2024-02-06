@@ -50,6 +50,11 @@ namespace SHA3M.Security.Cryptography
         private byte[] buffer;
         private int len_Buffer;
 
+        /*
+            Values are listed on 
+                https://en.wikipedia.org/wiki/SHA-3
+        */
+
         internal SHA3Managed( int len_HashBit )
         {
             if ( len_HashBit != 128 && len_HashBit != 224 && len_HashBit != 256 && len_HashBit != 384 && len_HashBit != 512 )
@@ -86,7 +91,7 @@ namespace SHA3M.Security.Cryptography
         {
             buffer      = new byte[ SizeInBytes ];
             len_Buffer  = 0;
-            state       = new ulong[ 8 * 8 ]; //4096 bits ( 8 * 8 * 64 )
+            state       = new ulong[ 5 * 5 ]; // 1600 bits ( 5 * 5 * 64 )
         }
 
         private void AddToBuffer( ReadOnlySpan<byte> array, ref int offset, ref int count )

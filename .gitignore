@@ -4,27 +4,22 @@
 /*
 
 # ----------------------
-# Add Gitignore
+# Exc > .vshistory
+# ----------------------
+.vshistory
+
+# ----------------------
+# Inc > Add Gitignore
 # ----------------------
 !.gitignore
 
 # ----------------------
-# Misc Templates
-# ----------------------
-!LICENSE*
-!Contributing*
-!Funding*
-!.github
-!.gitea
-!.gitlab
-
-# ----------------------
-# Add Manifest
+# Inc > Add Manifest
 # ----------------------
 !/manifest
 
 # ----------------------
-# Add Tools
+# Inc > Add Tools
 # ----------------------
 !/Tools
 
@@ -41,7 +36,7 @@
 /bin/Debug/*
 /bin/Release/*
 /bin/Release/*.pdb
-/bin/Release/*.exe
+/bin/Release/*.exe.config
 /bin/Release/*.manifest
 /bin/Release/*.application
 /bin/Release/*.dll
@@ -49,10 +44,19 @@
 
 /bin/Dist/*
 /bin/Dist/*.pdb
-/bin/Dist/*.exe
+/bin/Dist/*.exe.config
 /bin/Dist/*.manifest
 /bin/Dist/*.application
 /bin/Dist/*.dll
+!/bin/Dist/*exe
+
+/bin/Publish/*
+/bin/Publish/*.pdb
+/bin/Publish/*.exe.config
+/bin/Publish/*.manifest
+/bin/Publish/*.application
+/bin/Publish/*.dll
+!/bin/Publish/*exe
 
 /MSBuildCode/*
 !/MSBuildCode/
@@ -71,47 +75,35 @@
 !/bin/Release/net481/publish/
 !/bin/Release/net481/publish/*.exe
 
-/bin/Release/.vshistory*
-
 # Allow: GPG
 !/GnuPG*
-/GnuPG/.vshistory*
 
 # Allow: SHA3
 !/SHA3*
-/SHA3/.vshistory*
 
 # Allow: Blake2
 !/Blake2*
-/Blake2/.vshistory*
 
 # Allow: Blake3
 !/Blake3*
-/Blake3/.vshistory*
 
 # Allow: CRC
 !/CRC*
-/CRC/.vshistory*
 
 # Allow: Classes
 !/Classes*
-/Classes/.vshistory*
 
 # Allow: Controls
 !/Controls*
-/Controls/.vshistory*
 
 # Allow: Forms
 !/Forms*
-/Forms/.vshistory*
 
 # Allow: Materials
 !/Materials*
-/Materials/.vshistory*
 
 # Allow: Properties
 !/Properties*
-/Properties/.vshistory*
 
 # Allow: Exts
 !*.csproj
@@ -122,6 +114,10 @@
 !*.md
 !*.bat
 !*.props
-!*.targets
-!*.Config
-/bin/Dist/xsum.exe.config
+!/*config
+!LICENSE*
+!Contributing*
+!Funding*
+!.github
+!.gitea
+!.gitlab

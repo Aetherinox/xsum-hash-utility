@@ -412,6 +412,10 @@ namespace XSum
 
             static public void RouteOutput( string input ) { }
 
+            /*
+                @todo       : deprecate in favor of FindProgramPath
+            */
+
             public static bool FindProgram( string appexe )
             {
                 try
@@ -422,7 +426,7 @@ namespace XSum
                         p.StartInfo.FileName                = "where";
                         p.StartInfo.Arguments               = appexe;
                         p.StartInfo.RedirectStandardOutput  = true;
-                        p.OutputDataReceived                += (s, e) => RouteOutput( e.Data );
+                        p.OutputDataReceived                += ( s, e ) => RouteOutput( e.Data );
                         p.Start( );
                         p.BeginOutputReadLine( );
                         p.WaitForExit( );
@@ -432,8 +436,21 @@ namespace XSum
                 }
                 catch( Win32Exception )
                 {
-                    throw new Exception( "'where' command is not on path" );
+                    throw new Exception( "Failed to locate app. 'where' command is not on PATH" );
                 }
+            }
+
+            /*
+                Environment Variables
+            */
+
+            public static string FindProgramPath( string filename )
+            {
+                var paths       = new[]{ Environment.CurrentDirectory }.Concat( Environment.GetEnvironmentVariable( "PATH" ).Split( ';' ) );
+                var file_ext    = new[]{ String.Empty }.Concat(Environment.GetEnvironmentVariable( "PATHEXT" ).Split( ';' ).Where( e => e.StartsWith( "." ) ) );
+                var combos      = paths.SelectMany( x => file_ext, ( path, file_ext ) => Path.Combine( path, filename + file_ext ) );
+
+                return combos.FirstOrDefault( File.Exists );
             }
 
         #endregion

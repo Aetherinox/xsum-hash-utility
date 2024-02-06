@@ -599,7 +599,7 @@ namespace Starksoft.Aspen.GnuPG
             string result       = output.Value.Replace( "\"", string.Empty );
 
 
-            if ( Helpers.StringValidateEmail( result ) )
+            if ( !String.IsNullOrEmpty( result ) )
                 return result;
 
             return null;
