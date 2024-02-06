@@ -1,4 +1,4 @@
-<p align="center"><img src="Docs/images/banner.png" width="860"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Aetherinox/xsum-hash-utility/main/Docs/images/banner.png" width="860"></p>
 <h1 align="center"><b>xSum Hash Utility</b></h1>
 
 <div align="center">
