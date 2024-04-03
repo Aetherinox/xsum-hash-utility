@@ -1,6 +1,6 @@
 ﻿/*
 	@Title		: Algorithms > CRC
-	@Website	: https://github.com/Aetherinox/xsum-shahash-utility
+	@Website	: https://github.com/Aetherinox/XSum-shahash-utility
 	@Authors	: Aetherinox
                 : Benton Stark
 

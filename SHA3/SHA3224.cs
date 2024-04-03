@@ -1,6 +1,6 @@
 /*
 	@Title		: Algorithms > SHA-3
-	@Website	: https://github.com/Aetherinox/xsum-shahash-utility
+	@Website	: https://github.com/Aetherinox/XSum-shahash-utility
 	@Authors	: Aetherinox
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy

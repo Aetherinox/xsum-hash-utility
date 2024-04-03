@@ -16,6 +16,7 @@ using Starksoft.Aspen.GnuPG;
 using Isopoh.Cryptography.Argon2;
 using Cfg = XSum.Properties.Settings;
 using static System.Net.Mime.MediaTypeNames;
+using SharpHash.Utils;
 
 #endregion
 
@@ -541,6 +542,8 @@ namespace XSum
             {
                 var dict_GetHash        = new Dictionary<string, Func<string, string>>( );
 
+                /*
+                dict_GetHash.Add        ( "gost",           ( p ) => Hash.Hash_Manage_Universal ( p, "gost2012" ) );
                 dict_GetHash.Add        ( "crc8",           ( p ) => Hash.Hash_Manage_CRC       ( "8",          p ) );
                 dict_GetHash.Add        ( "crc16",          ( p ) => Hash.Hash_Manage_CRC       ( "16",         p ) );
                 dict_GetHash.Add        ( "crc32",          ( p ) => Hash.Hash_Manage_CRC       ( "32",         p ) );
@@ -565,8 +568,23 @@ namespace XSum
                 dict_GetHash.Add        ( "blake2s384",     ( p ) => Hash.Hash_Manage_B2S       ( "48",         p ) );
                 dict_GetHash.Add        ( "blake2s512",     ( p ) => Hash.Hash_Manage_B2S       ( "64",         p ) );
                 dict_GetHash.Add        ( "argon2",         ( p ) => Hash.Hash_Manage_AG2       ( p, arg_AG2_salt, arg_AG2_memory, arg_AG2_hashlen, arg_Iterations, arg_AG2_threads, arg_AG2_lanes ) );
+                */
+
+                dict_GetHash.Add        ( "gost",           ( p ) => Hash.Hash_Manage_Universal ( p, arg_Algo ) );
 
                 return dict_GetHash;
+            }
+
+            static string Hash_GenerateList( string algo = "sha256" )
+            {
+                string asdasd   = "md5";
+                var algdo        = LangBuilder.Reducer( asdasd );
+
+                if ( algdo == null )
+                    Console.WriteLine( "Invalid Algo" );
+
+                return "a";
+
             }
 
             /*

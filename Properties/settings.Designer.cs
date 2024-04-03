@@ -79,7 +79,7 @@ namespace XSum.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("32")]
+        [global::System.Configuration.DefaultSettingValueAttribute("2147483647")]
         public int ag2_hashlen_max {
             get {
                 return ((int)(this["ag2_hashlen_max"]));

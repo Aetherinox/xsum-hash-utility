@@ -15,6 +15,10 @@ using System.Threading;
 using Cfg = XSum.Properties.Settings;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using SharpHash.Base;
+using SharpHash.Interfaces;
+using System.Runtime.InteropServices.ComTypes;
+using System.Security.Policy;
 
 #endregion
 
@@ -680,6 +684,114 @@ namespace XSum
             }
 
         #endregion
+
+
+        #region "UnicweaL"
+
+
+
+            /*
+                Algo
+            */
+
+            static public string HashFolder( string folder, string algo )
+            {
+
+                var files                   = Directory.GetFiles( folder, "*.*", SearchOption.AllDirectories ).OrderBy( p => p ).ToList( );
+                using (var file_total       = (HashAlgorithm)CryptoConfig.CreateFromName( algo ) )
+                {
+                    int bytes_read_chunk    = 2048;
+
+                    foreach ( string file in files )
+                    {
+                        using (var file_single = (HashAlgorithm)CryptoConfig.CreateFromName( algo ) )
+                        {
+                            using ( FileStream file_contents = File.OpenRead( file ) )
+                            {
+                                byte[] bytes_content    = new byte[ bytes_read_chunk ];
+                                int bytes_read          = 0;
+
+                                // (optimization) read file in chunks
+                                while ( ( bytes_read = file_contents.Read( bytes_content, 0, bytes_read_chunk ) ) > 0 )
+                                {
+                                    file_total.TransformBlock   ( bytes_content, 0, bytes_read, bytes_content, 0 );
+                                    file_single.TransformBlock  ( bytes_content, 0, bytes_read, bytes_content, 0 );
+                                }
+
+                                // close file_single block with 0 length
+                                file_single.TransformFinalBlock( bytes_content, 0, 0 );
+                            }
+
+                            if ( AppInfo.bIsDebug( ) )
+                            {
+                                Console.WriteLine( file );
+                                Console.WriteLine( BitConverter.ToString( file_single.Hash ).Replace( "-", "" ).ToUpper( ) );
+                                Console.WriteLine( "\n");
+                            }
+
+                        }
+                    }
+
+                    // close total hash block
+                    file_total.TransformFinalBlock( new byte[ 0 ], 0, 0 );
+
+                    return BytesToString( file_total.Hash );
+                }
+            }
+
+            /*
+                MD5, SHA-2
+            */
+
+            public static string HashString( string str, string algo )
+            {
+                IHash hash              = HashFactory.CreateHash( "gost256" );
+                hash.Initialize         ( );
+
+                return hash.GetString   ( str, Encoding.UTF8 ).ToString( );
+            }
+
+            /*
+                Algo
+            */
+
+            public static string HashFile( string file, string algo )
+            {
+                IHash hash              = HashFactory.CreateHash( "gost256" );
+                hash.Initialize         ( );
+                hash.GetFile            ( file );
+
+                return hash.TransformFinal( ).ToString();
+        }
+
+        /*
+            Management > Universal
+
+            @arg        : str algo
+            @arg        : str input
+            @ret        : str
+        */
+
+            public static string Hash_Manage_Universal( string input, string algo )
+            {
+                if ( Directory.Exists( input ) )
+                {
+                    return Hash.HashFolder( input, algo );
+                }
+                else if ( File.Exists( input ) )
+                {
+                    return Hash.HashFile( input, algo );
+                }
+                else
+                {
+                    return Hash.HashString( input, algo );
+                }
+            }
+
+
+        #endregion
+
+
 
 
 

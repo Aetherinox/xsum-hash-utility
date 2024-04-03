@@ -196,17 +196,17 @@ namespace XSum
             Used for benchmarking
             generates a large set of words that will be used to benchmark sha algorithms
 
-            @arg        : str str
+            @arg        : str i_Words
             @bool       : bool bRandCase
             @ret        : str
         */
 
-        public string RandomString( int num_words, bool bRandCase )
+        public string RandomString( int i_Words, bool bRandCase )
         {
-            var sb          = new System.Text.StringBuilder( );
+            var sb          = new StringBuilder( );
             Random rand     = new Random( ); 
 
-            for ( int a = 0; a < num_words; a++ ) 
+            for ( int a = 0; a < i_Words; a++ ) 
             { 
 
                 int rand_val; 
@@ -326,6 +326,19 @@ namespace XSum
             }
         }
 
+        public static string FSReadString( Stream stream, Encoding enc = null )
+        {
+            enc = enc ?? Encoding.UTF8;
+
+            byte[] bytes        = new byte[stream.Length];
+            stream.Position     = 0;
+
+            stream.Read(bytes, 0, (int)stream.Length);
+
+            string data         = enc.GetString(bytes);
+
+            return enc.GetString(bytes);
+        }
 
         public string StringJoin(string[] array)
         {
